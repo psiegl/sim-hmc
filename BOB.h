@@ -123,6 +123,8 @@ public:
 
 	//Used to adjust for uneven clock frequencies
 	unsigned clockCycleAdjustmentCounter;
+
+    uint64_t dram_channel_clk;
 };
 }
 #endif

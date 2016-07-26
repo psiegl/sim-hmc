@@ -59,6 +59,7 @@ BOB::BOB() : priorityPort(0),
 	channelBitWidth(log2(NUM_CHANNELS)),
 	cacheOffset(log2(CACHE_LINE_SIZE))
 {
+    dram_channel_clk = 0;
 	/*
 	  HACK!!! - QEMU does not support the huge memory sizes BOB can simulate.
 	  Removing bits from the row address will have the least impact on function
@@ -745,6 +746,7 @@ void BOB::Update()
 		{
 			if(clockCycleAdjustmentCounter<DRAM_CPU_CLK_ADJUSTMENT)
 			{
+                dram_channel_clk++;
 				for(unsigned i=0; i<NUM_CHANNELS; i++)
 				{
 					channels[i]->Update();
@@ -1049,7 +1051,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 
 	PRINT(" == Time Check");
 	PRINT("    CPU Time : "<<currentClockCycle * CPU_CLK_PERIOD<<"ns");
-	PRINT("   DRAM Time : "<<(channels[0]->currentClockCycle * tCK)<<"ns");
+    PRINT("   DRAM Time : "<<(dram_channel_clk * tCK)<<"ns");
 }
 
 

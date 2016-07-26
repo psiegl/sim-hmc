@@ -32,7 +32,7 @@
 
 #include "SimpleController.h"
 #include "DRAMChannel.h"
-#include "math.h"
+#include <math.h>
 
 using namespace std;
 using namespace BOBSim;
@@ -105,15 +105,7 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	for(unsigned i=0; i<NUM_RANKS; i++)
 	{
 		refreshCounters[i] = ((7800/tCK)/NUM_RANKS)*(i+1);
-	}
-	//Prints all of the initialized refresh counters
-	if(DEBUG_CHANNEL)
-	{
-		for(unsigned i=0; i<NUM_RANKS; i++)
-		{
-			PRINT(i<<"  "<<refreshCounters[i]);
-		}
-	}
+    }
 }
 
 //Updates the state of everything 
@@ -136,61 +128,34 @@ void SimpleController::Update()
 	//cumulative rolling average
 	commandQueueAverage += currentCount;
 
-	//count the number of idle banks
-	unsigned num=0;
 	for(unsigned r=0; r<NUM_RANKS; r++)
 	{
 		for(unsigned b=0; b<NUM_BANKS; b++)
 		{
-			if(bankStates[r][b].currentBankState==IDLE)
+            switch(bankStates[r][b].currentBankState)
 			{
-				num++;
-			}
-		}
-	}
-	numIdleBanksAverage += num;
+            //count the number of idle banks
+            case IDLE:
+              numIdleBanksAverage++;
+              break;
 
-	//count the number of active banks
-	unsigned numActive=0;
-	for(unsigned r=0; r<NUM_RANKS; r++)
-	{
-		for(unsigned b=0; b<NUM_BANKS; b++)
-		{
-			if(bankStates[r][b].currentBankState==ROW_ACTIVE)
-			{
-				numActive++;
-			}
-		}
-	}
-	numActBanksAverage += numActive;
+            //count the number of active banks
+            case ROW_ACTIVE:
+              numActBanksAverage++;
+              break;
 
-	//count the number of precharging banks
-	unsigned numPre=0;
-	for(unsigned r=0; r<NUM_RANKS; r++)
-	{
-		for(unsigned b=0; b<NUM_BANKS; b++)
-		{
-			if(bankStates[r][b].currentBankState==PRECHARGING)
-			{
-				numPre++;
-			}
-		}
-	}
-	numPreBanksAverage += numPre;
+            //count the number of precharging banks
+            case PRECHARGING:
+              numPreBanksAverage++;
+              break;
 
-	//count the number of refreshing banks
-	unsigned numRef=0;
-	for(unsigned r=0; r<NUM_RANKS; r++)
-	{
-		for(unsigned b=0; b<NUM_BANKS; b++)
-		{
-			if(bankStates[r][b].currentBankState==REFRESHING)
-			{
-				numRef++;
+            //count the number of refreshing banks
+            case REFRESHING:
+              numRefBanksAverage++;
+              break;
 			}
 		}
-	}
-	numRefBanksAverage += numRef;
+    }
 
 	//
 	//Power
@@ -479,54 +444,7 @@ void SimpleController::Update()
 				break;
 			}
 		}
-	}
-	
-	//
-	//Debug output
-	//
-	if(DEBUG_CHANNEL)
-	{
-		if(commandQueue.size()>0)
-		{
-			DEBUG("     == Command queue");
-			for(unsigned i=0; i<commandQueue.size(); i++)
-			{
-				DEBUG("       "<<i<<"] " << *commandQueue[i]);
-			}
-		}
-
-		DEBUG("     == Bank states");
-
-		for(unsigned i=0; i<NUM_RANKS; i++)
-		{
-			for(unsigned j=0; j<NUM_BANKS; j++)
-			{
-				DEBUGN("       ");
-				if(bankStates[i][j].currentBankState == ROW_ACTIVE)
-				{
-					DEBUGN("[" << hex << bankStates[i][j].openRowAddress << dec << "] ");
-				}
-				else if(bankStates[i][j].currentBankState == IDLE)
-				{
-					DEBUGN("[idle]");
-				}
-				else if(bankStates[i][j].currentBankState == PRECHARGING)
-				{
-					DEBUGN("[pre] ");
-				}
-				else if(bankStates[i][j].currentBankState == REFRESHING)
-				{
-					DEBUGN("[ref] ");
-				}
-				else
-				{
-					ERROR("== Error - unknown state");
-					exit(0);
-				}
-			}
-			DEBUG("");
-		}
-	}
+    }
 
 	//increment clock cycle
 	currentClockCycle++;

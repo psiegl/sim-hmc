@@ -36,19 +36,6 @@
 using namespace std;
 using namespace BOBSim;
 
-DRAMChannel::DRAMChannel():
-	inFlightCommandPacket(NULL),
-	inFlightDataPacket(NULL),
-	inFlightDataCountdown(0),
-	inFlightCommandCountdown(0),
-	channelID(0),
-	readReturnQueueMax(0),
-	simpleController(this),
-	DRAMBusIdleCount(0)
-{
-	exit(0);
-}
-
 DRAMChannel::DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> *reportCB):
 	inFlightCommandCountdown(0),
 	inFlightDataCountdown(0),
@@ -60,9 +47,7 @@ DRAMChannel::DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> 
 	logicLayer(NULL),
 	DRAMBusIdleCount(0)
 {
-	ReportCallback = reportCB;
-
-	currentClockCycle = 0;
+    ReportCallback = reportCB;
 
 	Callback<DRAMChannel,void,BusPacket*,unsigned> *dataCallback = new Callback<DRAMChannel,void, BusPacket*,unsigned>(this, &DRAMChannel::ReceiveOnDataBus);
 	Callback<DRAMChannel,void,BusPacket*,unsigned> *cmdCallback = new Callback<DRAMChannel,void, BusPacket*,unsigned>(this, &DRAMChannel::ReceiveOnCmdBus);
@@ -77,7 +62,7 @@ DRAMChannel::DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> 
 	logicLayer = new LogicLayerInterface(id);
 
 	Callback<LogicLayerInterface, void, Transaction*, unsigned> *logicCallback = new Callback<LogicLayerInterface, void, Transaction*, unsigned>(logicLayer, &LogicLayerInterface::ReceiveLogicOperation);
-	SendToLogicLayer = logicCallback;
+    SendToLogicLayer = logicCallback;
 
 	Callback<DRAMChannel, bool, Transaction*, unsigned> *returnCallback = new Callback<DRAMChannel, bool, Transaction*, unsigned>(this, &DRAMChannel::AddTransaction);
 	logicLayer->RegisterReturnCallback(returnCallback);
@@ -88,7 +73,7 @@ void DRAMChannel::Update()
 {
 	if(DEBUG_CHANNEL)
 	{
-		DEBUG("   == DRAM Channel "<<channelID<<" [DRAM cycle "<<currentClockCycle<<"]");
+        DEBUG("   == DRAM Channel "<<channelID);
 
 		DEBUG("     == Read Return Queue");
 		for(unsigned i=0; i<readReturnQueue.size(); i++)
@@ -167,9 +152,7 @@ void DRAMChannel::Update()
 	for(unsigned i=0; i<NUM_RANKS; i++)
 	{
 		ranks[i].Update();
-	}
-
-	currentClockCycle++;
+    }
 }
 
 bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
@@ -192,7 +175,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
 	{
 		if(pendingLogicResponse==NULL)
 		{
-			if (DEBUG_LOGIC) DEBUG("== Made it back to channel on cycle "<<currentClockCycle<<" : "<<*trans);
+            if (DEBUG_LOGIC) DEBUG("== Made it back to channel : "<<*trans);
 			pendingLogicResponse = trans;
 		}
 		else return false;
@@ -203,7 +186,8 @@ bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
 		{
 			simpleController.AddTransaction(trans);
 		}
-		else return false;
+        else
+          return false;
 	}
 
 	return true;
@@ -222,15 +206,11 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket, unsigned id)
 	if(DEBUG_CHANNEL) DEBUG("     == Putting command on bus : " << *busPacket);
 
 	//Report the time we waited in the queue
-	if(busPacket->busPacketType==ACTIVATE)
+    if(busPacket->busPacketType==ACTIVATE ||
+       busPacket->busPacketType==WRITE_P ) //Report the WRITE is finally going
 	{
 		(*ReportCallback)(busPacket, 0);
-	}
-	//Report the WRITE is finally going
-	else if(busPacket->busPacketType==WRITE_P)
-	{
-		(*ReportCallback)(busPacket, 0);
-	}
+    }
 
 	inFlightCommandPacket = busPacket;
 	inFlightCommandCountdown = tCMDS;
@@ -250,8 +230,7 @@ void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket, unsigned id)
 		ERROR("== Error - Bus collision while trying to receive from a rank in channel "<<channelID);
 		ERROR("           Incoming Packet : "<<*busPacket);
 		ERROR("           Existing Packet : "<<*inFlightDataPacket);
-		ERROR("               (Time Left) : "<<inFlightDataCountdown);
-		ERROR("           Clock Cycle : "<<currentClockCycle);
+        ERROR("               (Time Left) : "<<inFlightDataCountdown);
 		exit(0);
 	}
 	if(DEBUG_CHANNEL) DEBUG("     == Putting data on bus [rank "<<id<<"] : " << *busPacket);

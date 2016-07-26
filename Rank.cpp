@@ -36,17 +36,12 @@
 using namespace std;
 using namespace BOBSim;
 
-Rank::Rank()
-{
-	currentClockCycle = 0;
-}
 
 Rank::Rank(unsigned rankid):
-	ReadReturnCallback(NULL)
+    id(rankid),
+    ReadReturnCallback(NULL)
 {
-	currentClockCycle = 0;
-
-	id = rankid;
+    currentClockCycle = 0;
 
 	bankStates = (BankState*)calloc(sizeof(BankState), NUM_BANKS);
 }
@@ -208,7 +203,3 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 	}
 }
 
-void Rank::RegisterCallback(Callback<DRAMChannel, void, BusPacket*, unsigned> *readCB)
-{
-	ReadReturnCallback = readCB;
-}

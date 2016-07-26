@@ -45,12 +45,13 @@ class DRAMChannel;
 class Rank : public SimulatorObject
 {
 public:
-	//Functions
-	Rank();
+    //Functions
 	Rank(unsigned id);
 	void Update();
 	void ReceiveFromBus(BusPacket *busPacket);
-	void RegisterCallback(Callback<DRAMChannel, void, BusPacket*, unsigned> *readCB);
+    void RegisterCallback(Callback<DRAMChannel, void, BusPacket*, unsigned> *readCB){
+      ReadReturnCallback = readCB;
+    }
 
 	//Fields
 	//Rank ID in relation to the channel
@@ -62,7 +63,7 @@ public:
 	vector<BusPacket*> readReturnQueue;
 
 	//Callback for returning data
-	Callback<DRAMChannel, void, BusPacket*, unsigned> *ReadReturnCallback;
+    Callback<DRAMChannel, void, BusPacket*, unsigned> *ReadReturnCallback;
 	
 	//State of all banks in the DRAM channel
 	BankState *bankStates;

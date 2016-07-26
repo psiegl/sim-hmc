@@ -44,14 +44,13 @@ namespace BOBSim
 {
 class BOB;
 class LogicLayerInterface;
-class DRAMChannel : public SimulatorObject
+class DRAMChannel
 {
 public:
-	//Functions
-	DRAMChannel();
+    //Functions
 	DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> *reportCB);
 	bool AddTransaction(Transaction *trans, unsigned notused);
-	void Update();
+    void Update();
 	void ReceiveOnDataBus(BusPacket *busPacket, unsigned ID);
 	void ReceiveOnCmdBus(BusPacket *busPacket, unsigned ID);
 	void RegisterCallback(Callback<BOB, void, BusPacket*, unsigned> *reportCB);
