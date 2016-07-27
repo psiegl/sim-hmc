@@ -1073,7 +1073,7 @@ void BOB::ReportCallback(BusPacket *bp, unsigned i)
 	{
 		if (writeIssuedCB)
 		{
-			(*writeIssuedCB)(bp->port, bp->address);
+            (bobwrapper->*writeIssuedCB)(bp->port, bp->address);
 		}
 	}
 	else if(bp->busPacketType==WRITE_DATA)
@@ -1099,8 +1099,9 @@ void BOB::ReportCallback(BusPacket *bp, unsigned i)
 	}
 }
 
-void BOB::RegisterWriteIssuedCallback(TransactionCompleteCB *cb)
+void BOB::RegisterWriteIssuedCallback(BOBWrapper *_bobwrapper, void (BOBWrapper::*cb)(unsigned, uint64_t))
 {
+    bobwrapper = _bobwrapper;
 	writeIssuedCB = cb;
 }
 

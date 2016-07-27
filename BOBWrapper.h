@@ -34,7 +34,6 @@
 #include <deque>
 #include <math.h>
 #include "BOB.h"
-#include "Callback.h"
 #include "Transaction.h"
 
 
@@ -54,9 +53,9 @@ public:
 	bool AddTransaction(Transaction* trans, unsigned port);
 	bool AddTransaction(uint64_t addr, bool isWrite, int coreID, void *logicOp);
 	void RegisterCallbacks(
-	    TransactionCompleteCB *readDone,
-	    TransactionCompleteCB *writeDone,
-	    LogicOperationCompleteCB *logicDone);
+        void (*readDone)(unsigned, uint64_t),
+        void (*writeDone)(unsigned, uint64_t),
+        void (*logicDone)(unsigned, void *));
 	void PrintStats(bool finalPrint);
 	void UpdateLatencyStats(Transaction *trans);
 	int FindOpenPort(uint coreID);
@@ -92,9 +91,9 @@ public:
 	vector<unsigned> returnsPerPort;
 
 	//Callback functions
-	TransactionCompleteCB *readDoneCallback;
-	TransactionCompleteCB *writeDoneCallback;
-	LogicOperationCompleteCB *logicDoneCallback;
+    void (*readDoneCallback)(unsigned, uint64_t);
+    void (*writeDoneCallback)(unsigned, uint64_t);
+    void (*logicDoneCallback)(unsigned, void *);
 
 	//More bookkeeping and statistics
 	vector< vector<unsigned> > perChanFullLatencies;

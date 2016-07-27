@@ -75,7 +75,6 @@ public:
 	
     //Callbacks
     void (BOB::*ReportCallback)(BusPacket*, unsigned);
-    void (LogicLayerInterface::*SendToLogicLayer)(Transaction *trans, unsigned i);
 
 	//Command packet being sent on DRAM command bus
 	BusPacket *inFlightCommandPacket;

@@ -40,7 +40,6 @@
 #include <string>
 #include <cstdlib>
 #include <stdint.h>
-#include "Callback.h"
 
 #ifdef LOG_OUTPUT
 #define PRINT(str)  {logOutput<< str<<std::endl;}

@@ -42,6 +42,7 @@ using namespace std;
 
 namespace BOBSim
 {
+class BOBWrapper;
 class BOB
 {
 public:
@@ -51,7 +52,7 @@ public:
 	void Update();
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
 	void ReportCallback(BusPacket *bp, unsigned i);
-	void RegisterWriteIssuedCallback(TransactionCompleteCB *cb);
+    void RegisterWriteIssuedCallback(BOBWrapper *_bobwrapper, void (BOBWrapper::*cb)(unsigned, uint64_t));
 
 	//Fields
 	//Ports used on main BOB controller to communicate with cache
@@ -108,8 +109,9 @@ public:
 	unsigned committedWrites;
 	unsigned logicOpCounter;
 	
-	//Callback
-	TransactionCompleteCB *writeIssuedCB;
+    //Callback
+    BOBWrapper *bobwrapper;
+    void (BOBWrapper::*writeIssuedCB)(unsigned, uint64_t);
 
 	//Address mapping widths 
 	unsigned rankBitWidth;

@@ -45,7 +45,7 @@ class Rank
 {
 public:
     //Functions
-    Rank(unsigned id, DRAMChannel *_dramchannel, void(DRAMChannel::*readCB)(BusPacket*, unsigned));
+    Rank(unsigned id, DRAMChannel *_dramchannel);
     void Update(void);
     void ReceiveFromBus(BusPacket *busPacket);
 
@@ -60,8 +60,6 @@ public:
 
     //Callback for returning data
     DRAMChannel *dramchannel;
-    void(DRAMChannel::*ReadReturnCallback)(BusPacket*, unsigned);
-    //Callback<DRAMChannel,void,BusPacket*,unsigned> *ReadReturnCallback;
 	
     //State of all banks in the DRAM channel
 	BankState *bankStates;

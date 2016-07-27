@@ -1,4 +1,6 @@
 #VARIANT?=G
+CC=clang
+CXX=clang++
 DEVICE?=DDR3_1333
 CXXFLAGS=-O3 -g
 LIB_NAME=libbobsim.so
@@ -34,14 +36,14 @@ $(LIB_NAME): $(LOBJ)
 	@$(CXX) -M $(CXXFLAGS) $< > $@
 
 %.po : %.cpp
-	g++ -O3 -ffast-math -fPIC -DNO_STORAGE -o $@ -c $<
+	$(CXX) -O3 -ffast-math -fPIC -DNO_STORAGE -o $@ -c $<
 
 # build all .cpp files to .o files
 %.o : %.cpp
-	g++ $(CXXFLAGS) -D${DEVICE} -o $@ -c $<
+	$(CXX) $(CXXFLAGS) -D${DEVICE} -o $@ -c $<
 
 %.lo : %.cpp
-	g++ $(CXXFLAGS) -D${DEVICE} -DLOG_OUTPUT -fPIC -o $@ -c $< 
+	$(CXX) $(CXXFLAGS) -D${DEVICE} -DLOG_OUTPUT -fPIC -o $@ -c $< 
 
 clean: 
 	-rm -f ${REBUILDABLES} *.dep *.txt tmp.log

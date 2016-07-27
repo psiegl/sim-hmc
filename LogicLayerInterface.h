@@ -31,12 +31,13 @@
 #ifndef LOGICLAYERINTERFACE_H
 #define LOGICLAYERINTERFACE_H
 
-using namespace std;
 
 #include "Transaction.h"
 #include "DRAMChannel.h"
 #include "LogicOperation.h"
 #include <deque>
+
+using namespace std;
 
 namespace BOBSim
 {

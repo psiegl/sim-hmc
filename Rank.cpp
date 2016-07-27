@@ -37,10 +37,9 @@ using namespace std;
 using namespace BOBSim;
 
 
-Rank::Rank(unsigned rankid,DRAMChannel *_dramchannel, void(DRAMChannel::*readCB)(BusPacket*, unsigned)):
+Rank::Rank(unsigned rankid,DRAMChannel *_channel):
     id(rankid),
-    dramchannel(_dramchannel),
-    ReadReturnCallback(readCB),
+    dramchannel(_channel),
     bankStates((BankState*)calloc(sizeof(BankState), NUM_BANKS)),
     currentClockCycle(0)
 {}
@@ -58,7 +57,7 @@ void Rank::Update(void)
 	}
 	if(readReturnCountdown.size()>0 && readReturnCountdown[0]==0)
     {
-        (dramchannel->*ReadReturnCallback)(readReturnQueue[0],id);
+        dramchannel->ReceiveOnDataBus(readReturnQueue[0],id);
 
 		readReturnCountdown.erase(readReturnCountdown.begin());
 		readReturnQueue.erase(readReturnQueue.begin());

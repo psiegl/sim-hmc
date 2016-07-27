@@ -32,7 +32,6 @@
 #ifndef BOBSIM_H
 #define BOBSIM_H
 
-#include "Callback.h"
 #include <vector>
 
 namespace BOBSim

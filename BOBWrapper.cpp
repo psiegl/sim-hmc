@@ -85,9 +85,7 @@ BOBWrapper::BOBWrapper(uint64_t qemu_mem_size) :
 
 	//Create BOB object and register callbacks
 	bob = new BOB();
-
-	Callback<BOBWrapper,void,unsigned,uint64_t> *writeIssuedCB = new Callback<BOBWrapper,void,unsigned,uint64_t>(this, &BOBWrapper::WriteIssuedCallback);
-	bob->RegisterWriteIssuedCallback(writeIssuedCB);
+    bob->RegisterWriteIssuedCallback(this, &BOBWrapper::WriteIssuedCallback);
 
 	//Incoming request packet fields (to be added to ports)
 	inFlightRequest = vector<Transaction*>(NUM_PORTS,NULL);
@@ -291,7 +289,10 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 	return true;
 }
 
-void BOBWrapper::RegisterCallbacks(TransactionCompleteCB *_readDone, TransactionCompleteCB *_writeDone, LogicOperationCompleteCB *_logicDone)
+void BOBWrapper::RegisterCallbacks(
+    void (*_readDone)(unsigned, uint64_t),
+    void (*_writeDone)(unsigned, uint64_t),
+    void (*_logicDone)(unsigned, void *))
 {
 	readDoneCallback = _readDone;
 	writeDoneCallback = _writeDone;

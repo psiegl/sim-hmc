@@ -47,12 +47,11 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*
     logicLayer(new LogicLayerInterface(id, this)),
     bob(_bob),
     ReportCallback(reportCB),
-    SendToLogicLayer(&LogicLayerInterface::ReceiveLogicOperation),
     DRAMBusIdleCount(0)
 {
     for(unsigned i=0; i<NUM_RANKS; i++)
 	{
-        ranks.push_back(Rank(i, this, &DRAMChannel::ReceiveOnDataBus));
+        ranks.push_back(Rank(i, this));
     }
 }
 
