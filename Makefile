@@ -51,4 +51,7 @@ test: $(EXE_NAME)
 	@ls -l $(EXE_NAME)
 	@./$(EXE_NAME) -c 2000 > tmp.log
 	@diff tmp.log zz_ref_C2000.log
+
+meld:
+	meld tmp.log zz_ref_C2000.log
   

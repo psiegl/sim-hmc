@@ -123,9 +123,6 @@ static uint SEED_CONSTANT = 11;
 //Text appended to output filenames for differentiating between simulations
 static const char *VARIANT_SUFFIX = "_testing";
 
-//QEMU defined total memory size
-extern uint64_t QEMU_MEMORY_SIZE;
-
 //
 //BOB Architecture Config
 //

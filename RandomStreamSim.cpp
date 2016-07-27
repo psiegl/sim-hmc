@@ -57,7 +57,6 @@ using namespace std;
 
 unsigned BOBSim::NUM_PORTS =4;
 
-uint64_t currentClockCycle = 0;
 int BOBSim::SHOW_SIM_OUTPUT=1;
 int c;
 int debugBus=0;
@@ -170,7 +169,7 @@ int main(int argc, char **argv)
 		}
     }
 
-	BOBWrapper bobWrapper(0);
+    BOBWrapper bobWrapper;
 	transactionBuffer = vector< vector<Transaction *> >(NUM_PORTS,vector<Transaction *>());
 
 	waitCounters = vector<unsigned>(NUM_PORTS,0);
@@ -187,16 +186,12 @@ int main(int argc, char **argv)
 	//   numCycles is the number of CPU cycles to simulate
 	for (int cpuCycle=0; cpuCycle<numCycles; cpuCycle++)
 	{
-		DEBUG("\n=========================["<<currentClockCycle<<"]==========================");
-
-		//adding new stuff
+        //adding new stuff
 		for(unsigned l=0; l<NUM_PORTS; l++)
 		{
 			if(transactionBuffer[l].size()>0)
 			{
-				if(DEBUG_PORTS) DEBUG("== TraceBasedSim trying to send : port "<<l<<" : "<<*transactionBuffer[l][0]);
-
-				if(bobWrapper.AddTransaction(transactionBuffer[l][0],l))
+                if(bobWrapper.AddTransaction(transactionBuffer[l][0],l))
 				{
 					transactionBuffer[l].erase(transactionBuffer[l].begin());
 				}
@@ -213,12 +208,10 @@ int main(int argc, char **argv)
 			}
 		}
 
-
 		//
 		//Update bobWrapper
 		//
-		bobWrapper.Update();
-		currentClockCycle++;
+        bobWrapper.Update();
 	}
 
 	//

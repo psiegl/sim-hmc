@@ -45,7 +45,6 @@ ofstream logOutput;
 unsigned LINK_CPU_CLK_RATIO;
 unsigned DRAM_CPU_CLK_RATIO;
 unsigned DRAM_CPU_CLK_ADJUSTMENT;
-//uint64_t QEMU_MEMORY_SIZE;
 BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 	readCounter(0),
 	writeCounter(0),
@@ -61,14 +60,6 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 	cacheOffset(log2(CACHE_LINE_SIZE))
 {
     dram_channel_clk = 0;
-	/*
-	  HACK!!! - QEMU does not support the huge memory sizes BOB can simulate.
-	  Removing bits from the row address will have the least impact on function
-	*/
-	uint qemuMemoryBitWidth = log2_64(QEMU_MEMORY_SIZE);
-	uint bitDifference = (busOffsetBitWidth + colBitWidth + rowBitWidth + channelBitWidth + rankBitWidth + bankBitWidth) - qemuMemoryBitWidth;
-	rowBitWidth = rowBitWidth - bitDifference;
-	//end hack
 
 
 #ifdef LOG_OUTPUT
@@ -79,8 +70,7 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 	output_filename += ".log";
 	logOutput.open(output_filename.c_str());
 #endif
-	DEBUG("!!!!!!! QEMU_MEMORY_SIZE :"<<QEMU_MEMORY_SIZE<<" qemuMemoryBitWidth : "<<qemuMemoryBitWidth<<"   newRowBitWidth : "<<rowBitWidth<<"\n");
-	DEBUG("busoff:"<<busOffsetBitWidth<<" col:"<<colBitWidth<<" row:"<<rowBitWidth<<" rank:"<<rankBitWidth<<" bank:"<<bankBitWidth<<" chan:"<<channelBitWidth);
+    DEBUG("busoff:"<<busOffsetBitWidth<<" col:"<<colBitWidth<<" row:"<<rowBitWidth<<" rank:"<<rankBitWidth<<" bank:"<<bankBitWidth<<" chan:"<<channelBitWidth);
 
 	currentClockCycle = 0;
 

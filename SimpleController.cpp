@@ -61,15 +61,6 @@ SimpleController::SimpleController(DRAMChannel *parent) :
     currentClockCycle(0)
 
 {
-	/*
-	  HACK!!! - QEMU does not support the huge memory sizes BOB can simulate.
-	  Removing bits from the row address will have the least impact on function
-	*/
-	uint qemuMemoryBitWidth = log2(QEMU_MEMORY_SIZE);
-	uint bitDifference = (busOffsetBitWidth + colBitWidth + rowBitWidth + channelBitWidth + rankBitWidth + bankBitWidth) - qemuMemoryBitWidth;
-	rowBitWidth = rowBitWidth - bitDifference;
-	//end hack
-
 	//Registers the parent channel object
     channel = parent;
 

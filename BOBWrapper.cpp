@@ -35,10 +35,7 @@ using namespace std;
 
 namespace BOBSim
 {
-
-uint64_t QEMU_MEMORY_SIZE;
-
-BOBWrapper::BOBWrapper(uint64_t qemu_mem_size) :
+BOBWrapper::BOBWrapper() :
 	readDoneCallback(NULL),
 	writeDoneCallback(NULL),
 	logicDoneCallback(NULL),
@@ -79,8 +76,6 @@ BOBWrapper::BOBWrapper(uint64_t qemu_mem_size) :
 		powerOut.open(tmp_str);
 	}
 
-	QEMU_MEMORY_SIZE = qemu_mem_size;
-
 	currentClockCycle=0;
 
 	//Create BOB object and register callbacks
@@ -115,8 +110,7 @@ BOBWrapper::BOBWrapper(uint64_t qemu_mem_size) :
 	//Write configuration stuff to output file
 	//
 	//System Parameters
-	//
-	statsOut<<"!!!!"<<qemu_mem_size<<"???"<<QEMU_MEMORY_SIZE<<endl;
+    //
 	statsOut<<"!!SYSTEM_INI"<<endl;
 	statsOut<<"NUM_RANKS="<<NUM_RANKS<<endl;
 	statsOut<<"NUM_CHANS="<<NUM_CHANNELS<<endl;
@@ -184,9 +178,9 @@ BOBWrapper::BOBWrapper(uint64_t qemu_mem_size) :
 	statsOut<<"!!EPOCH_DATA"<<endl;
 }
 
-BOBWrapper *getMemorySystemInstance(uint64_t qemu_mem_size)
+BOBWrapper *getMemorySystemInstance()
 {
-	return new BOBWrapper(qemu_mem_size);
+    return new BOBWrapper();
 }
 void *getPageWalkLogicOp(uint64_t baseAddr, vector<uint64_t> *args)
 {

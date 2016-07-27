@@ -48,7 +48,7 @@ private:
 	unsigned TryToSendPending();
 public:
 	//Functions
-	BOBWrapper(uint64_t qemu_memory_size);
+    BOBWrapper();
 	void Update();
 	bool AddTransaction(Transaction* trans, unsigned port);
 	bool AddTransaction(uint64_t addr, bool isWrite, int coreID, void *logicOp);

@@ -31,6 +31,7 @@
 //Bus Packet source
 
 #include "BusPacket.h"
+#include "Transaction.h"
 
 using namespace std;
 
