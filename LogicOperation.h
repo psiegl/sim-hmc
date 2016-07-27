@@ -48,7 +48,11 @@ public:
 	};
 
 	//functions
-	LogicOperation(LogicType type, vector<uint64_t> &args);
+    LogicOperation(LogicType type, vector<uint64_t> &args)
+    {
+        logicType = type;
+        arguments = args;
+    }
 
 	//fields
 	LogicType logicType;

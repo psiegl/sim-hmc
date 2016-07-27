@@ -36,20 +36,6 @@ using namespace std;
 
 namespace BOBSim
 {
-BusPacket::BusPacket():
-	busPacketType(READ),
-	column(0),
-	row(0),
-	bank(0),
-	rank(0),
-	transactionID(0),
-	port(0),
-	burstLength(0),
-	queueWaitTime(0),
-	channel(0),
-	fromLogicOp(false)
-{}
-
 BusPacket::BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned rw, unsigned rnk, unsigned bnk, unsigned prt, unsigned bl, unsigned mappedChannel, uint64_t addr, bool fromLogic):
 	burstLength(bl),
 	busPacketType(packtype),
