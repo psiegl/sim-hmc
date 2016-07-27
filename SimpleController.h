@@ -48,12 +48,12 @@ class SimpleController
 {
 public:
 	//Functions
-	SimpleController(DRAMChannel *parent);
+    SimpleController(DRAMChannel *parent,
+                     void(DRAMChannel::*ReceiveOnCmdBus)(BusPacket*, unsigned),
+                     void(DRAMChannel::*ReceiveOnDataBus)(BusPacket*, unsigned));
 	bool IsIssuable(BusPacket *busPacket);
 	void Update();
-	void AddTransaction(Transaction *trans);
-	void RegisterCallback(Callback<DRAMChannel, void, BusPacket*, unsigned> *cmdCB,
-	                      Callback<DRAMChannel, void, BusPacket*, unsigned> *dataCB);
+    void AddTransaction(Transaction *trans);
 
 	//Fields
 	//Statistics and bookkeeping

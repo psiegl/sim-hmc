@@ -37,7 +37,9 @@
 using namespace std;
 using namespace BOBSim;
 
-SimpleController::SimpleController(DRAMChannel *parent) :
+SimpleController::SimpleController(DRAMChannel *parent,
+                                   void(DRAMChannel::*ReceiveOnCmdBus)(BusPacket*, unsigned),
+                                   void(DRAMChannel::*ReceiveOnDataBus)(BusPacket*, unsigned)) :
 	refreshCounter(0),
 	readCounter(0),
 	writeCounter(0),
@@ -57,7 +59,8 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	busOffsetBitWidth(log2(BUS_ALIGNMENT_SIZE)),
 	channelBitWidth(log2(NUM_CHANNELS)),
 	cacheOffset(log2(CACHE_LINE_SIZE)),
-	outstandingReads(0)
+    outstandingReads(0),
+    currentClockCycle(0)
 
 {
 	/*
@@ -71,9 +74,8 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 
 	//Registers the parent channel object
 	channel = parent;
-
-	//Initialize
-	currentClockCycle = 0;
+    CommandCallback = new Callback<DRAMChannel, void, BusPacket*, unsigned>(channel, ReceiveOnCmdBus);
+    DataCallback = new Callback<DRAMChannel, void, BusPacket*, unsigned>(channel, ReceiveOnDataBus);
 
 	//Make the bank state objects
 	bankStates = (BankState**) malloc(sizeof(BankState*)*(NUM_RANKS));
@@ -876,11 +878,4 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 	};
 
 	if(DEBUG_CHANNEL) DEBUG(" to RK:"<<hex<<mappedRank<<" BK:"<<mappedBank<<" RW:"<<mappedRow<<" CL:"<<mappedCol<<dec);
-}
-
-void SimpleController::RegisterCallback(Callback<DRAMChannel, void, BusPacket*, unsigned> *cmdCB,
-                                        Callback<DRAMChannel, void, BusPacket*, unsigned> *dataCB)
-{
-	CommandCallback = cmdCB;
-	DataCallback = dataCB;
 }

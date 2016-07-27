@@ -43,17 +43,12 @@ DRAMChannel::DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> 
 	inFlightCommandPacket(NULL),
 	inFlightDataPacket(NULL),
 	readReturnQueueMax(0),
-	simpleController(this),
+    ReportCallback(reportCB),
+    simpleController(this, &DRAMChannel::ReceiveOnCmdBus, &DRAMChannel::ReceiveOnDataBus),
 	logicLayer(NULL),
 	DRAMBusIdleCount(0)
 {
-    ReportCallback = reportCB;
-
-	Callback<DRAMChannel,void,BusPacket*,unsigned> *dataCallback = new Callback<DRAMChannel,void, BusPacket*,unsigned>(this, &DRAMChannel::ReceiveOnDataBus);
-	Callback<DRAMChannel,void,BusPacket*,unsigned> *cmdCallback = new Callback<DRAMChannel,void, BusPacket*,unsigned>(this, &DRAMChannel::ReceiveOnCmdBus);
-	simpleController.RegisterCallback(cmdCallback, dataCallback);
-
-	for(int i=0; i<NUM_RANKS; i++)
+    for(unsigned i=0; i<NUM_RANKS; i++)
 	{
         ranks.push_back(Rank(i, this, &DRAMChannel::ReceiveOnDataBus));
 	}
@@ -218,7 +213,7 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket, unsigned id)
 void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket, unsigned id)
 {
 	if(!(busPacket->busPacketType==READ_DATA ||
-	        busPacket->busPacketType==WRITE_DATA))
+       busPacket->busPacketType==WRITE_DATA))
 	{
 		ERROR("== Error - Trying to put non-data packet on data bus:" << *busPacket);
 		exit(0);
