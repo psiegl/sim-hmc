@@ -75,7 +75,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		for(unsigned i=0; i<NUM_BANKS; i++)
 		{
 			if(bankStates[i].currentBankState != IDLE ||
-			        bankStates[i].nextActivate > currentClockCycle)
+               bankStates[i].nextActivate > currentClockCycle)
 			{
 				ERROR("== Error - Refresh when not allowed in bank "<<i);
 				ERROR("           NextAct : "<<bankStates[i].nextActivate);
@@ -92,8 +92,8 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		break;
 	case READ_P:
 		if(bankStates[busPacket->bank].currentBankState != ROW_ACTIVE ||
-		        bankStates[busPacket->bank].openRowAddress != busPacket->row ||
-		        currentClockCycle < bankStates[busPacket->bank].nextRead)
+           bankStates[busPacket->bank].openRowAddress != busPacket->row ||
+           currentClockCycle < bankStates[busPacket->bank].nextRead)
 		{
 			ERROR("== Error - Rank receiving READ_P when not allowed");
 			ERROR("           Current Clock Cycle : "<<currentClockCycle);

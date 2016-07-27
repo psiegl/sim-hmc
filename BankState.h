@@ -49,8 +49,47 @@ class BankState
 {
 public:
 	//Functions
-	BankState();
-	void UpdateStateChange();
+    BankState(void) :
+      currentBankState(IDLE),
+      openRowAddress(0),
+      nextActivate(0),
+      nextRead(0),
+      nextWrite(0),
+      nextStrobeMin(0),
+      nextStrobeMax(0),
+      nextRefresh(0),
+      stateChangeCountdown(0)
+    {}
+
+    void UpdateStateChange(void)
+    {
+      if(this->stateChangeCountdown)
+      {
+        this->stateChangeCountdown--;
+
+        if( ! this->stateChangeCountdown )
+        {
+          switch(lastCommand)
+          {
+          case REFRESH:
+            this->currentBankState = IDLE;
+            break;
+          case WRITE_P:
+          case READ_P:
+            this->currentBankState = PRECHARGING;
+            this->stateChangeCountdown = tRP;
+            this->lastCommand = PRECHARGE;
+            break;
+          case PRECHARGE:
+            this->currentBankState = IDLE;
+            break;
+          default:
+            ERROR("== WTF STATE? : "<<this->lastCommand);
+            exit(0);
+          }
+        }
+      }
+    }
 
 	//Fields
 	CurrentBankState currentBankState;
@@ -64,7 +103,6 @@ public:
 
 	BusPacketType lastCommand;
 	unsigned stateChangeCountdown;
-
 };
 }
 
