@@ -69,8 +69,6 @@ size_t equalsign;
 
 long numCycles=30l;
 
-ofstream BOBSim::verificationOutput;
-
 vector<unsigned> randomSeeds;
 
 vector<unsigned> waitCounters;
@@ -170,13 +168,7 @@ int main(int argc, char **argv)
 			BOBSim::SHOW_SIM_OUTPUT=0;
 			break;
 		}
-	}
-
-	//open up verification file
-	if(VERIFICATION_OUTPUT)
-	{
-		verificationOutput.open("sim_out_DDR3_micron_64M_8B_x4_sg187E.ini.tmp");
-	}
+    }
 
 	BOBWrapper bobWrapper(0);
 	transactionBuffer = vector< vector<Transaction *> >(NUM_PORTS,vector<Transaction *>());

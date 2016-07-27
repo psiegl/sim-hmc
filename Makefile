@@ -13,8 +13,6 @@ OBJ = $(subst LibraryStubs.o,,$(addsuffix .o, $(basename $(SRC))))
 
 LOBJ = $(patsubst RandomStreamSim%.lo,,$(addsuffix .lo, $(basename $(SRC))))
 
-REBUILDABLES=$(OBJ) $(EXE_NAME) ${LOBJ} ${LIB_NAME}
-
 all: ${EXE_NAME}
 
 #   $@ target name, $^ target deps, $< matched pattern
@@ -46,7 +44,7 @@ $(LIB_NAME): $(LOBJ)
 	$(CXX) $(CXXFLAGS) -D${DEVICE} -DLOG_OUTPUT -fPIC -o $@ -c $< 
 
 clean: 
-	-rm -f ${REBUILDABLES} *.dep *.txt tmp.log
+	-rm -f $(EXE_NAME) $(LIB_NAME) *.lo *.o *.so *.dep *.txt tmp.log
 
 test: $(EXE_NAME)
 	@ls -lh $(EXE_NAME)

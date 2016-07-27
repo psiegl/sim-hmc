@@ -136,8 +136,7 @@ BOBWrapper::BOBWrapper(uint64_t qemu_mem_size) :
 	statsOut<<"DEBUG_BANKSTATE=false"<<endl;
 	statsOut<<"DEBUG_BUS=false"<<endl;
 	statsOut<<"DEBUG_BANKS=false"<<endl;
-	statsOut<<"DEBUG_POWER=false"<<endl;
-	statsOut<<"VERIFICATION_OUTPUT="<<(VERIFICATION_OUTPUT?"true":"false")<<endl;
+    statsOut<<"DEBUG_POWER=false"<<endl;
 
 	//
 	//Device Parameters

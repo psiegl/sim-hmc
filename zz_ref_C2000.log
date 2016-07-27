@@ -4005,82 +4005,82 @@ DRAM_CPU_CLK_ADJUSTMENT : 6
 
 =========================[1999]==========================
 ==================Epoch [0]=======================
-per epoch] reads   : 269 writes : 169 (61.4155% Reads) : 438
-lifetime ] reads   : 269 writes : 169 total : 438
+per epoch] reads   : 216 writes : 142 (60.3352% Reads) : 358
+lifetime ] reads   : 216 writes : 142 total : 358
 issued logic ops   : 0 returned logic responses : 0
-bandwidth          : 41.7709 GB/sec
+bandwidth          : 34.1415 GB/sec
 current cycle      : 2000
 --------------------------
-full time mean  : 143.822 ns
-          std   : 60.5101 ns
-          min   : 43.75 ns
-          max   : 366.25 ns
-chan time mean  : 105.174 ns
-           std  : 52.1822
-           min  : 41.5625 ns
-           max  : 272.188 ns
-dram time mean  : 40.7435 ns
-          std   : 8.14556 ns
+full time mean  : 115.583 ns
+          std   : 47.5136 ns
+          min   : 46.25 ns
+          max   : 305 ns
+chan time mean  : 65.8579 ns
+           std  : 22.3807
+           min  : 43.75 ns
+           max  : 183.125 ns
+dram time mean  : 38.0845 ns
+          std   : 7.19166 ns
           min   : 32.5 ns
           max   : 81.25 ns
 -- Per Channel Latency Components in nanoseconds (All from READs) : 
       reqPort    reqLink     workQ    access     rrq    rspLink   rspPort  total
-0]   31.9375    1.5625   12.2054   41.0714   47.0982    8.0982    1.2500  143.2232
-1]   21.2988    1.5625    8.5352   42.1094   88.4375    8.1641    1.2500  171.3574
-2]   42.7482    1.5625    6.3695   38.3824   24.7794    8.1250    1.2500  123.2169
-3]   24.8958    1.5625    8.0019   38.1439   21.7330    7.9640    1.2500  103.5511
-4]   35.3686    1.5625   11.8990   42.3077   82.4920    7.9808    1.2500  182.8606
-5]   39.7886    1.5625    4.5496   40.7721   31.7555    7.9136    1.2500  127.5919
-6]   53.5417    1.5625    2.4242   41.2879   57.2917    8.0492    1.2500  165.4072
-7]   43.3405    1.5625   11.7026   41.8103   18.3944    8.0496    1.2500  126.1099
+0]   54.2411    2.8125    1.4509   38.9286   12.7121    9.0067    1.2500  120.4018
+1]   33.0692    2.8125    3.6719   40.0000   24.2969    8.9844    1.2500  114.0848
+2]   40.3588    2.8125    6.4931   38.4722   12.5231    8.8657    1.2500  110.7755
+3]   25.4212    2.8125    3.7908   36.0870   10.8832    9.0625    1.2500   89.3071
+4]   68.5227    2.8125    6.6951   38.3333    8.7405    8.9583    1.2500  135.3125
+5]   70.6490    2.8125    3.2212   36.7788   11.3101    9.0385    1.2500  135.0601
+6]   38.1250    2.8125    2.4625   37.6000    9.0250    8.9875    1.2500  100.2625
+7]   42.8125    2.8125    8.9062   37.9327    7.6923    9.0505    1.2500  110.4567
  ---  Port stats (per epoch) : 
- 0]  request: 88% idle  response: 87.4% idle  rds:88 wrts:38 rtn:63 tot:126
- 1]  request: 84.5% idle  response: 86.8% idle  rds:86 wrts:56 rtn:66 tot:142
- 2]  request: 88.95% idle  response: 87.6% idle  rds:89 wrts:33 rtn:62 tot:122
- 3]  request: 86.9% idle  response: 84.4% idle  rds:94 wrts:42 rtn:78 tot:136
+ 0]  request: 88.95% idle  response: 89.3% idle  rds:69 wrts:38 rtn:53 tot:107
+ 1]  request: 89.35% idle  response: 90.4% idle  rds:65 wrts:37 rtn:48 tot:102
+ 2]  request: 91.2% idle  response: 91.2% idle  rds:56 wrts:30 rtn:44 tot:86
+ 3]  request: 88.35% idle  response: 85.8% idle  rds:85 wrts:37 rtn:71 tot:122
  === BOB Print === 
  == Ports
-  -- Port 0 - inputBufferAvg : 7.893 (8)   outputBufferAvg : 0.126 (0)
-  -- Port 1 - inputBufferAvg : 7.872 (8)   outputBufferAvg : 0.132 (0)
-  -- Port 2 - inputBufferAvg : 7.882 (8)   outputBufferAvg : 0.124 (0)
-  -- Port 3 - inputBufferAvg : 7.8935 (8)   outputBufferAvg : 0.156 (0)
+  -- Port 0 - inputBufferAvg : 7.9125 (8)   outputBufferAvg : 0.107 (1)
+  -- Port 1 - inputBufferAvg : 7.8945 (8)   outputBufferAvg : 0.096 (0)
+  -- Port 2 - inputBufferAvg : 7.899 (8)   outputBufferAvg : 0.088 (0)
+  -- Port 3 - inputBufferAvg : 7.8965 (8)   outputBufferAvg : 0.142 (0)
  == Link Bandwidth (!! Includes packet overhead and request packets !!)
     Req Link(6.4 GB/s peak)  Rsp Link(9.6 GB/s peak)
-      5.312 GB/s             7.7616 GB/s
-      5.904 GB/s             7.8288 GB/s
-      5.8528 GB/s             8.4384 GB/s
-      5.6672 GB/s             7.2048 GB/s
+      5.5296 GB/s             7.3296 GB/s
+      5.6352 GB/s             6.5232 GB/s
+      6.064 GB/s             7.7856 GB/s
+      5.7952 GB/s             6.7392 GB/s
      -----------
-      5.684          7.8084 (avgs)
+      5.756          7.0944 (avgs)
  == Channel Usage and Stats (32GB/Chan == 256 GB total)
      reqs   workQAvg  workQMax idleBanks   actBanks  preBanks  refBanks  (totalBanks) BusIdle  BW(10.6667)  RRQMax(16)   RRQFull lifetimeRequests
-0]       59    0.9087         5   27.1755    3.6779    1.1466    0.0000   32.0000     47.84     5.182         8(2)         0        59
-1]       59    0.7476         4   27.3413    3.5288    1.1298    0.0000   32.0000     48.08     5.158        14(5)         0        59
-2]       66    0.8149         3   27.0409    3.6683    1.2909    0.0000   32.0000     43.03     5.660        10(10)         0        66
-3]       64    0.7212         4   27.0697    3.6514    1.2788    0.0000   32.0000     43.27     5.636         5(4)         0        64
-4]       73    2.1659         8   24.8486    5.7476    1.4038    0.0000   32.0000     34.62     6.495        15(11)       204        73
-5]       65    0.6202         5   26.8942    3.8918    1.2139    0.0000   32.0000     46.39     5.325         7(5)         0        65
-6]       52    0.2740         2   28.1226    2.8173    1.0601    0.0000   32.0000     50.96     4.872         8(3)         0        52
-7]       56    1.0841         5   27.1635    3.6899    1.1466    0.0000   32.0000     48.08     5.158         4(1)         0        56
-                                                                                          AVG : 5.4357
+0]       48    0.2837         2   28.4663    2.5817    0.9519    0.0000   32.0000     56.97     4.275         3(1)         0        48
+1]       45    0.5192         3   28.7452    2.3462    0.9087    0.0000   32.0000     59.62     4.012         6(2)         0        45
+2]       49    0.4808         3   28.5192    2.5361    0.9447    0.0000   32.0000     58.41     4.131         5(4)         0        49
+3]       48    0.5312         4   28.6130    2.4880    0.8990    0.0000   32.0000     59.62     4.012         4(3)         0        48
+4]       59    0.6202         3   27.8870    3.0096    1.1034    0.0000   32.0000     50.00     4.967         4(1)         0        59
+5]       42    0.2476         3   28.9952    2.1394    0.8654    0.0000   32.0000     61.54     3.821         3(0)         0        42
+6]       46    0.2476         2   28.6875    2.3942    0.9183    0.0000   32.0000     58.41     4.131         3(1)         0        46
+7]       48    0.5769         3   28.6226    2.4639    0.9135    0.0000   32.0000     58.89     4.083         3(0)         0        48
+                                                                                          AVG : 4.17901
  == Requests seen at Channels
-  -- Reads  : 332
-  -- Writes : 162
-            = 494
+  -- Reads  : 254
+  -- Writes : 131
+            = 385
  == Channel Power
-    -- Channel 0 -- DRAM Power : 8.76548 w
-    -- Channel 1 -- DRAM Power : 8.8151 w
-    -- Channel 2 -- DRAM Power : 9.38308 w
-    -- Channel 3 -- DRAM Power : 9.29827 w
-    -- Channel 4 -- DRAM Power : 10.1706 w
-    -- Channel 5 -- DRAM Power : 9.1324 w
-    -- Channel 6 -- DRAM Power : 8.39077 w
-    -- Channel 7 -- DRAM Power : 8.6149 w
-   Average Power  : 9.07132 w
-   Total Power    : 72.5706 w
+    -- Channel 0 -- DRAM Power : 7.99875 w
+    -- Channel 1 -- DRAM Power : 7.57471 w
+    -- Channel 2 -- DRAM Power : 8.03654 w
+    -- Channel 3 -- DRAM Power : 7.7951 w
+    -- Channel 4 -- DRAM Power : 8.81913 w
+    -- Channel 5 -- DRAM Power : 7.39731 w
+    -- Channel 6 -- DRAM Power : 7.665 w
+    -- Channel 7 -- DRAM Power : 7.86779 w
+   Average Power  : 7.89429 w
+   Total Power    : 63.1543 w
    SimpCont BG Power : 28 w
    SimpCont Core Power : 28 w
-   System Power   : 128.571 w
+   System Power   : 119.154 w
  == Time Check
     CPU Time : 625ns
    DRAM Time : 624ns

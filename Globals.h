@@ -104,10 +104,6 @@ static bool DEBUG_PORTS = false;
 //prints debug information relating to the logic layer in each simple controller
 static bool DEBUG_LOGIC = false;
 
-//Verification for modelsim
-static bool VERIFICATION_OUTPUT = false;
-extern std::ofstream verificationOutput;
-
 //
 //Random Stream Sim stuff
 //
@@ -141,7 +137,7 @@ static uint NUM_LINK_BUSES = 4;
 //Number of DRAM channels in the system
 static uint NUM_CHANNELS = 8;
 //Multi-channel optimization degree
-static uint CHANNELS_PER_LINK_BUS = 2;
+static uint CHANNELS_PER_LINK_BUS = NUM_CHANNELS / NUM_LINK_BUSES;
 
 //Number of lanes for both request and response link bus
 static uint REQUEST_LINK_BUS_WIDTH = 8;//Bit Lanes
@@ -186,9 +182,9 @@ static uint LOGIC_RESPONSE_PACKET_OVERHEAD = 8;
 //Packet sizes
 //
 //Packet overhead for requests and responses
-static uint RD_REQUEST_PACKET_OVERHEAD = 8; //bytes
-static uint RD_RESPONSE_PACKET_OVERHEAD = 8; //bytes
-static uint WR_REQUEST_PACKET_OVERHEAD = 8; //bytes
+static uint RD_REQUEST_PACKET_OVERHEAD = 16; //bytes
+static uint RD_RESPONSE_PACKET_OVERHEAD = 16; //bytes
+static uint WR_REQUEST_PACKET_OVERHEAD = 16; //bytes
 
 //
 //CPU

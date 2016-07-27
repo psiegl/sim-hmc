@@ -51,32 +51,6 @@ BusPacket::BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned
 	fromLogicOp(fromLogic)
 {}
 
-void BusPacket::PrintVerification(uint64_t currentCycle)
-{
-	switch(busPacketType)
-	{
-	case ACTIVATE:
-		verificationOutput << currentCycle <<": activate (" << rank << "," << bank << "," << row <<");"<<endl;
-		break;
-	case READ_P:
-		verificationOutput << currentCycle << ": read ("<<rank<<","<<bank<<","<<column<<",1,0);"<<endl;
-		break;
-	case WRITE_P:
-		verificationOutput << currentCycle << ": write ("<<rank<<","<<bank<<","<<column<<",1,0,'h0);"<<endl;
-		break;
-	case REFRESH:
-		verificationOutput << currentCycle <<": refresh (" << rank << ");"<<endl;
-		break;
-	case WRITE_DATA:
-
-		break;
-	default:
-		ERROR("== Error - Unsupported bus packet type in verification");
-		exit(0);
-		break;
-	}
-}
-
 ostream& operator<<(ostream &out, const BusPacket &bp)
 {
 

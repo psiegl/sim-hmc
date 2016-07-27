@@ -58,7 +58,6 @@ class BusPacket
 public:
     //Functions
 	BusPacket(BusPacketType packtype, unsigned transactionID, unsigned col, unsigned rw, unsigned r, unsigned b, unsigned prt, unsigned bl, unsigned mappedChannel, uint64_t address, bool fromLogic);
-	void PrintVerification(uint64_t currentCycle);
 
 	//Fields
 	bool fromLogicOp;
