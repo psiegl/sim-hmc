@@ -115,8 +115,8 @@ private:
 	unsigned channelBitWidth;
 	unsigned cacheOffset;
 
-	Callback<DRAMChannel, void, BusPacket*, unsigned> *CommandCallback;
-	Callback<DRAMChannel, void, BusPacket*, unsigned> *DataCallback;
+    void(DRAMChannel::*CommandCallback)(BusPacket*, unsigned);
+    void(DRAMChannel::*DataCallback)(BusPacket*, unsigned);
 
     uint64_t currentClockCycle;
 };

@@ -74,8 +74,8 @@ SimpleController::SimpleController(DRAMChannel *parent,
 
 	//Registers the parent channel object
 	channel = parent;
-    CommandCallback = new Callback<DRAMChannel, void, BusPacket*, unsigned>(channel, ReceiveOnCmdBus);
-    DataCallback = new Callback<DRAMChannel, void, BusPacket*, unsigned>(channel, ReceiveOnDataBus);
+    CommandCallback = ReceiveOnCmdBus;
+    DataCallback = ReceiveOnDataBus;
 
 	//Make the bank state objects
 	bankStates = (BankState**) malloc(sizeof(BankState*)*(NUM_RANKS));
@@ -228,7 +228,7 @@ void SimpleController::Update()
 	if(writeBurstCountdown.size()>0&&writeBurstCountdown[0]==0)
 	{
 		if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : "<<*writeBurstQueue[0]);
-		(*DataCallback)(writeBurstQueue[0],0);
+        (channel->*DataCallback)(writeBurstQueue[0],0);
 		writeBurstQueue.erase(writeBurstQueue.begin());
 		writeBurstCountdown.erase(writeBurstCountdown.begin());
 	}
@@ -263,7 +263,7 @@ void SimpleController::Update()
 				refreshPacket->channel = channel->channelID;
 
 				//Send to command bus
-				(*CommandCallback)(refreshPacket,0);
+                (channel->*CommandCallback)(refreshPacket,0);
 
 				//make sure we don't send anythign else
 				issuingRefresh = true;
@@ -306,7 +306,7 @@ void SimpleController::Update()
 					continue;
 
 				//send to channel
-				(*CommandCallback)(commandQueue[i],0);
+                (channel->*CommandCallback)(commandQueue[i],0);
 
 				//update channel controllers bank state bookkeeping
 				unsigned rank = commandQueue[i]->rank;

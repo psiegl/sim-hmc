@@ -65,18 +65,7 @@ DRAMChannel::DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> 
 
 void DRAMChannel::Update()
 {
-	if(DEBUG_CHANNEL)
-	{
-        DEBUG("   == DRAM Channel "<<channelID);
-
-		DEBUG("     == Read Return Queue");
-		for(unsigned i=0; i<readReturnQueue.size(); i++)
-		{
-			DEBUG("     "<<i<<"] "<<*readReturnQueue[i]);
-		}
-	}
-
-	if(inFlightDataPacket==NULL)
+    if(inFlightDataPacket==NULL)
 	{
 		DRAMBusIdleCount++;
 	}
