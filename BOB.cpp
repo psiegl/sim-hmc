@@ -147,7 +147,7 @@ BOB::BOB() : priorityPort(0),
 	priorityLinkBus = vector<unsigned>(NUM_PORTS,0);
 }
 
-void BOB::Update()
+void BOB::Update(void)
 {
 	//
 	//STATS KEEPING

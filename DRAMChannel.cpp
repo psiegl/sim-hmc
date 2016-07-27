@@ -37,27 +37,23 @@ using namespace std;
 using namespace BOBSim;
 
 DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned)):
-	inFlightCommandCountdown(0),
-	inFlightDataCountdown(0),
-	channelID(id),
+    simpleController(this, &DRAMChannel::ReceiveOnCmdBus, &DRAMChannel::ReceiveOnDataBus),
+    inFlightCommandCountdown(0),
+    inFlightDataCountdown(0),
+    channelID(id),
 	inFlightCommandPacket(NULL),
 	inFlightDataPacket(NULL),
 	readReturnQueueMax(0),
+    logicLayer(new LogicLayerInterface(id)),
     bob(_bob),
     ReportCallback(reportCB),
-    simpleController(this, &DRAMChannel::ReceiveOnCmdBus, &DRAMChannel::ReceiveOnDataBus),
-	logicLayer(NULL),
-	DRAMBusIdleCount(0)
+    SendToLogicLayer(&LogicLayerInterface::ReceiveLogicOperation),
+    DRAMBusIdleCount(0)
 {
     for(unsigned i=0; i<NUM_RANKS; i++)
 	{
         ranks.push_back(Rank(i, this, &DRAMChannel::ReceiveOnDataBus));
-	}
-
-	logicLayer = new LogicLayerInterface(id);
-
-	Callback<LogicLayerInterface, void, Transaction*, unsigned> *logicCallback = new Callback<LogicLayerInterface, void, Transaction*, unsigned>(logicLayer, &LogicLayerInterface::ReceiveLogicOperation);
-    SendToLogicLayer = logicCallback;
+    }
 
 	Callback<DRAMChannel, bool, Transaction*, unsigned> *returnCallback = new Callback<DRAMChannel, bool, Transaction*, unsigned>(this, &DRAMChannel::AddTransaction);
 	logicLayer->RegisterReturnCallback(returnCallback);
@@ -95,7 +91,7 @@ void DRAMChannel::Update()
 				//if the bus packet was from a request originating from a logic operation, send it back to logic layer
 				if(inFlightDataPacket->fromLogicOp)
 				{
-					(*SendToLogicLayer)(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address),0);
+                    (logicLayer->*SendToLogicLayer)(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address),0);
 				}
 				//if it was a regular request, add to return queue
 				else
@@ -147,7 +143,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
 	{
 		if(SendToLogicLayer!=NULL)
 		{
-			(*SendToLogicLayer)(trans,0);
+            (logicLayer->*SendToLogicLayer)(trans,0);
 		}
 		else
 		{

@@ -50,7 +50,7 @@ public:
     //Functions
     DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned));
 	bool AddTransaction(Transaction *trans, unsigned notused);
-    void Update();
+    void Update(void);
 	void ReceiveOnDataBus(BusPacket *busPacket, unsigned ID);
     void ReceiveOnCmdBus(BusPacket *busPacket, unsigned ID);
 
@@ -63,6 +63,8 @@ public:
 	unsigned channelID;
 	//Logic chip
 	LogicLayerInterface *logicLayer;
+    // bob interface
+    BOB *bob;
 	//Pending outgoing logic response
 	Transaction *pendingLogicResponse;
 
@@ -71,10 +73,9 @@ public:
 	//Storage for pending response data
 	deque<BusPacket*> readReturnQueue;
 	
-	//Callbacks
-    BOB *bob;
-    void(BOB::*ReportCallback)(BusPacket*, unsigned);
-	Callback<LogicLayerInterface, void, Transaction*, unsigned> *SendToLogicLayer;
+    //Callbacks
+    void (BOB::*ReportCallback)(BusPacket*, unsigned);
+    void (LogicLayerInterface::*SendToLogicLayer)(Transaction *trans, unsigned i);
 
 	//Command packet being sent on DRAM command bus
 	BusPacket *inFlightCommandPacket;
