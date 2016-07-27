@@ -148,11 +148,11 @@ void BOB::Update(void)
 	for(unsigned i=0; i<pendingReads.size(); i++)
 	{
 		//look in the channel that the request was mapped to and search its return queue
-		for(unsigned j=0; j<channels[pendingReads[i]->mappedChannel]->readReturnQueue.size(); j++)
+        for(unsigned j=0; j<channels[pendingReads[i]->mappedChannel]->readReturnQueue.size(); j++)
 		{
 			//if the transaction IDs match, then the data is waiting there to return (it might not be ready yet,
 			//  which would not trigger this condition)
-			if(pendingReads[i]->transactionID==channels[pendingReads[i]->mappedChannel]->readReturnQueue[j]->transactionID)
+            if(pendingReads[i]->transactionID==channels[pendingReads[i]->mappedChannel]->readReturnQueue[j]->transactionID)
 			{
 				pendingReads[i]->cyclesInReadReturnQ++;
 			}
@@ -162,11 +162,11 @@ void BOB::Update(void)
 	//calculate number of transactions waiting
 	for(unsigned i=0; i<NUM_CHANNELS; i++)
 	{
-		for(unsigned j=0; j<channels[i]->simpleController.commandQueue.size(); j++)
+        for(unsigned j=0; j<channels[i]->simpleController.commandQueue.size(); j++)
 		{
-			if(channels[i]->simpleController.commandQueue[j]->busPacketType==ACTIVATE)
+            if(channels[i]->simpleController.commandQueue[j]->busPacketType==ACTIVATE)
 			{
-				channels[i]->simpleController.commandQueue[j]->queueWaitTime++;
+                channels[i]->simpleController.commandQueue[j]->queueWaitTime++;
 			}
 		}
 	}
@@ -190,107 +190,21 @@ void BOB::Update(void)
 	{
 		portInputBufferAvg[i] += ports[i].inputBuffer.size();
 		portOutputBufferAvg[i] += ports[i].outputBuffer.size();
-	}
 
+        //
+        // UPDATE BUSES
+        //
+        //update each port's bookkeeping
 
-	//
-	// DEBUG OUTPUT
-	//
-
-	if(DEBUG_BOB)
-	{
-		DEBUG(endl<<" --------- BOB Update Started ["<<currentClockCycle<<"] ---------");
-
-		for(unsigned i=0; i<NUM_PORTS; i++)
-		{
-			DEBUG("== Port "<<i);
-			DEBUG(" - Input Buffer ("<<ports[i].inputBuffer.size()<<") == Busy Countdown:"<<ports[i].inputBusyCountdown);
-			for(unsigned j=0; j<ports[i].inputBuffer.size(); j++)
-			{
-				DEBUG("   "<<j<<"] "<<*ports[i].inputBuffer[j]);
-			}
-			DEBUG(" - Output Buffer ("<<ports[i].outputBuffer.size()<<") == Busy Countdown:"<<ports[i].outputBusyCountdown);
-			for(unsigned j=0; j<ports[i].outputBuffer.size(); j++)
-			{
-				DEBUG("   "<<j<<"] "<<*ports[i].outputBuffer[j]);
-			}
-		}
-
-		DEBUG("== SerDe Buffers");
-		for(unsigned i=0; i<NUM_LINK_BUSES; i++)
-		{
-			DEBUGN("   "<<i<<"] request: ");
-			if(serDesBufferRequest[i]==NULL)
-			{
-				DEBUGN("NULL");
-			}
-			else
-			{
-				DEBUGN(*serDesBufferRequest[i]);
-			}
-
-			DEBUGN("   response: ");
-			if(serDesBufferResponse[i]==NULL)
-			{
-				DEBUG("NULL");
-			}
-			else
-			{
-				DEBUG(*serDesBufferResponse[i]);
-			}
-		}
-
-		DEBUG("== Request Link Transactions");
-		for(unsigned i=0; i<NUM_LINK_BUSES; i++)
-		{
-			if(inFlightRequestLink[i]!=NULL)
-			{
-				DEBUG("   "<<i<<"] "<<*inFlightRequestLink[i]<<" for "<<inFlightRequestLinkCountdowns[i]<<" cc");
-			}
-			else
-			{
-				DEBUG("   "<<i<<"] NULL");
-			}
-		}
-
-		DEBUG("== Response Link Transactions");
-		for(unsigned i=0; i<NUM_LINK_BUSES; i++)
-		{
-			if(inFlightResponseLink[i]!=NULL)
-			{
-				DEBUG("   "<<i<<"] "<<*inFlightResponseLink[i]<<" for "<<inFlightResponseLinkCountdowns[i]<<" cc");
-			}
-			else
-			{
-				DEBUG("   "<<i<<"] NULL");
-			}
-		}
-
-
-		DEBUG("== Pending Read Queue ("<<pendingReads.size()<<")");
-		for(unsigned i=0; i<pendingReads.size(); i++)
-		{
-			DEBUG(" "<<i<<"] "<<*pendingReads[i]);
-		}
-
-	}
-
-	//
-	// UPDATE BUSES
-	//
-	if(DEBUG_BOB)DEBUG("== Bus Movement");
-	//update each port's bookkeeping
-	for(unsigned i=0; i<NUM_PORTS; i++)
-	{
 		if(ports[i].inputBusyCountdown>0)
 		{
 			ports[i].inputBusyCountdown--;
 
 			//if the port input is done sending, erase that item
-			if(ports[i].inputBusyCountdown==0)
-			{
-
-			}
+//			if(ports[i].inputBusyCountdown==0)
+//			{
+//
+//			}
 		}
 
 		if(ports[i].outputBusyCountdown>0)
@@ -312,7 +226,7 @@ void BOB::Update(void)
 				if(DEBUG_BOB) DEBUG("  == Adding to channel "<<inFlightRequestLink[i]->mappedChannel<<" (from link bus "<<i<<") : "<<*inFlightRequestLink[i]);
 
 				//add to channel
-				channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i], 0); //0 is not used
+                channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i], 0); //0 is not used
 
 				//remove from channel bus
 				inFlightRequestLink[i] = NULL;
@@ -338,8 +252,8 @@ void BOB::Update(void)
 				inFlightResponseLink[i]->channelTimeTotal = currentClockCycle - inFlightResponseLink[i]->channelStartTime;
 
 				//remove from return queue
-				delete channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue[0];
-				channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
+                delete channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue[0];
+                channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
 
 
 				serDesBufferResponse[i] = inFlightResponseLink[i];
@@ -359,7 +273,7 @@ void BOB::Update(void)
 		//REQUEST
 		//
 		if(serDesBufferRequest[c]!=NULL &&
-		        inFlightRequestLinkCountdowns[c]==0)
+           inFlightRequestLinkCountdowns[c]==0)
 		{
 			//error checking
 			if(inFlightRequestLink[c]!=NULL)
@@ -378,36 +292,32 @@ void BOB::Update(void)
 
 			//the total number of channel cycles the packet will be on the bus
 			unsigned totalChannelCycles;
-
-			if(inFlightRequestLink[c]->transactionType==DATA_READ)
-			{
+            switch(inFlightRequestLink[c]->transactionType) {
+            case DATA_READ:
 				//
 				//widths are in bits
 				//
 				totalChannelCycles = (RD_REQUEST_PACKET_OVERHEAD * 8) / REQUEST_LINK_BUS_WIDTH +
 				                     !!((RD_REQUEST_PACKET_OVERHEAD * 8) % REQUEST_LINK_BUS_WIDTH);
-			}
-			else if(inFlightRequestLink[c]->transactionType==DATA_WRITE)
-			{
+                break;
+            case DATA_WRITE:
 				//
 				//widths are in bits
 				//
 				totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE) * 8) / REQUEST_LINK_BUS_WIDTH +
 				                     !!(((WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE) * 8) % REQUEST_LINK_BUS_WIDTH);
-			}
-			else if(inFlightRequestLink[c]->transactionType==LOGIC_OPERATION)
-			{
+                break;
+            case LOGIC_OPERATION:
 				//
 				//widths are in bits
 				//
 				totalChannelCycles = (inFlightRequestLink[c]->transactionSize * 8) / REQUEST_LINK_BUS_WIDTH +
 				                     !!((inFlightRequestLink[c]->transactionSize * 8) % REQUEST_LINK_BUS_WIDTH);
-			}
-			else
-			{
+                break;
+            default:
 				ERROR("== Error - wrong type "<<*inFlightRequestLink[c]);
-				exit(0);
-			}
+                exit(0);
+            }
 
 			//if the channel uses DDR signaling, the cycles is cut in half
 			if(LINK_BUS_USE_DDR)
@@ -482,7 +392,7 @@ void BOB::Update(void)
 		//make sure the port isn't already sending something
 		//  and that there is an item there to send
 		if(ports[p].inputBusyCountdown==0 &&
-		        ports[p].inputBuffer.size()>0)
+           ports[p].inputBuffer.size()>0)
 		{
 			//search out-of-order
 			for(unsigned i=0; i<ports[p].inputBuffer.size(); i++)
@@ -492,7 +402,7 @@ void BOB::Update(void)
 
 				//make sure the serDe isn't busy and the queue isn't full
 				if(serDesBufferRequest[linkBusID]==NULL &&
-				        channels[channelID]->simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
+                        channels[channelID]->simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
 				{
 					//put on channel bus
 					serDesBufferRequest[linkBusID] = ports[p].inputBuffer[i];
@@ -503,8 +413,8 @@ void BOB::Update(void)
 					//keep track of requests
 					channelCounters[channelID]++;
 
-					if(serDesBufferRequest[linkBusID]->transactionType==DATA_READ)
-					{
+                    switch(serDesBufferRequest[linkBusID]->transactionType) {
+                    case DATA_READ:
 						//put in pending queue
 						//  make it a RETURN_DATA type before we put it in pending queue
 						pendingReads.push_back(ports[p].inputBuffer[i]);
@@ -513,23 +423,20 @@ void BOB::Update(void)
 
 						//set port busy time
 						ports[p].inputBusyCountdown = 1;
-					}
-					else if(serDesBufferRequest[linkBusID]->transactionType==DATA_WRITE)
-					{
+                        break;
+                    case DATA_WRITE:
 						writeCounter++;
 
 						//set port busy time
-						ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
-					}
-					else if(serDesBufferRequest[linkBusID]->transactionType==LOGIC_OPERATION)
-					{
+                        ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
+                        break;
+                    case LOGIC_OPERATION:
 						logicOpCounter++;
 
 						//set port busy time
-						ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
-					}
-					else
-					{
+                        ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
+                        break;
+                    default:
 						ERROR("== Error - unknown transaction type going to channel : "<<*serDesBufferRequest[linkBusID]);
 						exit(0);
 					}
@@ -542,24 +449,7 @@ void BOB::Update(void)
 					//remove from port input buffer
 					ports[p].inputBuffer.erase(ports[p].inputBuffer.begin()+i);
 					break;
-				}
-				else
-				{
-					if(DEBUG_BOB)
-					{
-						if(serDesBufferRequest[linkBusID]!=NULL)
-						{
-							DEBUG("    == Request SerDes Full : "<<*serDesBufferRequest[linkBusID]);
-							DEBUG("             Left : "<<inFlightRequestLinkCountdowns[linkBusID]);
-						}
-
-						if(channels[channelID]->simpleController.waitingACTS>=CHANNEL_WORK_Q_MAX)
-						{
-							cmdQFull[channelID]++;
-							DEBUG("    == Channel Queue Full");
-						}
-					}
-				}
+                }
 			}
 		}
 
@@ -584,7 +474,7 @@ void BOB::Update(void)
 				unsigned chan = link * CHANNELS_PER_LINK_BUS + responseLinkRoundRobin[link];
 
 				//make sure something is there
-				if(channels[chan]->pendingLogicResponse!=NULL)
+                if(channels[chan]->pendingLogicResponse!=NULL)
 				{
 					//calculate numbers to see how long the response is on the bus
 					//
@@ -616,15 +506,15 @@ void BOB::Update(void)
 						ERROR("   Cycle : "<<currentClockCycle);
 						ERROR(" Channel : "<<chan);
 						ERROR(" LinkBus : "<<link);
-						ERROR(" Incoming: "<<*(channels[chan]->pendingLogicResponse));
+                        ERROR(" Incoming: "<<*(channels[chan]->pendingLogicResponse));
 						ERROR(" Current : "<<*inFlightResponseLink[link]);
 						exit(0);
 					}
 
 					//make in flight
-					inFlightResponseLink[link] = channels[chan]->pendingLogicResponse;
+                    inFlightResponseLink[link] = channels[chan]->pendingLogicResponse;
 					//remove from channel
-					channels[chan]->pendingLogicResponse = NULL;
+                    channels[chan]->pendingLogicResponse = NULL;
 
 					if(DEBUG_BOB)
 					{
@@ -634,13 +524,13 @@ void BOB::Update(void)
 
 					break;
 				}
-				else if(channels[chan]->readReturnQueue.size()>0)
+                else if(channels[chan]->readReturnQueue.size()>0)
 				{
 					//remove transaction from pending queue
 					for(unsigned p=0; p<pendingReads.size(); p++)
 					{
 						//find pending item in pending queue
-						if(pendingReads[p]->transactionID == channels[chan]->readReturnQueue[0]->transactionID)
+                        if(pendingReads[p]->transactionID == channels[chan]->readReturnQueue[0]->transactionID)
 						{
 							//make the return packet
 							pendingReads[p]->transactionType = RETURN_DATA;
@@ -691,8 +581,8 @@ void BOB::Update(void)
 
 							//remove pending queues
 							pendingReads.erase(pendingReads.begin()+p);
-							//delete channels[chan]->readReturnQueue[0];
-							//channels[chan]->readReturnQueue.erase(channels[chan]->readReturnQueue.begin());
+                            //delete channels[chan]->readReturnQueue[0];
+                            //channels[chan]->readReturnQueue.erase(channels[chan]->readReturnQueue.begin());
 
 							break;
 						}
@@ -715,10 +605,6 @@ void BOB::Update(void)
 				if(responseLinkRoundRobin[link]==CHANNELS_PER_LINK_BUS)
 					responseLinkRoundRobin[link]=0;
 			}
-
-
-
-
 		}
 	}
 	//
@@ -737,7 +623,7 @@ void BOB::Update(void)
                 dram_channel_clk++;
 				for(unsigned i=0; i<NUM_CHANNELS; i++)
 				{
-					channels[i]->Update();
+                    channels[i]->Update();
 				}
 			}
 			else clockCycleAdjustmentCounter=0;
@@ -749,7 +635,7 @@ void BOB::Update(void)
 		{
 			for(unsigned i=0; i<NUM_CHANNELS; i++)
 			{
-				channels[i]->Update();
+                channels[i]->Update();
 			}
 		}
 	}
@@ -903,7 +789,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 	for(unsigned i=0; i<NUM_CHANNELS; i++)
 	{
 		//compute each DRAM channel's BW
-		double DRAMBandwidth= (bw * (1 - ((double)channels[i]->DRAMBusIdleCount/(double)dramCyclesElapsed))) * 1E9 / (1<<30);
+        double DRAMBandwidth= (bw * (1 - ((double)channels[i]->DRAMBusIdleCount/(double)dramCyclesElapsed))) * 1E9 / (1<<30);
 
 		statsOut<<DRAMBandwidth<<",";
 
@@ -915,44 +801,44 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 		snprintf(tmp_str, MAX_TMP_STR, "%d]%9d%10.4f%10d%10.4f%10.4f%10.4f%10.4f%10.4f%10.2f%10.3f%10d(%d)%10d%10ld\n",
 		         i,
 		         channelCounters[i],
-		         (float)channels[i]->simpleController.commandQueueAverage/dramCyclesElapsed,
-		         channels[i]->simpleController.commandQueueMax,
-		         (float)channels[i]->simpleController.numIdleBanksAverage/dramCyclesElapsed,
-		         (float)channels[i]->simpleController.numActBanksAverage/dramCyclesElapsed,
-		         (float)channels[i]->simpleController.numPreBanksAverage/dramCyclesElapsed,
-		         (float)channels[i]->simpleController.numRefBanksAverage/dramCyclesElapsed,
-		         (float)(channels[i]->simpleController.numIdleBanksAverage+
-		                 channels[i]->simpleController.numActBanksAverage+
-		                 channels[i]->simpleController.numPreBanksAverage+
-		                 channels[i]->simpleController.numRefBanksAverage)/dramCyclesElapsed,
-		         100*((float)channels[i]->DRAMBusIdleCount/(float)dramCyclesElapsed),
+                 (float)channels[i]->simpleController.commandQueueAverage/dramCyclesElapsed,
+                 channels[i]->simpleController.commandQueueMax,
+                 (float)channels[i]->simpleController.numIdleBanksAverage/dramCyclesElapsed,
+                 (float)channels[i]->simpleController.numActBanksAverage/dramCyclesElapsed,
+                 (float)channels[i]->simpleController.numPreBanksAverage/dramCyclesElapsed,
+                 (float)channels[i]->simpleController.numRefBanksAverage/dramCyclesElapsed,
+                 (float)(channels[i]->simpleController.numIdleBanksAverage+
+                         channels[i]->simpleController.numActBanksAverage+
+                         channels[i]->simpleController.numPreBanksAverage+
+                         channels[i]->simpleController.numRefBanksAverage)/dramCyclesElapsed,
+                 100*((float)channels[i]->DRAMBusIdleCount/(float)dramCyclesElapsed),
 		         DRAMBandwidth,
-		         channels[i]->readReturnQueueMax,
-		         (int)channels[i]->readReturnQueue.size(),
-		         channels[i]->simpleController.RRQFull,
+                 channels[i]->readReturnQueueMax,
+                 (int)channels[i]->readReturnQueue.size(),
+                 channels[i]->simpleController.RRQFull,
 		         channelCountersLifetime[i]
 
 		        );
 
-		for(int r=0; r<NUM_RANKS; r++)
-		{
-			for(int b=0; b<NUM_BANKS; b++)
-			{
-				//PRINTN(channels[i]->simpleController.bankStates[r][b]);
-			}
-		}
+        for(int r=0; r<NUM_RANKS; r++)
+        {
+            for(int b=0; b<NUM_BANKS; b++)
+            {
+                //PRINTN(channels[i]->simpleController.bankStates[r][b]);
+            }
+        }
 
 		//reset
-		channels[i]->simpleController.commandQueueAverage=0;
-		channels[i]->simpleController.numIdleBanksAverage=0;
-		channels[i]->simpleController.numActBanksAverage=0;
-		channels[i]->simpleController.numPreBanksAverage=0;
-		channels[i]->simpleController.numRefBanksAverage=0;
-		channels[i]->simpleController.commandQueueMax=0;
-		channels[i]->readReturnQueueMax=0;
-		channels[i]->DRAMBusIdleCount=0;
+        channels[i]->simpleController.commandQueueAverage=0;
+        channels[i]->simpleController.numIdleBanksAverage=0;
+        channels[i]->simpleController.numActBanksAverage=0;
+        channels[i]->simpleController.numPreBanksAverage=0;
+        channels[i]->simpleController.numRefBanksAverage=0;
+        channels[i]->simpleController.commandQueueMax=0;
+        channels[i]->readReturnQueueMax=0;
+        channels[i]->DRAMBusIdleCount=0;
 		channelCounters[i]=0;
-		channels[i]->simpleController.RRQFull=0;
+        channels[i]->simpleController.RRQFull=0;
 		cmdQFull[i]=0;
 
 		PRINTN(tmp_str);
@@ -987,15 +873,15 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 		PRINTN("    -- Channel "<<c);
 		for(unsigned r=0; r<NUM_RANKS; r++)
 		{
-			float backgroundPower = ((float)channels[c]->simpleController.backgroundEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
-			float burstPower = ((float)channels[c]->simpleController.burstEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
-			float actprePower = ((float)channels[c]->simpleController.actpreEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
-			float refreshPower = ((float)channels[c]->simpleController.refreshEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+            float backgroundPower = ((float)channels[c]->simpleController.backgroundEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+            float burstPower = ((float)channels[c]->simpleController.burstEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+            float actprePower = ((float)channels[c]->simpleController.actpreEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+            float refreshPower = ((float)channels[c]->simpleController.refreshEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
 
-			float averagePower = ((float)(channels[c]->simpleController.actpreEnergy[r] +
-			                              channels[c]->simpleController.backgroundEnergy[r] +
-			                              channels[c]->simpleController.burstEnergy[r] +
-			                              channels[c]->simpleController.refreshEnergy[r]) / (float) dramCyclesElapsed) * Vdd / 1000;
+            float averagePower = ((float)(channels[c]->simpleController.actpreEnergy[r] +
+                                          channels[c]->simpleController.backgroundEnergy[r] +
+                                          channels[c]->simpleController.burstEnergy[r] +
+                                          channels[c]->simpleController.refreshEnergy[r]) / (float) dramCyclesElapsed) * Vdd / 1000;
 			totalChannelPower += averagePower;
 
 			if(!shortOutput)
@@ -1012,10 +898,10 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 			}
 
 			//clear for next epoch
-			channels[c]->simpleController.backgroundEnergy[r]=0;
-			channels[c]->simpleController.burstEnergy[r]=0;
-			channels[c]->simpleController.actpreEnergy[r]=0;
-			channels[c]->simpleController.refreshEnergy[r]=0;
+            channels[c]->simpleController.backgroundEnergy[r]=0;
+            channels[c]->simpleController.burstEnergy[r]=0;
+            channels[c]->simpleController.actpreEnergy[r]=0;
+            channels[c]->simpleController.refreshEnergy[r]=0;
 		}
 
 		allChanAveragePower += totalChannelPower;
