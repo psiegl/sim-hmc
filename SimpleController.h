@@ -33,7 +33,6 @@
 
 //Simple Controller header
 
-#include "SimulatorObject.h"
 #include "BusPacket.h"
 #include "Transaction.h"
 #include "BankState.h"
@@ -45,7 +44,7 @@ namespace BOBSim
 {
 //forward declaration
 class DRAMChannel;
-class SimpleController : public SimulatorObject
+class SimpleController
 {
 public:
 	//Functions
@@ -118,6 +117,8 @@ private:
 
 	Callback<DRAMChannel, void, BusPacket*, unsigned> *CommandCallback;
 	Callback<DRAMChannel, void, BusPacket*, unsigned> *DataCallback;
+
+    uint64_t currentClockCycle;
 };
 }
 

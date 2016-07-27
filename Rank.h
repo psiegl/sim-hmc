@@ -35,14 +35,13 @@
 
 #include "Globals.h"
 #include "BankState.h"
-#include "SimulatorObject.h"
 
 using namespace std;
 
 namespace BOBSim
 {
 class DRAMChannel;
-class Rank : public SimulatorObject
+class Rank
 {
 public:
     //Functions
@@ -67,6 +66,8 @@ public:
 	
 	//State of all banks in the DRAM channel
 	BankState *bankStates;
+
+    uint64_t currentClockCycle;
 };
 }
 

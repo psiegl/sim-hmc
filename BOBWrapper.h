@@ -32,9 +32,8 @@
 #define BOBWRAPPER_H
 
 #include <deque>
-#include "SimulatorObject.h"
-#include "BOB.h"
 #include <math.h>
+#include "BOB.h"
 #include "Callback.h"
 #include "Transaction.h"
 
@@ -44,7 +43,7 @@ using namespace std;
 
 namespace BOBSim
 {
-class BOBWrapper : public SimulatorObject
+class BOBWrapper
 {
 private:
 	unsigned TryToSendPending();
@@ -134,6 +133,8 @@ public:
 	
 	//Round-robin counter
 	uint portRoundRobin;
+
+    uint64_t currentClockCycle;
 
 };
 BOBWrapper *getMemorySystemInstance(uint64_t qemu_mem_size);

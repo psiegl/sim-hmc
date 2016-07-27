@@ -34,7 +34,6 @@
 //BOB header
 
 #include "Transaction.h"
-#include "SimulatorObject.h"
 #include "DRAMChannel.h"
 #include "SimpleController.h"
 #include "Port.h"
@@ -43,7 +42,7 @@ using namespace std;
 
 namespace BOBSim
 {
-class BOB : public SimulatorObject
+class BOB
 {
 public:
 	//Functions
@@ -125,6 +124,7 @@ public:
 	unsigned clockCycleAdjustmentCounter;
 
     uint64_t dram_channel_clk;
+    uint64_t currentClockCycle;
 };
 }
 #endif
