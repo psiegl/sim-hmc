@@ -99,7 +99,7 @@ public:
 	uint64_t nextWrite;
 //	uint64_t nextStrobeMin;
 //	uint64_t nextStrobeMax;
-//	uint64_t nextRefresh;
+//	uint64_t nextRefresh;     // ToDo!
 
 	BusPacketType lastCommand;
 	unsigned stateChangeCountdown;

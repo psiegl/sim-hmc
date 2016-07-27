@@ -37,7 +37,7 @@ using namespace std;
 using namespace BOBSim;
 
 DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned)):
-    simpleController(this, &DRAMChannel::ReceiveOnCmdBus, &DRAMChannel::ReceiveOnDataBus),
+    simpleController(this),
     inFlightCommandCountdown(0),
     inFlightDataCountdown(0),
     channelID(id),

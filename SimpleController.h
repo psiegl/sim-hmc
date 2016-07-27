@@ -48,9 +48,7 @@ class SimpleController
 {
 public:
 	//Functions
-    SimpleController(DRAMChannel *parent,
-                     void(DRAMChannel::*ReceiveOnCmdBus)(BusPacket*, unsigned),
-                     void(DRAMChannel::*ReceiveOnDataBus)(BusPacket*, unsigned));
+    SimpleController(DRAMChannel *parent);
 	bool IsIssuable(BusPacket *busPacket);
 	void Update();
     void AddTransaction(Transaction *trans);
@@ -113,10 +111,7 @@ private:
 	unsigned colBitWidth;
 	unsigned busOffsetBitWidth;
 	unsigned channelBitWidth;
-	unsigned cacheOffset;
-
-    void(DRAMChannel::*CommandCallback)(BusPacket*, unsigned);
-    void(DRAMChannel::*DataCallback)(BusPacket*, unsigned);
+    unsigned cacheOffset;
 
     uint64_t currentClockCycle;
 };

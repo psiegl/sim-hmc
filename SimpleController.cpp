@@ -37,9 +37,7 @@
 using namespace std;
 using namespace BOBSim;
 
-SimpleController::SimpleController(DRAMChannel *parent,
-                                   void(DRAMChannel::*ReceiveOnCmdBus)(BusPacket*, unsigned),
-                                   void(DRAMChannel::*ReceiveOnDataBus)(BusPacket*, unsigned)) :
+SimpleController::SimpleController(DRAMChannel *parent) :
 	refreshCounter(0),
 	readCounter(0),
 	writeCounter(0),
@@ -73,9 +71,7 @@ SimpleController::SimpleController(DRAMChannel *parent,
 	//end hack
 
 	//Registers the parent channel object
-	channel = parent;
-    CommandCallback = ReceiveOnCmdBus;
-    DataCallback = ReceiveOnDataBus;
+    channel = parent;
 
 	//Make the bank state objects
 	bankStates = (BankState**) malloc(sizeof(BankState*)*(NUM_RANKS));
@@ -120,10 +116,7 @@ void SimpleController::Update()
 	//count all the ACTIVATES waiting in the queue
 	for(unsigned i=0; i<commandQueue.size(); i++)
 	{
-		if(commandQueue[i]->busPacketType==ACTIVATE)
-		{
-			currentCount++;
-		}
+        currentCount += (commandQueue[i]->busPacketType==ACTIVATE);
 	}
 	if(currentCount>commandQueueMax) commandQueueMax = currentCount;
 
@@ -156,19 +149,16 @@ void SimpleController::Update()
               numRefBanksAverage++;
               break;
 			}
-		}
-    }
+        }
 
-	//
-	//Power
-	//
-	for(unsigned r=0; r<NUM_RANKS; r++)
-	{
+        //
+        //Power
+        //
 		bool bankOpen = false;
 		for(unsigned b=0; b<NUM_RANKS; b++)
 		{
 			if(bankStates[r][b].currentBankState == ROW_ACTIVE ||
-			        bankStates[r][b].currentBankState == REFRESHING)
+               bankStates[r][b].currentBankState == REFRESHING)
 			{
 				bankOpen = true;
 				break;
@@ -185,40 +175,30 @@ void SimpleController::Update()
 			//DRAM_BUS_WIDTH/2 because value accounts for DDR
 			idd2nCount[r]++;
 			backgroundEnergy[r] += IDD2N * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
-		}
-	}
+        }
 
-
-	//
-	//Update
-	//
-	//Updates the sliding window for tFAW
-	for(unsigned r=0; r<NUM_RANKS; r++)
-	{
+        //
+        //Update
+        //
+        //Updates the sliding window for tFAW
 		for(unsigned i=0; i<tFAWWindow[r].size(); i++)
 		{
 			tFAWWindow[r][i]--;
 			if(tFAWWindow[r][i]==0) tFAWWindow[r].erase(tFAWWindow[r].begin());
 		}
-	}
 
-	//Updates the bank states for each rank
-	for(unsigned r=0; r<NUM_RANKS; r++)
-	{
+        //Updates the bank states for each rank
 		for(unsigned b=0; b<NUM_BANKS; b++)
 		{
 			bankStates[r][b].UpdateStateChange();
 		}
-	}
 
-	//Handle refresh counters
-	for(unsigned i=0; i<NUM_RANKS; i++)
-	{
-		if(refreshCounters[i]>0)
-		{
-			refreshCounters[i]--;
-		}
-	}
+        //Handle refresh counters
+        if(refreshCounters[r]>0)
+        {
+            refreshCounters[r]--;
+        }
+    }
 
 	//Send write data to data bus
 	for(unsigned i=0; i<writeBurstCountdown.size(); i++)
@@ -228,7 +208,7 @@ void SimpleController::Update()
 	if(writeBurstCountdown.size()>0&&writeBurstCountdown[0]==0)
 	{
 		if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : "<<*writeBurstQueue[0]);
-        (channel->*DataCallback)(writeBurstQueue[0],0);
+        channel->ReceiveOnDataBus(writeBurstQueue[0],0);
 		writeBurstQueue.erase(writeBurstQueue.begin());
 		writeBurstCountdown.erase(writeBurstCountdown.begin());
 	}
@@ -246,10 +226,10 @@ void SimpleController::Update()
 			for(unsigned b=0; b<NUM_BANKS; b++)
 			{
 				if(bankStates[r][b].nextActivate > currentClockCycle ||
-				        bankStates[r][b].currentBankState != IDLE)
+                   bankStates[r][b].currentBankState != IDLE)
 				{
 					canIssueRefresh = false;
-
+                    break;
 				}
 			}
 
@@ -263,7 +243,7 @@ void SimpleController::Update()
 				refreshPacket->channel = channel->channelID;
 
 				//Send to command bus
-                (channel->*CommandCallback)(refreshPacket,0);
+                channel->ReceiveOnCmdBus(refreshPacket,0);
 
 				//make sure we don't send anythign else
 				issuingRefresh = true;
@@ -306,7 +286,7 @@ void SimpleController::Update()
 					continue;
 
 				//send to channel
-                (channel->*CommandCallback)(commandQueue[i],0);
+                channel->ReceiveOnCmdBus(commandQueue[i],0);
 
 				//update channel controllers bank state bookkeeping
 				unsigned rank = commandQueue[i]->rank;
