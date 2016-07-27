@@ -58,7 +58,6 @@ using namespace std;
 unsigned BOBSim::NUM_PORTS =4;
 
 int BOBSim::SHOW_SIM_OUTPUT=1;
-int c;
 int debugBus=0;
 string traceFileName = "traces/trace.trc";
 string pwdString = "";
@@ -130,7 +129,7 @@ int main(int argc, char **argv)
 			{0, 0, 0, 0}
 		};
 		int option_index=0; //for getopt
-		c = getopt_long (argc, argv, "c:n:p:bkq", long_options, &option_index);
+        int c = getopt_long (argc, argv, "c:n:p:bkq", long_options, &option_index);
 		if (c == -1)
 		{
 			break;
@@ -169,7 +168,6 @@ int main(int argc, char **argv)
 		}
     }
 
-    BOBWrapper bobWrapper;
 	transactionBuffer = vector< vector<Transaction *> >(NUM_PORTS,vector<Transaction *>());
 
 	waitCounters = vector<unsigned>(NUM_PORTS,0);
@@ -184,6 +182,7 @@ int main(int argc, char **argv)
 	//iterate over total number of cycles
 	//  "main loop"
 	//   numCycles is the number of CPU cycles to simulate
+    BOBWrapper bobWrapper;
 	for (int cpuCycle=0; cpuCycle<numCycles; cpuCycle++)
 	{
         //adding new stuff
@@ -197,14 +196,14 @@ int main(int argc, char **argv)
 				}
 			}
 			else
-			{
-				if(waitCounters[l]>0) waitCounters[l]--;
+            {
+                if(waitCounters[l]>0) waitCounters[l]--;
 
-				//make sure we are not waiting during idle time
-				if(waitCounters[l]==0)
-				{
-					FillTransactionBuffer(l);
-				}
+                //make sure we are not waiting during idle time
+                if(waitCounters[l]==0)
+                {
+                    FillTransactionBuffer(l);
+                }
 			}
 		}
 

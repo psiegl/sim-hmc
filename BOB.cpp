@@ -1048,8 +1048,8 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 //
 void BOB::ReportCallback(BusPacket *bp, unsigned i)
 {
-	if(bp->busPacketType==ACTIVATE)
-	{
+    switch(bp->busPacketType) {
+    case ACTIVATE:
 		for(unsigned p=0; p<pendingReads.size(); p++)
 		{
 			if(pendingReads[p]->transactionID==bp->transactionID)
@@ -1059,17 +1059,14 @@ void BOB::ReportCallback(BusPacket *bp, unsigned i)
 				break;
 			}
 		}
-	}
-	else if(bp->busPacketType==WRITE_P)
-	{
+        break;
+    case WRITE_P:
         bobwrapper->WriteIssuedCallback(bp->port, bp->address);
-	}
-	else if(bp->busPacketType==WRITE_DATA)
-	{
+        break;
+    case WRITE_DATA:
 		committedWrites++;
-	}
-	else if(bp->busPacketType==READ_DATA)
-	{
+        break;
+    case READ_DATA:
 		for(unsigned p=0; p<pendingReads.size(); p++)
 		{
 			if(pendingReads[p]->transactionID==bp->transactionID)
@@ -1078,13 +1075,12 @@ void BOB::ReportCallback(BusPacket *bp, unsigned i)
 				break;
 			}
 		}
-	}
-	else
-	{
+        break;
+    default:
 		ERROR("== Error - Wrong type of packet received in bob");
 		ERROR(*bp);
-		exit(0);
-	}
+        exit(0);
+    }
 }
 
 } //namespace BOBSim
