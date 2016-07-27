@@ -44,7 +44,7 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*
 	inFlightCommandPacket(NULL),
 	inFlightDataPacket(NULL),
 	readReturnQueueMax(0),
-    logicLayer(new LogicLayerInterface(id)),
+    logicLayer(new LogicLayerInterface(id, this)),
     bob(_bob),
     ReportCallback(reportCB),
     SendToLogicLayer(&LogicLayerInterface::ReceiveLogicOperation),
@@ -54,10 +54,6 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*
 	{
         ranks.push_back(Rank(i, this, &DRAMChannel::ReceiveOnDataBus));
     }
-
-	Callback<DRAMChannel, bool, Transaction*, unsigned> *returnCallback = new Callback<DRAMChannel, bool, Transaction*, unsigned>(this, &DRAMChannel::AddTransaction);
-	logicLayer->RegisterReturnCallback(returnCallback);
-
 }
 
 void DRAMChannel::Update()
@@ -110,7 +106,7 @@ void DRAMChannel::Update()
 				}
 				break;
 			case WRITE_DATA:
-				//(*ReportCallback)(inFlightDataPacket, 0);
+                //(bob->*ReportCallback)(inFlightDataPacket, 0);
 				ranks[inFlightDataPacket->rank].ReceiveFromBus(inFlightDataPacket);
 				break;
 			default:
@@ -139,28 +135,34 @@ bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
 {
 	if(DEBUG_CHANNEL)DEBUG("    In AddTransaction - got : "<<*trans);
 
-	if(trans->transactionType==LOGIC_OPERATION)
-	{
-        logicLayer->ReceiveLogicOperation(trans,0);
-	}
-	else if(trans->transactionType==LOGIC_RESPONSE)
-	{
-		if(pendingLogicResponse==NULL)
-		{
-            if (DEBUG_LOGIC) DEBUG("== Made it back to channel : "<<*trans);
-			pendingLogicResponse = trans;
-		}
-		else return false;
-	}
-	else
-	{
-		if(simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
-		{
-			simpleController.AddTransaction(trans);
-		}
-        else
-          return false;
-	}
+    switch(trans->transactionType) {
+      case LOGIC_OPERATION:
+      {
+          logicLayer->ReceiveLogicOperation(trans,0);
+          break;
+      }
+      case LOGIC_RESPONSE:
+      {
+          if(pendingLogicResponse==NULL)
+          {
+              if (DEBUG_LOGIC) DEBUG("== Made it back to channel : "<<*trans);
+              pendingLogicResponse = trans;
+              break;
+          }
+          else
+              return false;
+      }
+      default:
+      {
+          if(simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
+          {
+              simpleController.AddTransaction(trans);
+              break;
+          }
+          else
+              return false;
+      }
+    }
 
 	return true;
 }

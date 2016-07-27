@@ -33,20 +33,15 @@
 using namespace BOBSim;
 using namespace std;
 
-LogicLayerInterface::LogicLayerInterface(uint id):
-	simpleControllerID(id),
+LogicLayerInterface::LogicLayerInterface(uint id, DRAMChannel *_channel):
+    channel(_channel),
+    simpleControllerID(id),
 	currentClockCycle(0),
 	currentTransaction(NULL),
 	currentLogicOperation(NULL),
-	issuedRequests(0)
-{
+    issuedRequests(0)
+{}
 
-}
-
-void LogicLayerInterface::RegisterReturnCallback(Callback<DRAMChannel, bool, Transaction*, unsigned> *returnCallback)
-{
-	ReturnToSimpleController = returnCallback;
-}
 
 void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans, unsigned i)
 {
@@ -64,7 +59,7 @@ void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans, unsigned i)
 void LogicLayerInterface::Update()
 {
 	//send back to channel if there is something in the outgoing queue
-	if(outgoingQueue.size()>0 && (*ReturnToSimpleController)(outgoingQueue[0],0))
+    if(outgoingQueue.size()>0 && channel->AddTransaction(outgoingQueue[0],0))
 	{
 		//if we just send the response, we are done and can clear the current stuff
 		if(outgoingQueue[0]->transactionType==LOGIC_RESPONSE)

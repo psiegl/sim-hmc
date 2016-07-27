@@ -43,13 +43,12 @@ namespace BOBSim
 class LogicLayerInterface
 {
 public:
-	LogicLayerInterface(uint id);
+    LogicLayerInterface(uint id, DRAMChannel *_channel);
 
 	void ReceiveLogicOperation(Transaction *trans, unsigned i);
-	void RegisterReturnCallback(Callback<DRAMChannel, bool, Transaction*, unsigned> *returnCallback);
-	void Update();
+    void Update(void);
 
-	Callback<DRAMChannel, bool, Transaction*, unsigned> *ReturnToSimpleController;
+    DRAMChannel *channel;
 
 	uint simpleControllerID;
 	uint64_t currentClockCycle;
