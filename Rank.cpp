@@ -37,16 +37,15 @@ using namespace std;
 using namespace BOBSim;
 
 
-Rank::Rank(unsigned rankid):
+Rank::Rank(unsigned rankid,DRAMChannel *_dramchannel, void(DRAMChannel::*readCB)(BusPacket*, unsigned)):
     id(rankid),
-    ReadReturnCallback(NULL)
-{
-    currentClockCycle = 0;
+    dramchannel(_dramchannel),
+    ReadReturnCallback(readCB),
+    bankStates((BankState*)calloc(sizeof(BankState), NUM_BANKS)),
+    currentClockCycle(0)
+{}
 
-	bankStates = (BankState*)calloc(sizeof(BankState), NUM_BANKS);
-}
-
-void Rank::Update()
+void Rank::Update(void)
 {
 	for(unsigned i=0; i<NUM_BANKS; i++)
 	{
@@ -58,8 +57,9 @@ void Rank::Update()
 		readReturnCountdown[i]--;
 	}
 	if(readReturnCountdown.size()>0 && readReturnCountdown[0]==0)
-	{
-		(*ReadReturnCallback)(readReturnQueue[0],id);
+    {
+        (dramchannel->*ReadReturnCallback)(readReturnQueue[0],id);
+
 		readReturnCountdown.erase(readReturnCountdown.begin());
 		readReturnQueue.erase(readReturnQueue.begin());
 	}
@@ -70,13 +70,6 @@ void Rank::Update()
 
 void Rank::ReceiveFromBus(BusPacket *busPacket)
 {
-	if(DEBUG_CHANNEL) DEBUG("     == Rank "<<id<<" received : " << *busPacket);
-
-	if(VERIFICATION_OUTPUT && busPacket->channel==0)
-	{
-		busPacket->PrintVerification(currentClockCycle);
-	}
-
 	switch(busPacket->busPacketType)
 	{
 	case REFRESH:
@@ -105,7 +98,6 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		{
 			ERROR("== Error - Rank receiving READ_P when not allowed");
 			ERROR("           Current Clock Cycle : "<<currentClockCycle);
-			ERROR(bankStates[busPacket->bank]);
 			exit(0);
 		}
 
@@ -134,7 +126,6 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		        currentClockCycle < bankStates[busPacket->bank].nextWrite)
 		{
 			ERROR("== Error - Rank "<<id<<" receiving WRITE_P when not allowed");
-			ERROR(bankStates[busPacket->bank]);
 			ERROR("           currentClockCycle : "<<currentClockCycle);
 			exit(0);
 		}
@@ -185,10 +176,10 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		break;
 	case WRITE_DATA:
 		if(bankStates[busPacket->bank].currentBankState != ROW_ACTIVE ||
-		        bankStates[busPacket->bank].openRowAddress != busPacket->row)
+           bankStates[busPacket->bank].openRowAddress != busPacket->row)
 		{
 			ERROR("== Error - Clock Cycle : "<<currentClockCycle);
-			ERROR("== Error - Rank receiving WRITE_DATA when not allowed: " << *busPacket <<endl << bankStates[busPacket->bank]);
+            ERROR("== Error - Rank receiving WRITE_DATA when not allowed: " << *busPacket <<endl);
 			exit(0);
 		}
 

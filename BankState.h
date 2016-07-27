@@ -66,7 +66,6 @@ public:
 	unsigned stateChangeCountdown;
 
 };
-ostream &operator<<(ostream &out, const BankState &bs);
 }
 
 #endif

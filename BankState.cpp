@@ -78,33 +78,4 @@ void BankState::UpdateStateChange()
 	}
 }
 
-ostream &operator<<(ostream &out, const BankState &bs)
-{
-	//out << dec <<" == Bank State " <<endl;
-	switch(bs.currentBankState)
-	{
-	case IDLE:
-		out<<"    State : Idle" <<endl;
-		break;
-	case ROW_ACTIVE:
-		out<<"    State : Active" <<endl;
-		break;
-	case PRECHARGING:
-		out<<"    State : Precharging" <<endl;
-		break;
-	case REFRESHING:
-		out<<"    State : Refreshing" <<endl;
-		break;
-	}
-	/*
-	out<<"    StateChange    : " << bs.stateChangeCountdown<<endl;
-	out<<"    OpenRowAddress : " << bs.openRowAddress <<endl;
-	out<<"    nextRead       : " << bs.nextRead <<endl;
-	out<<"    nextWrite      : " << bs.nextWrite <<endl;
-	out<<"    nextActivate   : " << bs.nextActivate <<endl;
-	out<<"    nextStrobeMin  : " << bs.nextStrobeMin << endl;
-	out<<"    nextStrobeMax  : " << bs.nextStrobeMax << endl;
-	*/
-	return out;
-}
 }

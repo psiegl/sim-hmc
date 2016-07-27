@@ -55,8 +55,7 @@ DRAMChannel::DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> 
 
 	for(int i=0; i<NUM_RANKS; i++)
 	{
-		ranks.push_back(Rank(i));
-		ranks[i].RegisterCallback(dataCallback);
+        ranks.push_back(Rank(i, this, &DRAMChannel::ReceiveOnDataBus));
 	}
 
 	logicLayer = new LogicLayerInterface(id);

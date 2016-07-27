@@ -45,12 +45,9 @@ class Rank
 {
 public:
     //Functions
-	Rank(unsigned id);
-	void Update();
-	void ReceiveFromBus(BusPacket *busPacket);
-    void RegisterCallback(Callback<DRAMChannel, void, BusPacket*, unsigned> *readCB){
-      ReadReturnCallback = readCB;
-    }
+    Rank(unsigned id, DRAMChannel *_dramchannel, void(DRAMChannel::*readCB)(BusPacket*, unsigned));
+    void Update(void);
+    void ReceiveFromBus(BusPacket *busPacket);
 
 	//Fields
 	//Rank ID in relation to the channel
@@ -61,10 +58,12 @@ public:
 	//Storage for response data
 	vector<BusPacket*> readReturnQueue;
 
-	//Callback for returning data
-    Callback<DRAMChannel, void, BusPacket*, unsigned> *ReadReturnCallback;
+    //Callback for returning data
+    DRAMChannel *dramchannel;
+    void(DRAMChannel::*ReadReturnCallback)(BusPacket*, unsigned);
+    //Callback<DRAMChannel,void,BusPacket*,unsigned> *ReadReturnCallback;
 	
-	//State of all banks in the DRAM channel
+    //State of all banks in the DRAM channel
 	BankState *bankStates;
 
     uint64_t currentClockCycle;
