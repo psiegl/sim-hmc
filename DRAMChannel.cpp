@@ -91,7 +91,7 @@ void DRAMChannel::Update()
 				//if the bus packet was from a request originating from a logic operation, send it back to logic layer
 				if(inFlightDataPacket->fromLogicOp)
 				{
-                    (logicLayer->*SendToLogicLayer)(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address),0);
+                    logicLayer->ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address),0);
 				}
 				//if it was a regular request, add to return queue
 				else
@@ -141,15 +141,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
 
 	if(trans->transactionType==LOGIC_OPERATION)
 	{
-		if(SendToLogicLayer!=NULL)
-		{
-            (logicLayer->*SendToLogicLayer)(trans,0);
-		}
-		else
-		{
-			ERROR("== Logic Layers are not registered, yet receiving a logic operation.  Please register");
-			exit(0);
-		}
+        logicLayer->ReceiveLogicOperation(trans,0);
 	}
 	else if(trans->transactionType==LOGIC_RESPONSE)
 	{
