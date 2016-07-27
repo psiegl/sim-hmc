@@ -84,8 +84,7 @@ BOBWrapper::BOBWrapper(uint64_t qemu_mem_size) :
 	currentClockCycle=0;
 
 	//Create BOB object and register callbacks
-	bob = new BOB();
-    bob->RegisterWriteIssuedCallback(this, &BOBWrapper::WriteIssuedCallback);
+    bob = new BOB(this);
 
 	//Incoming request packet fields (to be added to ports)
 	inFlightRequest = vector<Transaction*>(NUM_PORTS,NULL);

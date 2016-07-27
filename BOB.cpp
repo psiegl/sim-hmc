@@ -32,6 +32,7 @@
 #include <bitset>
 #include <math.h>
 #include "BOB.h"
+#include "BOBWrapper.h"
 
 using namespace std;
 
@@ -45,12 +46,12 @@ unsigned LINK_CPU_CLK_RATIO;
 unsigned DRAM_CPU_CLK_RATIO;
 unsigned DRAM_CPU_CLK_ADJUSTMENT;
 //uint64_t QEMU_MEMORY_SIZE;
-BOB::BOB() : priorityPort(0),
+BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 	readCounter(0),
 	writeCounter(0),
 	committedWrites(0),
 	clockCycleAdjustmentCounter(0),
-	writeIssuedCB(NULL),
+    bobwrapper(_bobwrapper),
 	rankBitWidth(log2(NUM_RANKS)),
 	bankBitWidth(log2(NUM_BANKS)),
 	rowBitWidth(log2(NUM_ROWS)),
@@ -1071,10 +1072,7 @@ void BOB::ReportCallback(BusPacket *bp, unsigned i)
 	}
 	else if(bp->busPacketType==WRITE_P)
 	{
-		if (writeIssuedCB)
-		{
-            (bobwrapper->*writeIssuedCB)(bp->port, bp->address);
-		}
+        bobwrapper->WriteIssuedCallback(bp->port, bp->address);
 	}
 	else if(bp->busPacketType==WRITE_DATA)
 	{
@@ -1097,12 +1095,6 @@ void BOB::ReportCallback(BusPacket *bp, unsigned i)
 		ERROR(*bp);
 		exit(0);
 	}
-}
-
-void BOB::RegisterWriteIssuedCallback(BOBWrapper *_bobwrapper, void (BOBWrapper::*cb)(unsigned, uint64_t))
-{
-    bobwrapper = _bobwrapper;
-	writeIssuedCB = cb;
 }
 
 } //namespace BOBSim
