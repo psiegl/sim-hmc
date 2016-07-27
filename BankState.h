@@ -55,9 +55,9 @@ public:
       nextActivate(0),
       nextRead(0),
       nextWrite(0),
-      nextStrobeMin(0),
-      nextStrobeMax(0),
-      nextRefresh(0),
+//      nextStrobeMin(0),
+//      nextStrobeMax(0),
+//      nextRefresh(0),
       stateChangeCountdown(0)
     {}
 
@@ -97,9 +97,9 @@ public:
 	uint64_t nextActivate;
 	uint64_t nextRead;
 	uint64_t nextWrite;
-	uint64_t nextStrobeMin;
-	uint64_t nextStrobeMax;
-	uint64_t nextRefresh;
+//	uint64_t nextStrobeMin;
+//	uint64_t nextStrobeMax;
+//	uint64_t nextRefresh;
 
 	BusPacketType lastCommand;
 	unsigned stateChangeCountdown;

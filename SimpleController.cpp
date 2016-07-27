@@ -333,7 +333,7 @@ void SimpleController::Update()
 					bankStates[rank][bank].lastCommand = READ_P;
 					bankStates[rank][bank].stateChangeCountdown = (4*tCK>7.5)?tRTP:ceil(7.5/tCK); //4 clk or 7.5ns
 					bankStates[rank][bank].nextActivate = max(bankStates[rank][bank].nextActivate, currentClockCycle + tRTP + tRP);
-					bankStates[rank][bank].nextRefresh = currentClockCycle + tRTP + tRP;
+//					bankStates[rank][bank].nextRefresh = currentClockCycle + tRTP + tRP;
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
 					{
@@ -386,7 +386,7 @@ void SimpleController::Update()
 					bankStates[rank][bank].lastCommand = WRITE_P;
 					bankStates[rank][bank].stateChangeCountdown = tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR;
 					bankStates[rank][bank].nextActivate = currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR + tRP;
-					bankStates[rank][bank].nextRefresh = currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR + tRP;
+//					bankStates[rank][bank].nextRefresh = currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR + tRP;
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
 					{
