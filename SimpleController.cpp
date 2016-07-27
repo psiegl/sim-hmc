@@ -311,7 +311,7 @@ void SimpleController::Update()
 				//update channel controllers bank state bookkeeping
 				unsigned rank = commandQueue[i]->rank;
 				unsigned bank = commandQueue[i]->bank;
-				BusPacket *writeData;
+
 
 				//
 				//Main block for determining what to do with each type of command
@@ -365,6 +365,7 @@ void SimpleController::Update()
 
 					break;
 				case WRITE_P:
+                {
 					waitingACTS--;
 					if(waitingACTS<0)
 					{
@@ -375,6 +376,7 @@ void SimpleController::Update()
 					//keep track of energy
 					burstEnergy[rank] += (IDD4W - IDD3N) * BL/2 * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
+                    BusPacket *writeData;
 					writeData = new BusPacket(*commandQueue[i]);
 					writeData->busPacketType = WRITE_DATA;
 					writeBurstQueue.push_back(writeData);
@@ -411,6 +413,7 @@ void SimpleController::Update()
 					bankStates[rank][bank].nextWrite = bankStates[rank][bank].nextActivate;
 
 					break;
+                }
 				case ACTIVATE:
 					for(unsigned b=0; b<NUM_BANKS; b++)
 					{

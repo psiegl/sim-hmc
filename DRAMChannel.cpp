@@ -36,13 +36,14 @@
 using namespace std;
 using namespace BOBSim;
 
-DRAMChannel::DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> *reportCB):
+DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned)):
 	inFlightCommandCountdown(0),
 	inFlightDataCountdown(0),
 	channelID(id),
 	inFlightCommandPacket(NULL),
 	inFlightDataPacket(NULL),
 	readReturnQueueMax(0),
+    bob(_bob),
     ReportCallback(reportCB),
     simpleController(this, &DRAMChannel::ReceiveOnCmdBus, &DRAMChannel::ReceiveOnDataBus),
 	logicLayer(NULL),
@@ -103,7 +104,7 @@ void DRAMChannel::Update()
 
 					simpleController.outstandingReads--;
 
-					(*ReportCallback)(inFlightDataPacket, 0);
+                    (bob->*ReportCallback)(inFlightDataPacket, 0);
 
 					//keep track of total number of entries in return queue
 					if(readReturnQueue.size()>readReturnQueueMax)
@@ -192,7 +193,7 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket, unsigned id)
     if(busPacket->busPacketType==ACTIVATE ||
        busPacket->busPacketType==WRITE_P ) //Report the WRITE is finally going
 	{
-		(*ReportCallback)(busPacket, 0);
+        (bob->*ReportCallback)(busPacket, 0);
     }
 
 	inFlightCommandPacket = busPacket;
@@ -220,9 +221,4 @@ void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket, unsigned id)
 
 	inFlightDataPacket = busPacket;
 	inFlightDataCountdown = busPacket->burstLength;
-}
-
-void DRAMChannel::RegisterCallback(Callback<BOB, void, BusPacket*, unsigned> *rptCallback)
-{
-	ReportCallback = rptCallback;
 }

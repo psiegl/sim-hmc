@@ -47,6 +47,8 @@ clean:
 	-rm -f ${REBUILDABLES} *.dep *.txt tmp.log
 
 test: $(EXE_NAME)
-	./$(EXE_NAME) -c 2000 > tmp.log
-	diff tmp.log zz_ref_C2000.log
+	@ls -lh $(EXE_NAME)
+	@ls -l $(EXE_NAME)
+	@./$(EXE_NAME) -c 2000 > tmp.log
+	@diff tmp.log zz_ref_C2000.log
   

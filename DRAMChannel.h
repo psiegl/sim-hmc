@@ -48,12 +48,11 @@ class DRAMChannel
 {
 public:
     //Functions
-	DRAMChannel(unsigned id, Callback<BOB, void, BusPacket*, unsigned> *reportCB);
+    DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned));
 	bool AddTransaction(Transaction *trans, unsigned notused);
     void Update();
 	void ReceiveOnDataBus(BusPacket *busPacket, unsigned ID);
-	void ReceiveOnCmdBus(BusPacket *busPacket, unsigned ID);
-	void RegisterCallback(Callback<BOB, void, BusPacket*, unsigned> *reportCB);
+    void ReceiveOnCmdBus(BusPacket *busPacket, unsigned ID);
 
 	//Fields
 	//Controller used to operate ranks of DRAM
@@ -73,7 +72,8 @@ public:
 	deque<BusPacket*> readReturnQueue;
 	
 	//Callbacks
-	Callback<BOB, void, BusPacket*, unsigned> *ReportCallback;
+    BOB *bob;
+    void(BOB::*ReportCallback)(BusPacket*, unsigned);
 	Callback<LogicLayerInterface, void, Transaction*, unsigned> *SendToLogicLayer;
 
 	//Command packet being sent on DRAM command bus

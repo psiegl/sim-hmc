@@ -136,14 +136,11 @@ BOB::BOB() : priorityPort(0),
 
 	cmdQFull = vector<uint>(NUM_CHANNELS,0);
 
-	//Define callback function
-	Callback<BOB, void, BusPacket*, unsigned> *reportCallback = new Callback<BOB, void, BusPacket*, unsigned>(this, &BOB::ReportCallback);
-
 	//Create channels
 	channels.reserve(NUM_CHANNELS);
 	for(unsigned i=0; i<NUM_CHANNELS; i++)
 	{
-		channels.push_back(new DRAMChannel(i,reportCallback));
+        channels.push_back(new DRAMChannel(i, this, &BOB::ReportCallback));
 	}
 
 	//Used for round-robin
