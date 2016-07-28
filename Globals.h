@@ -119,15 +119,15 @@ extern int SHOW_SIM_OUTPUT;
 //NOTE : NUM_LINK_BUSES * CHANNELS_PER_LINK_BUS = NUM_CHANNELS
 //
 //Number of link buses in the system
-static uint NUM_LINK_BUSES = 4;
+#define NUM_LINK_BUSES                4
 //Number of DRAM channels in the system
-static uint NUM_CHANNELS = 8;
+#define NUM_CHANNELS                  8
 //Multi-channel optimization degree
-static uint CHANNELS_PER_LINK_BUS = NUM_CHANNELS / NUM_LINK_BUSES;
+#define CHANNELS_PER_LINK_BUS (NUM_CHANNELS / NUM_LINK_BUSES)
 
 //Number of lanes for both request and response link bus
-static uint REQUEST_LINK_BUS_WIDTH = 8;//Bit Lanes
-static uint RESPONSE_LINK_BUS_WIDTH = 12; //Bit Lanes
+#define REQUEST_LINK_BUS_WIDTH        8 //Bit Lanes
+#define RESPONSE_LINK_BUS_WIDTH      12 //Bit Lanes
 
 //Clock frequency for link buses
 //static float LINK_BUS_CLK_PERIOD = .15625; // ns - 6.4 GHz
@@ -138,57 +138,57 @@ extern uint LINK_CPU_CLK_RATIO;
 static bool LINK_BUS_USE_DDR = true;
 
 //Size of DRAM request
-static uint TRANSACTION_SIZE = 64; // psiegl: changes as of packet size!
+#define TRANSACTION_SIZE             64 // psiegl: changes as of packet size!
 //Width of DRAM bus as standardized by JEDEC
-static uint DRAM_BUS_WIDTH = 16; //bytes - DOUBLE TO ACCOUNT FOR DDR - 64-bits wide JEDEC bus
+#define DRAM_BUS_WIDTH               16 //bytes - DOUBLE TO ACCOUNT FOR DDR - 64-bits wide JEDEC bus
 
 //Number of ports on main BOB controller
 extern uint NUM_PORTS;
 //Number of bytes each port can transfer in a CPU cycle
-static uint PORT_WIDTH = 16;
+#define PORT_WIDTH                   16
 //Number of transaction packets that each port buffer may hold
-static uint PORT_QUEUE_DEPTH = 8;
+#define PORT_QUEUE_DEPTH              8
 //Heuristic used for adding new requests to the available ports
 static PortHeuristicScheme portHeuristic = FIRST_AVAILABLE;
 
 //Number of requests each simple controller can hold in its work queue
-static uint CHANNEL_WORK_Q_MAX = 16; //entries
+#define CHANNEL_WORK_Q_MAX           16 //entries
 //Amount of response data that can be held in each simple controller return queue
-static uint CHANNEL_RETURN_Q_MAX = 1024; //bytes
+#define CHANNEL_RETURN_Q_MAX       1024 //bytes
 
 //
 //Logic Layer Stuff
 //
 //Lets logic responses be sent before regular data requests
-static bool GIVE_LOGIC_PRIORITY = true;
+#define GIVE_LOGIC_PRIORITY        true
 //Size of logic request packet
-static uint LOGIC_RESPONSE_PACKET_OVERHEAD = 8;
+#define LOGIC_RESPONSE_PACKET_OVERHEAD 8
 
 //
 //Packet sizes
 //
 //Packet overhead for requests and responses
-static uint RD_REQUEST_PACKET_OVERHEAD = 16; //bytes (orig: 8)
-static uint RD_RESPONSE_PACKET_OVERHEAD = 16; //bytes (orig: 8)
-static uint WR_REQUEST_PACKET_OVERHEAD = 16; //bytes (orig: 8)
+#define RD_REQUEST_PACKET_OVERHEAD   16  //bytes (orig: 8)
+#define RD_RESPONSE_PACKET_OVERHEAD  16 //bytes (orig: 8)
+#define WR_REQUEST_PACKET_OVERHEAD   16 //bytes (orig: 8)
 
 //
 //Power
 //
 //Average power consumption of a single simple controller package
-static uint SIMP_CONT_BACKGROUND_POWER = 7;//watts
+#define SIMP_CONT_BACKGROUND_POWER    7 //watts
 //Additional power consumption for each simple controller core in the package
-static float SIMP_CONT_CORE_POWER = 3.5;//watts
+#define SIMP_CONT_CORE_POWER        3.5 //watts
 
 //
 //DRAM Stuff
 //
 //Alignment to determine width of DRAM bus, used in mapping
-static uint BUS_ALIGNMENT_SIZE = 8;
+#define BUS_ALIGNMENT_SIZE           8
 //Cache line size in bytes 
-static uint CACHE_LINE_SIZE = 64; 
+#define CACHE_LINE_SIZE             64
 //Offset of channel ID
-static uint CHANNEL_ID_OFFSET = 0;
+#define CHANNEL_ID_OFFSET            0
 //Ratio of clock speeds between DRAM and CPU - computed at runtime
 extern uint DRAM_CPU_CLK_RATIO;
 //Address mapping scheme - defined at the top of this file
@@ -198,7 +198,7 @@ static AddressMappingScheme mappingScheme = RW_CLH_BK_RK_CH_CLL_BY;
 //CPU
 //
 //CPU clock frequency in nanoseconds
-static float CPU_CLK_PERIOD = 0.3125; //ns
+#define CPU_CLK_PERIOD          0.3125 //ns
 
 //
 //DRAM Timing
