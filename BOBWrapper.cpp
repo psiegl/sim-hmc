@@ -265,7 +265,7 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 		}
 		if(currentClockCycle<5000)
 		{
-			DEBUG("!! "<<*trans<<" to port "<<openPort);
+            DEBUG("!! to port "<<openPort);
 		}
 		if (isWrite)
 			writesPerCycle++;
@@ -327,7 +327,7 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 			break;
 		}
 
-		if(DEBUG_PORTS) DEBUG(" = Putting transaction on port "<<port<<" - "<<*inFlightRequest[port]<<" for "<<inFlightRequestCounter[port]<<" CPU cycles");
+        if(DEBUG_PORTS) DEBUG(" = Putting transaction on port "<<port<<" - for "<<inFlightRequestCounter[port]<<" CPU cycles");
 
 		return true;
 	}
@@ -375,7 +375,7 @@ void BOBWrapper::Update()
 			{
 				if(inFlightRequest[i]!=NULL)
 				{
-					if(DEBUG_PORTS)DEBUG("== Header done - Adding "<<*inFlightRequest[i]<<" to port "<<i);
+                    if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
 					bob->ports[i].inputBuffer.push_back(inFlightRequest[i]);
 				}
 				else
@@ -433,7 +433,7 @@ void BOBWrapper::Update()
 				}
 				else
 				{
-					ERROR("== ERROR - unknown packet type coming down : "<<*inFlightResponse[i]);
+                    ERROR("== ERROR - unknown packet type coming down ");
 					exit(0);
 				}
 
@@ -464,8 +464,7 @@ void BOBWrapper::Update()
 			}
 			else
 			{
-				ERROR("== Error - wrong type of transaction out of");
-				ERROR("== "<<*inFlightResponse[i]);
+                ERROR("== Error - wrong type of transaction out of");
 				exit(0);
 			}
 		}
@@ -482,7 +481,7 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 {
 	if(returnedRead->transactionType==LOGIC_RESPONSE)
 	{
-		DEBUG("  == Got Logic Response : "<<*returnedRead);
+        DEBUG("  == Got Logic Response");
 		DEBUG("  == Logic All Done!");
 		DEBUG("  == Took : "<<CPU_CLK_PERIOD*(currentClockCycle - returnedRead->fullStartTime)<<"ns");
 		return;

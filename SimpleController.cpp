@@ -500,7 +500,7 @@ void SimpleController::AddTransaction(Transaction *trans)
 	if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
 	{
 		//if requests from logic ops have priority, put them at the front so they go first
-		if(DEBUG_LOGIC) DEBUG("  == Simple Controller received transaction from logic op : "<<*trans);
+        if(DEBUG_LOGIC) DEBUG("  == Simple Controller received transaction from logic op");
 		switch(trans->transactionType)
 		{
 		case DATA_READ:
@@ -515,7 +515,7 @@ void SimpleController::AddTransaction(Transaction *trans)
 			delete trans;
 			break;
 		default:
-			ERROR("== ERROR - Adding wrong transaction to simple controller : "<<*trans);
+            ERROR("== ERROR - Adding wrong transaction to simple controller");
 			abort();
 			break;
 		}
@@ -541,7 +541,7 @@ void SimpleController::AddTransaction(Transaction *trans)
 			delete trans;
 			break;
 		default:
-			ERROR("== ERROR - Adding wrong transaction to simple controller : "<<*trans);
+            ERROR("== ERROR - Adding wrong transaction to simple controller");
 			abort();
 			break;
 		}

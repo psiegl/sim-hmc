@@ -49,7 +49,7 @@ class DRAMChannel
 public:
     //Functions
     DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned));
-	bool AddTransaction(Transaction *trans, unsigned notused);
+    bool AddTransaction(Transaction *trans);
     void Update(void);
 	void ReceiveOnDataBus(BusPacket *busPacket, unsigned ID);
     void ReceiveOnCmdBus(BusPacket *busPacket, unsigned ID);

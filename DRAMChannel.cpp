@@ -130,9 +130,9 @@ void DRAMChannel::Update()
     }
 }
 
-bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
+bool DRAMChannel::AddTransaction(Transaction *trans)
 {
-	if(DEBUG_CHANNEL)DEBUG("    In AddTransaction - got : "<<*trans);
+    if(DEBUG_CHANNEL)DEBUG("    In AddTransaction - got");
 
     switch(trans->transactionType) {
       case LOGIC_OPERATION:
@@ -144,7 +144,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans, unsigned notused)
       {
           if(pendingLogicResponse==NULL)
           {
-              if (DEBUG_LOGIC) DEBUG("== Made it back to channel : "<<*trans);
+              if (DEBUG_LOGIC) DEBUG("== Made it back to channel ");
               pendingLogicResponse = trans;
               break;
           }

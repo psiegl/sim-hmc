@@ -45,7 +45,7 @@ LogicLayerInterface::LogicLayerInterface(uint id, DRAMChannel *_channel):
 
 void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans, unsigned i)
 {
-	if (DEBUG_LOGIC) DEBUG("== Received in logic layer "<<simpleControllerID<<" on cycle "<<currentClockCycle<<" : "<<*trans);
+    if (DEBUG_LOGIC) DEBUG("== Received in logic layer "<<simpleControllerID<<" on cycle "<<currentClockCycle);
 	if (trans->transactionType == LOGIC_OPERATION)
 	{
 		pendingLogicOpsQueue.push_back(trans);
@@ -59,7 +59,7 @@ void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans, unsigned i)
 void LogicLayerInterface::Update()
 {
 	//send back to channel if there is something in the outgoing queue
-    if(outgoingQueue.size()>0 && channel->AddTransaction(outgoingQueue[0],0))
+    if(outgoingQueue.size()>0 && channel->AddTransaction(outgoingQueue[0]))
 	{
 		//if we just send the response, we are done and can clear the current stuff
 		if(outgoingQueue[0]->transactionType==LOGIC_RESPONSE)
@@ -82,7 +82,7 @@ void LogicLayerInterface::Update()
 			currentLogicOperation = (LogicOperation *)pendingLogicOpsQueue[0]->logicOpContents;
 			currentTransaction = pendingLogicOpsQueue[0];
 
-			if(DEBUG_LOGIC) DEBUG(" == In logic layer "<<simpleControllerID<<" : interpreting transaction "<<*currentTransaction);
+            if(DEBUG_LOGIC) DEBUG(" == In logic layer "<<simpleControllerID<<" : interpreting transaction");
 
 			// grabbed the pointers, now we can remove from queue
 			pendingLogicOpsQueue.pop_front();
@@ -124,7 +124,7 @@ void LogicLayerInterface::Update()
 					Transaction *trans = new Transaction(DATA_WRITE, 64, pageStart + i*(1<<(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))));
 					trans->originatedFromLogicOp = true;
 
-					if(DEBUG_LOGIC) DEBUG("      == Logic Op created : "<<*trans);
+                    if(DEBUG_LOGIC) DEBUG("      == Logic Op created");
 
 					outgoingQueue.push_back(trans);
 
@@ -168,7 +168,7 @@ void LogicLayerInterface::Update()
 					Transaction *trans = new Transaction(DATA_READ, 64, sourceAddress + i*(1<<(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))));
 					trans->originatedFromLogicOp = true;
 
-					if(DEBUG_LOGIC) DEBUG("      == Logic Op created : "<<*trans);
+                    if(DEBUG_LOGIC) DEBUG("      == Logic Op created");
 
 					outgoingQueue.push_back(trans);
 				}
@@ -193,7 +193,7 @@ void LogicLayerInterface::Update()
 		}
 		else
 		{
-			ERROR(" == Error - Logic operation has no contents : "<<*newOperationQueue[0]);
+            ERROR(" == Error - Logic operation has no contents");
 			exit(-1);
 		}
 	}
@@ -211,7 +211,7 @@ void LogicLayerInterface::Update()
 			exit(-1);
 		}
 
-		if (DEBUG_LOGIC) DEBUG("   ==[L:"<<simpleControllerID<<"] oh hai, return data"<<*newOperationQueue[0]);
+        if (DEBUG_LOGIC) DEBUG("   ==[L:"<<simpleControllerID<<"] oh hai, return data");
 		//handle the return data based on the logic op that is being executed
 		Transaction *t;
 		switch(currentLogicOperation->logicType)
@@ -221,7 +221,7 @@ void LogicLayerInterface::Update()
 			t = new Transaction(DATA_WRITE, 64, newOperationQueue[0]->address - currentTransaction->address + currentLogicOperation->arguments[0]);
 			t->originatedFromLogicOp = true;
 
-			if(DEBUG_LOGIC) DEBUG("      == Logic Op Copy moved data from 0x"<<hex<<setw(8)<<setfill('0')<<newOperationQueue[0]->address<<dec<<" to : "<<*t);
+            if(DEBUG_LOGIC) DEBUG("      == Logic Op Copy moved data");
 
 			outgoingQueue.push_back(t);
 
@@ -260,7 +260,7 @@ void LogicLayerInterface::Update()
 			break;
 
 		default:
-			ERROR("== ERROR - Getting data back for a logic op that doesnt create requests : "<<*currentTransaction);
+            ERROR("== ERROR - Getting data back for a logic op that doesnt create requests");
 			exit(-1);
 			break;
 		};

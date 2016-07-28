@@ -55,8 +55,29 @@ class Transaction
 {
 public:
 	//Functions
-	Transaction(TransactionType transType, unsigned size, uint64_t addr);
-	Transaction();
+    Transaction(TransactionType transType, unsigned size, uint64_t addr):
+      transactionType(transType),
+      address(addr),
+      mappedChannel(0),
+      transactionSize(size),
+      cyclesReqPort(0),
+      cyclesRspPort(0),
+      cyclesReqLink(0),
+      cyclesRspLink(0),
+      cyclesInReadReturnQ(0),
+      cyclesInWorkQueue(0),
+      fullStartTime(0),
+      fullTimeTotal(0),
+      dramStartTime(0),
+      dramTimeTotal(0),
+      channelStartTime(0),
+      channelTimeTotal(0),
+      portID(0),
+      coreID(0),
+      originatedFromLogicOp(false)
+    {
+        transactionID = globalID++;
+    }
 
 	//Fields
 	//Type of transaction (defined above)
@@ -95,8 +116,6 @@ public:
 	uint64_t channelStartTime; //start sending on BOB Channel bus until...
 	uint64_t channelTimeTotal; //completely added to SerDeDownBuffer
 };
-
-ostream& operator<<(ostream &out, const Transaction &t);
 }
 
 #endif

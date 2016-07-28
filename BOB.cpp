@@ -222,10 +222,10 @@ void BOB::Update(void)
 			{
 				//compute total time in serDes and travel up channel
 				inFlightRequestLink[i]->cyclesReqLink = currentClockCycle - inFlightRequestLink[i]->cyclesReqLink;
-				if(DEBUG_BOB) DEBUG("  == Adding to channel "<<inFlightRequestLink[i]->mappedChannel<<" (from link bus "<<i<<") : "<<*inFlightRequestLink[i]);
+                if(DEBUG_BOB) DEBUG("  == Adding to channel "<<inFlightRequestLink[i]->mappedChannel<<" (from link bus "<<i<<")");
 
 				//add to channel
-                channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i], 0); //0 is not used
+                channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i]); //0 is not used
 
 				//remove from channel bus
 				inFlightRequestLink[i] = NULL;
@@ -278,9 +278,7 @@ void BOB::Update(void)
 			if(inFlightRequestLink[c]!=NULL)
 			{
 				ERROR("== Error - item in SerDe buffer without channel being free");
-				ERROR("   == Channel : "<<c);
-				ERROR("   == Current : "<<*inFlightRequestLink[c]);
-				ERROR("   == SerDe   : "<<*serDesBufferRequest[c]);
+                ERROR("   == Channel : "<<c);
 				exit(0);
 			}
 
@@ -314,7 +312,7 @@ void BOB::Update(void)
 				                     !!((inFlightRequestLink[c]->transactionSize * 8) % REQUEST_LINK_BUS_WIDTH);
                 break;
             default:
-				ERROR("== Error - wrong type "<<*inFlightRequestLink[c]);
+                ERROR("== Error - wrong type ");
                 exit(0);
             }
 
@@ -338,7 +336,7 @@ void BOB::Update(void)
 
 			if(DEBUG_BOB)
 			{
-				DEBUG("  == Channel Bus "<<c<<" getting : "<<*inFlightRequestLink[c]);
+                DEBUG("  == Channel Bus "<<c<<" getting ");
 				DEBUG("     == CPU Clks:"<<inFlightRequestLinkCountdowns[c]<<"   Channel Clks:"<< totalChannelCycles<<" DDR?:"<<LINK_BUS_USE_DDR);
 			}
 		}
@@ -368,7 +366,7 @@ void BOB::Update(void)
 					ports[p].outputBusyCountdown = 1;
 					break;
 				default:
-					ERROR("== ERROR - Trying to add wrong type of transaction to output port : "<<*serDesBufferResponse[priorityLinkBus[p]]);
+                    ERROR("== ERROR - Trying to add wrong type of transaction to output port ");
 					exit(0);
 					break;
 				};
@@ -436,11 +434,11 @@ void BOB::Update(void)
                         ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
                         break;
                     default:
-						ERROR("== Error - unknown transaction type going to channel : "<<*serDesBufferRequest[linkBusID]);
+                        ERROR("== Error - unknown transaction type going to channel : ");
 						exit(0);
 					}
 
-					if(DEBUG_BOB) DEBUG("    == Request SerDes "<<linkBusID<<" getting "<<*serDesBufferRequest[linkBusID]);
+                    if(DEBUG_BOB) DEBUG("    == Request SerDes "<<linkBusID<<" getting ");
 
 					priorityPort++;
 					if(priorityPort==NUM_PORTS) priorityPort = 0;
@@ -504,9 +502,7 @@ void BOB::Update(void)
 						ERROR("== Error - Trying to set Transaction on down channel while something is there");
 						ERROR("   Cycle : "<<currentClockCycle);
 						ERROR(" Channel : "<<chan);
-						ERROR(" LinkBus : "<<link);
-                        ERROR(" Incoming: "<<*(channels[chan]->pendingLogicResponse));
-						ERROR(" Current : "<<*inFlightResponseLink[link]);
+                        ERROR(" LinkBus : "<<link);
 						exit(0);
 					}
 
@@ -517,7 +513,7 @@ void BOB::Update(void)
 
 					if(DEBUG_BOB)
 					{
-						DEBUG("  == Link Bus "<<link<<" returning "<<*inFlightResponseLink[link]);
+                        DEBUG("  == Link Bus "<<link<<" returning ");
 						DEBUG("     == CPU Clks:"<<inFlightResponseLinkCountdowns[link]<<"   Channel Clks:"<<totalChannelCycles<<" DDR?:"<<LINK_BUS_USE_DDR);
 					}
 
@@ -562,9 +558,7 @@ void BOB::Update(void)
 								ERROR("== Error - Trying to set Transaction on down channel while something is there");
 								ERROR("   Cycle : "<<currentClockCycle);
 								ERROR(" Channel : "<<chan);
-								ERROR(" LinkBus : "<<link);
-								ERROR(" Incoming: "<<*pendingReads[p]);
-								ERROR(" Current : "<<*inFlightResponseLink[link]);
+                                ERROR(" LinkBus : "<<link);
 								exit(0);
 							}
 
@@ -574,7 +568,7 @@ void BOB::Update(void)
 
 							if(DEBUG_BOB)
 							{
-								DEBUG("  == Link Bus "<<link<<" returning "<<*inFlightResponseLink[link]);
+                                DEBUG("  == Link Bus "<<link<<" returning ");
 								DEBUG("     == CPU Clks:"<<inFlightResponseLinkCountdowns[link]<<"   Channel Clks:"<<totalChannelCycles<<" DDR?:"<<LINK_BUS_USE_DDR);
 							}
 
@@ -685,7 +679,7 @@ unsigned BOB::FindChannelID(Transaction* trans)
 		break;
 	};
 
-	if(DEBUG_BOB) DEBUGN("    == Mapping "<<*trans);
+    if(DEBUG_BOB) DEBUGN("    == Mapping ");
 
 	//build channel id mask
 	for(unsigned i=0; i<bitWidth; i++)
