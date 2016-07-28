@@ -556,7 +556,7 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 
 	if(DEBUG_CHANNEL)DEBUGN("     == Mapped 0x"<<hex<<physicalAddress);
 
-	switch(mappingScheme)
+    switch(MAPPINGSCHEME)
 	{
 	case BK_CLH_RW_RK_CH_CLL_BY://bank:col_high:row:rank:chan:col_low:by
 		//remove low order bits

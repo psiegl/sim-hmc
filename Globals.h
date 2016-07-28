@@ -192,7 +192,7 @@ static PortHeuristicScheme portHeuristic = FIRST_AVAILABLE;
 //Ratio of clock speeds between DRAM and CPU - computed at runtime
 extern uint DRAM_CPU_CLK_RATIO;
 //Address mapping scheme - defined at the top of this file
-static AddressMappingScheme mappingScheme = RW_CLH_BK_RK_CH_CLL_BY;
+#define MAPPINGSCHEME RW_CLH_BK_RK_CH_CLL_BY
 
 //
 //CPU

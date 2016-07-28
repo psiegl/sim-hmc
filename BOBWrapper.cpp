@@ -123,7 +123,7 @@ BOBWrapper::BOBWrapper() :
 	statsOut<<"EPOCH_COUNT="<<EPOCH_LENGTH<<endl;
 	statsOut<<"ROW_BUFFER_POLICY=close_page"<<endl;
 	statsOut<<"SCHEDULING_POLICY=N/A"<<endl;
-	statsOut<<"ADDRESS_MAPPING_SCHEME=scheme"<<mappingScheme<<endl;
+    statsOut<<"ADDRESS_MAPPING_SCHEME=scheme"<<MAPPINGSCHEME<<endl;
 	statsOut<<"QUEUING_STRUCTURE=N/A"<<endl;
 	statsOut<<"DEBUG_TRANS_Q=false"<<endl;
 	statsOut<<"DEBUG_CMD_Q=false"<<endl;

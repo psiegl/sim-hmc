@@ -653,7 +653,7 @@ unsigned BOB::FindChannelID(Transaction* trans)
 	uint64_t channelMask = 0;
 	unsigned channelIDOffset;// = log2(BUS_ALIGNMENT_SIZE) + CHANNEL_ID_OFFSET;
 
-	switch(mappingScheme)
+    switch(MAPPINGSCHEME)
 	{
 	case BK_CLH_RW_RK_CH_CLL_BY://bank:col_high:row:rank:chan:col_low:by
 		channelIDOffset = cacheOffset;//bus alignment + column low bits should make the cache offset
