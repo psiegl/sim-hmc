@@ -178,7 +178,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
            bankStates[busPacket->bank].openRowAddress != busPacket->row)
 		{
 			ERROR("== Error - Clock Cycle : "<<currentClockCycle);
-            ERROR("== Error - Rank receiving WRITE_DATA when not allowed: " << *busPacket <<endl);
+            ERROR("== Error - Rank receiving WRITE_DATA when not allowed");
 			exit(0);
 		}
 

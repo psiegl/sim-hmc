@@ -34,9 +34,6 @@
 //Bus Packet header
 
 #include "Globals.h"
-#include <iostream>
-
-using std::ostream;
 
 namespace BOBSim
 {
@@ -57,7 +54,20 @@ class BusPacket
 {
 public:
     //Functions
-	BusPacket(BusPacketType packtype, unsigned transactionID, unsigned col, unsigned rw, unsigned r, unsigned b, unsigned prt, unsigned bl, unsigned mappedChannel, uint64_t address, bool fromLogic);
+    BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned rw, unsigned rnk, unsigned bnk, unsigned prt, unsigned bl, unsigned mappedChannel, uint64_t addr, bool fromLogic) :
+      burstLength(bl),
+      busPacketType(packtype),
+      transactionID(id),
+      column(col),
+      row(rw),
+      bank(bnk),
+      rank(rnk),
+      port(prt),
+      channel(mappedChannel),
+      queueWaitTime(0),
+      address(addr),
+      fromLogicOp(fromLogic)
+    {}
 
 	//Fields
 	bool fromLogicOp;
@@ -72,10 +82,7 @@ public:
 	unsigned burstLength;
 	unsigned channel;
 	uint64_t address;
-
-
 };
-ostream& operator<<(ostream &out, const BusPacket &bp);
 }
 
 #endif

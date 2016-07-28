@@ -81,7 +81,7 @@ void DRAMChannel::Update()
 			switch(inFlightDataPacket->busPacketType)
 			{
 			case READ_DATA:
-				if(DEBUG_CHANNEL) DEBUG("     == Data burst complete : " << *inFlightDataPacket);
+                if(DEBUG_CHANNEL) DEBUG("     == Data burst complete");
 
 				//if the bus packet was from a request originating from a logic operation, send it back to logic layer
 				if(inFlightDataPacket->fromLogicOp)
@@ -109,7 +109,7 @@ void DRAMChannel::Update()
 				ranks[inFlightDataPacket->rank].ReceiveFromBus(inFlightDataPacket);
 				break;
 			default:
-				ERROR("Encountered unexpected bus packet type" << *inFlightDataPacket);
+                ERROR("Encountered unexpected bus packet type");
 				abort();
 			}
 
@@ -171,12 +171,8 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket, unsigned id)
 	if(inFlightCommandPacket!=NULL)
 	{
 		ERROR("== Error - Bus collision while trying to receive from controller");
-		ERROR("   Existing : "<<*inFlightCommandPacket);
-		ERROR("   Incoming : "<<*busPacket);
 		exit(0);
 	}
-
-	if(DEBUG_CHANNEL) DEBUG("     == Putting command on bus : " << *busPacket);
 
 	//Report the time we waited in the queue
     if(busPacket->busPacketType==ACTIVATE ||
@@ -194,19 +190,16 @@ void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket, unsigned id)
 	if(!(busPacket->busPacketType==READ_DATA ||
        busPacket->busPacketType==WRITE_DATA))
 	{
-		ERROR("== Error - Trying to put non-data packet on data bus:" << *busPacket);
+        ERROR("== Error - Trying to put non-data packet on data bus!");
 		exit(0);
 	}
 
 	if(inFlightDataPacket!=NULL)
 	{
 		ERROR("== Error - Bus collision while trying to receive from a rank in channel "<<channelID);
-		ERROR("           Incoming Packet : "<<*busPacket);
-		ERROR("           Existing Packet : "<<*inFlightDataPacket);
         ERROR("               (Time Left) : "<<inFlightDataCountdown);
 		exit(0);
 	}
-	if(DEBUG_CHANNEL) DEBUG("     == Putting data on bus [rank "<<id<<"] : " << *busPacket);
 
 	inFlightDataPacket = busPacket;
 	inFlightDataCountdown = busPacket->burstLength;

@@ -962,8 +962,7 @@ void BOB::ReportCallback(BusPacket *bp, unsigned i)
 		}
         break;
     default:
-		ERROR("== Error - Wrong type of packet received in bob");
-		ERROR(*bp);
+        ERROR("== Error - Wrong type of packet received in bob");
         exit(0);
     }
 }

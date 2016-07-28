@@ -194,7 +194,7 @@ void SimpleController::Update()
 	}
 	if(writeBurstCountdown.size()>0&&writeBurstCountdown[0]==0)
 	{
-		if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : "<<*writeBurstQueue[0]);
+        if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : ");
         channel->ReceiveOnDataBus(writeBurstQueue[0],0);
 		writeBurstQueue.erase(writeBurstQueue.begin());
 		writeBurstCountdown.erase(writeBurstCountdown.begin());
@@ -405,7 +405,7 @@ void SimpleController::Update()
 
 					break;
 				default:
-					ERROR("Unexpected packet type" << *commandQueue[i]);
+                    ERROR("Unexpected packet type");
 					abort();
 				}
 
@@ -487,7 +487,7 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 		else return false;
 		break;
 	default:
-		ERROR("== Error - Checking issuability on unknown packet type: " << *busPacket);
+        ERROR("== Error - Checking issuability on unknown packet type");
 		exit(0);
 	}
 }

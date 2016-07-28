@@ -41,7 +41,7 @@
 #include <cstdlib>
 #include <stdint.h>
 
-#ifdef LOG_OUTPUT
+#if defined(LOG_OUTPUT)
 #define PRINT(str)  {logOutput<< str<<std::endl;}
 #define PRINTN(str) {logOutput<< str;}
 #define DEBUG(str)  {if (BOBSim::SHOW_SIM_OUTPUT) {logOutput<< str <<std::endl;}}
@@ -50,9 +50,7 @@ namespace BOBSim
 {
 extern std::ofstream logOutput; //defined in BOBWrapper.cpp
 }
-#else
-
-#ifdef NO_OUTPUT
+#elif defined(NO_OUTPUT)
 #define PRINT(str)
 #define PRINTN(str)
 #define DEBUG(str)
@@ -63,10 +61,6 @@ extern std::ofstream logOutput; //defined in BOBWrapper.cpp
 #define PRINTN(str) { std::cout <<str; }
 #define DEBUG(str)  {if (BOBSim::SHOW_SIM_OUTPUT) {std::cout<< str <<std::endl;}}
 #define DEBUGN(str) {if (BOBSim::SHOW_SIM_OUTPUT) {std::cout<< str;}}
-#endif
-#endif
-
-#ifdef LOG_OUTPUT
 #endif
 
 #define ERROR(str) std::cerr<<"[ERROR ("<<__FILE__<<":"<<__LINE__<<")]: "<<str<<std::endl;
