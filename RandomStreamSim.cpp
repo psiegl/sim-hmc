@@ -52,6 +52,15 @@
 #include "LogicOperation.h"
 
 
+//Total number of reads (as a percentage) in request stream
+static float READ_WRITE_RATIO = 66.6;//%
+//Frequency of requests - 0.0 = no requests; 1.0 = as fast as possible
+static float PORT_UTILIZATION = 1.0;
+
+//Changes random seeding for request stream
+static uint SEED_CONSTANT = 11;
+
+
 using namespace BOBSim;
 using namespace std;
 

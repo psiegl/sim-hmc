@@ -30,6 +30,7 @@
 
 #include "BOBWrapper.h"
 #include "LogicOperation.h"
+#include <cstring>
 
 using namespace std;
 
@@ -63,16 +64,16 @@ BOBWrapper::BOBWrapper() :
 	char tmp_str[TMP_STR_LEN];
 	if ((sim_desc = getenv("SIM_DESC")) != NULL)
 	{
-		snprintf(tmp_str, TMP_STR_LEN, "BOBstats%s%s.txt", sim_desc, VARIANT_SUFFIX);
+        snprintf(tmp_str, TMP_STR_LEN, "BOBstats%s.txt", sim_desc);
 		statsOut.open(tmp_str);
-		snprintf(tmp_str, TMP_STR_LEN, "BOBpower%s%s.txt", sim_desc, VARIANT_SUFFIX);
+        snprintf(tmp_str, TMP_STR_LEN, "BOBpower%s.txt", sim_desc);
 		powerOut.open(tmp_str);
 	}
 	else
 	{
-		snprintf(tmp_str, TMP_STR_LEN, "BOBstats%s.txt", VARIANT_SUFFIX);
+        strcpy(tmp_str, "BOBstats.txt");
 		statsOut.open(tmp_str);
-		snprintf(tmp_str, TMP_STR_LEN, "BOBpower%s.txt", VARIANT_SUFFIX);
+        strcpy(tmp_str, "BOBpower.txt");
 		powerOut.open(tmp_str);
 	}
 

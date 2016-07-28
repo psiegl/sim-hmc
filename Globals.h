@@ -112,17 +112,6 @@ static uint EPOCH_LENGTH = 1000000;
 //Flag for quiet mode (-q)
 extern int SHOW_SIM_OUTPUT;
 
-//Total number of reads (as a percentage) in request stream
-static float READ_WRITE_RATIO = 66.6;//%
-//Frequency of requests - 0.0 = no requests; 1.0 = as fast as possible
-static float PORT_UTILIZATION = 1.0;
-
-//Changes random seeding for request stream
-static uint SEED_CONSTANT = 11;
-
-//Text appended to output filenames for differentiating between simulations
-static const char *VARIANT_SUFFIX = "_testing";
-
 //
 //BOB Architecture Config
 //
@@ -149,7 +138,7 @@ extern uint LINK_CPU_CLK_RATIO;
 static bool LINK_BUS_USE_DDR = true;
 
 //Size of DRAM request
-static uint TRANSACTION_SIZE = 64;
+static uint TRANSACTION_SIZE = 64; // psiegl: changes as of packet size!
 //Width of DRAM bus as standardized by JEDEC
 static uint DRAM_BUS_WIDTH = 16; //bytes - DOUBLE TO ACCOUNT FOR DDR - 64-bits wide JEDEC bus
 
@@ -179,15 +168,9 @@ static uint LOGIC_RESPONSE_PACKET_OVERHEAD = 8;
 //Packet sizes
 //
 //Packet overhead for requests and responses
-static uint RD_REQUEST_PACKET_OVERHEAD = 16; //bytes
-static uint RD_RESPONSE_PACKET_OVERHEAD = 16; //bytes
-static uint WR_REQUEST_PACKET_OVERHEAD = 16; //bytes
-
-//
-//CPU
-//
-//CPU clock frequency in nanoseconds
-static float CPU_CLK_PERIOD = 0.3125; //ns
+static uint RD_REQUEST_PACKET_OVERHEAD = 16; //bytes (orig: 8)
+static uint RD_RESPONSE_PACKET_OVERHEAD = 16; //bytes (orig: 8)
+static uint WR_REQUEST_PACKET_OVERHEAD = 16; //bytes (orig: 8)
 
 //
 //Power
@@ -212,211 +195,20 @@ extern uint DRAM_CPU_CLK_RATIO;
 static AddressMappingScheme mappingScheme = RW_CLH_BK_RK_CH_CLL_BY;
 
 //
+//CPU
+//
+//CPU clock frequency in nanoseconds
+static float CPU_CLK_PERIOD = 0.3125; //ns
+
+//
 //DRAM Timing
 //
-#ifdef DDR3_1333
-//DDR3-1333 Micron Part : MT41J1G4-15E
-//Clock Rate : 666MHz
-static uint NUM_RANKS = 4;
-static uint NUM_BANKS = 8;
-static ulong NUM_ROWS = 65536;
-static ulong NUM_COLS = 2048;
-
-static ulong DEVICE_WIDTH = 4;
-static uint BL = 8; //only used in power calculation
-
-static float Vdd = 1.5;
-
-//CLOCK PERIOD
-static float tCK = 1.5; //ns
-
-//in clock ticks
-//ACT to READ or WRITE
-static uint tRCD = 9;
-//PRE command period
-static uint tRP = 9;
-//ACT to ACT
-static uint tRC = 33;
-//ACT to PRE
-static uint tRAS = 24;
-
-//CAS latency
-static uint tCL = 9;
-//CAS Write latency
-static uint tCWL = 7;
-
-//ACT to ACT (different banks)
-static uint tRRD = 4;
-//4 ACT Window
-static uint tFAW = 20;
-//WRITE recovery
-static uint tWR = 10;
-//WRITE to READ
-static uint tWTR = 5;
-//READ to PRE
-static uint tRTP = 5;
-//CAS to CAS
-static uint tCCD = 4;
-//REF to ACT
-static uint tRFC = 107;
-//CMD time
-static uint tCMDS = 1;
-//Rank to rank switch
-static uint tRTRS = 2; //clk
-
-//IDD Values
-static uint IDD0 = 75;
-static uint IDD1 = 90;
-static uint IDD2P0 = 12;
-static uint IDD2P1 = 30;
-static uint IDD2Q = 35;
-static uint IDD2N = 40;
-static uint IDD2NT = 55;
-static uint IDD3P = 35;
-static uint IDD3N = 45;
-static uint IDD4R = 150;
-static uint IDD4W = 155;
-static uint IDD5B = 230;
-static uint IDD6 = 12;
-static uint IDD6ET = 16;
-static uint IDD7 = 290;
-static uint IDD8 = 0;
-#endif
-#ifdef DDR3_1600
-//DDR3-1600 Micron Part : MT41J256M4-125E
-//Clock Rate : 800MHz
-static uint NUM_RANKS = 4;
-static uint NUM_BANKS = 8;
-static uint NUM_ROWS = 16384;
-static uint NUM_COLS = 2048;
-
-static uint DEVICE_WIDTH = 4;
-static uint BL = 8; //only used in power calculation
-
-static float Vdd = 1.5;
-
-//CLOCK PERIOD
-static float tCK = 1.25; //ns
-
-//in clock ticks
-//ACT to READ or WRITE
-static uint tRCD = 11;
-//PRE command period
-static uint tRP = 11;
-//ACT to ACT
-static uint tRC = 39;
-//ACT to PRE
-static uint tRAS = 28;
-
-//CAS latency
-static uint tCL = 11;
-//CAS Write latency
-static uint tCWL = 8;
-
-//ACT to ACT (different banks)
-static uint tRRD = 5;
-//4 ACT Window
-static uint tFAW = 24;
-//WRITE recovery
-static uint tWR = 12;
-//WRITE to READ
-static uint tWTR = 6;
-//READ to PRE
-static uint tRTP = 6;
-//CAS to CAS
-static uint tCCD = 4;
-//REF to ACT
-static uint tRFC = 88;
-//CMD time
-static uint tCMDS = 1;
-//Rank to rank switch
-static uint tRTRS = 2; //clk
-
-//IDD Values
-static uint IDD0 = 95;
-static uint IDD1 = 115;
-static uint IDD2P0 = 12;
-static uint IDD2P1 = 45;
-static uint IDD2Q = 67;
-static uint IDD2N = 70;
-static uint IDD2NT = 95;
-static uint IDD3P = 45;
-static uint IDD3N = 67;
-static uint IDD4R = 250;
-static uint IDD4W = 250;
-static uint IDD5B = 260;
-static uint IDD6 = 6;
-static uint IDD6ET = 9;
-static uint IDD7 = 400;
-static uint IDD8 = 0;
-#endif
-#ifdef DDR3_1066
-//DDR3-1066 Micron Part : MT41J512M4-187E
-//Clock Rate : 553MHz
-static uint NUM_RANKS = 4;
-static uint NUM_BANKS = 8;
-static uint NUM_ROWS = 32768;
-static uint NUM_COLS = 2048;
-
-static uint DEVICE_WIDTH = 4;
-static uint BL = 8; //only used in power calculation
-
-static float Vdd = 1.5;
-
-//CLOCK PERIOD
-static float tCK = 1.875; //ns
-
-//in clock ticks
-//ACT to READ or WRITE
-static uint tRCD = 7; //13.125ns
-//PRE command period
-static uint tRP = 7; //13.125ns
-//ACT to ACT
-static uint tRC = 27; //50.625ns
-//ACT to PRE
-static uint tRAS = 20; //37.5ns
-
-//CAS latency
-static uint tCL = 7;
-//CAS Write latency
-static uint tCWL = 6;
-
-//ACT to ACT (different banks)
-static uint tRRD = 4; //7.5ns
-//4 ACT Window
-static uint tFAW = 20; //37.5ns
-//WRITE recovery
-static uint tWR = 8; //15ns
-//WRITE to READ
-static uint tWTR = 4; //7.5ns
-//READ to PRE
-static uint tRTP = 4; //7.5ns
-//CAS to CAS
-static uint tCCD = 4; //7.5ns
-//REF to ACT
-static uint tRFC = 86; //160ns
-//CMD time
-static uint tCMDS = 1; //clk
-//Rank to rank switch
-static uint tRTRS = 2; //clk
-
-//IDD Values
-static uint IDD0 = 90;
-static uint IDD1 = 115;
-static uint IDD2P0 = 12;
-static uint IDD2P1 = 35;
-static uint IDD2Q = 65;
-static uint IDD2N = 70;
-static uint IDD2NT = 90;
-static uint IDD3P = 55;
-static uint IDD3N = 80;
-static uint IDD4R = 200;
-static uint IDD4W = 255;
-static uint IDD5B = 290;
-static uint IDD6 = 10;
-static uint IDD6ET = 14;
-static uint IDD7 = 345;
-static uint IDD8 = 0;
+#if defined(DDR3_1333)
+#include "cfg/ddr3_1333.h"
+#elif defined(DDR3_1600)
+#include "cfg/ddr3_1600.h"
+#elif defined(DDR3_1066)
+#include "cfg/ddr3_1066.h"
 #endif
 
 uint inline log2(unsigned value)

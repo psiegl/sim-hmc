@@ -65,8 +65,7 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 #ifdef LOG_OUTPUT
 	string output_filename("BOBsim");
 	if (getenv("SIM_DESC"))
-		output_filename += getenv("SIM_DESC");
-	output_filename += VARIANT_SUFFIX;
+        output_filename += getenv("SIM_DESC");
 	output_filename += ".log";
 	logOutput.open(output_filename.c_str());
 #endif
