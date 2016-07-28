@@ -140,20 +140,20 @@ void LogicLayerInterface::Update()
 				//
 				//Arguments : 1) Destination Address
 				//            2) Size
-				//
+                //
 
-				uint64_t sourceAddress;
-				uint64_t destinationAddress; //start of destination copy
-				uint64_t sizeToCopy; //number of 64-byte words to copy
+                uint64_t sourceAddress;
+                uint64_t destinationAddress; //start of destination copy
+                uint64_t sizeToCopy; //number of 64-byte words to copy
 				if(currentLogicOperation->arguments.size()!=2)
 				{
 					ERROR("== ERROR - Incorrect number of arguments for logic operation "<<currentLogicOperation->logicType);
 					exit(-1);
 				}
 
-				sourceAddress = currentTransaction->address;
-				destinationAddress = currentLogicOperation->arguments[0];
-				sizeToCopy = currentLogicOperation->arguments[1];
+                sourceAddress = currentTransaction->address;
+                destinationAddress = currentLogicOperation->arguments[0];
+                sizeToCopy = currentLogicOperation->arguments[1];
 
 				if(DEBUG_LOGIC)
 				{

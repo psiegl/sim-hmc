@@ -41,8 +41,16 @@ class Port
 {
 public:
 	//Functions
-	Port();
-	Port(unsigned id);
+    Port():
+      portID(0),
+      inputBusyCountdown(0),
+      outputBusyCountdown(0)
+    {}
+    Port(unsigned id):
+      portID(id),
+      inputBusyCountdown(0),
+      outputBusyCountdown(0)
+    {}
 
 	//Fields
 	//The port identifier in relation to the entire system

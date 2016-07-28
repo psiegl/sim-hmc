@@ -91,6 +91,18 @@ public:
       }
     }
 
+    bool isBankOpen(void) {
+      return (this->currentBankState == ROW_ACTIVE ||
+              this->currentBankState == REFRESHING);
+    }
+
+    void refresh(uint64_t cycle) {
+      this->currentBankState = REFRESHING;
+      this->stateChangeCountdown = tRFC;
+      this->nextActivate = cycle + tRFC;
+      this->lastCommand = REFRESH;
+    }
+
 	//Fields
 	CurrentBankState currentBankState;
 	unsigned openRowAddress;

@@ -145,15 +145,11 @@ void SimpleController::Update()
         //
         //Power
         //
-		bool bankOpen = false;
+        bool bankOpen;
 		for(unsigned b=0; b<NUM_RANKS; b++)
 		{
-			if(bankStates[r][b].currentBankState == ROW_ACTIVE ||
-               bankStates[r][b].currentBankState == REFRESHING)
-			{
-				bankOpen = true;
-				break;
-			}
+          if( (bankOpen = bankStates[r][b].isBankOpen()) )
+            break;
 		}
 
 		if(bankOpen)
@@ -243,10 +239,7 @@ void SimpleController::Update()
 
 				for(unsigned b=0; b<NUM_BANKS; b++)
 				{
-					bankStates[r][b].currentBankState = REFRESHING;
-					bankStates[r][b].stateChangeCountdown = tRFC;
-					bankStates[r][b].nextActivate = currentClockCycle + tRFC;
-					bankStates[r][b].lastCommand = REFRESH;
+                    bankStates[r][b].refresh(currentClockCycle);
 				}
 
 				//reset refresh counters
@@ -365,16 +358,20 @@ void SimpleController::Update()
 						{
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
-								bankStates[r][b].nextRead = max(bankStates[r][b].nextRead, currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWTR);
-								bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite, currentClockCycle+(uint64_t)max(tCCD, TRANSACTION_SIZE/DRAM_BUS_WIDTH));
+                                bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
+                                                                currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWTR);
+                                bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
+                                                                 currentClockCycle+(uint64_t)max(tCCD, TRANSACTION_SIZE/DRAM_BUS_WIDTH));
 							}
 						}
 						else
 						{
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
-								bankStates[r][b].nextRead = max(bankStates[r][b].nextRead, currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS - tCL);
-								bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite, currentClockCycle + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS);
+                                bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
+                                                                currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS - tCL);
+                                bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
+                                                                 currentClockCycle + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS);
 							}
 						}
 					}
@@ -410,8 +407,6 @@ void SimpleController::Update()
 				default:
 					ERROR("Unexpected packet type" << *commandQueue[i]);
 					abort();
-
-
 				}
 
 				//erase
