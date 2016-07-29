@@ -83,7 +83,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 				exit(0);
 			}
 
-            bankStates[i].lastCommand = busPacket->busPacketType;
+            bankStates[i].lastCommand = REFRESH;
 			bankStates[i].currentBankState = REFRESHING;
 			bankStates[i].stateChangeCountdown = tRFC;
 			bankStates[i].nextActivate = currentClockCycle + tRFC;
@@ -113,7 +113,8 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			bankStates[i].nextWrite = max(bankStates[i].nextWrite, currentClockCycle + tCCD);
 		}
 
-        bankStates[busPacket->bank].lastCommand = busPacket->busPacketType;
+        std::cout << READ_P << " " << busPacket->busPacketType << std::endl;
+        bankStates[busPacket->bank].lastCommand = READ_P;
 		bankStates[busPacket->bank].stateChangeCountdown = tRTP;
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tRTP + tRP;
 		bankStates[busPacket->bank].nextRead = bankStates[busPacket->bank].nextActivate;
@@ -138,7 +139,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			bankStates[i].nextRead = max(bankStates[i].nextRead, currentClockCycle + tCCD);
 			bankStates[i].nextWrite = max(bankStates[i].nextWrite, currentClockCycle + tCCD);
 		}
-        bankStates[busPacket->bank].lastCommand = busPacket->busPacketType;
+        bankStates[busPacket->bank].lastCommand = WRITE_P;
         bankStates[busPacket->bank].stateChangeCountdown = tCWL + busPacket->burstLength + tWR; // busPacket->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tCWL + busPacket->burstLength + tWR + tRP;
 		bankStates[busPacket->bank].nextRead = bankStates[busPacket->bank].nextActivate;
