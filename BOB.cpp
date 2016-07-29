@@ -800,8 +800,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 	PRINT("  -- Writes : "<<writeCounter);
 	PRINT("            = "<<totalRequestsAtChannels);
 	readCounter = 0;
-	writeCounter = 0;
-	totalRequestsAtChannels = 0;
+    writeCounter = 0;
 
 	//
 	//

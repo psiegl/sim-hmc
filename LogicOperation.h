@@ -94,7 +94,7 @@ public:
     //            2) Pattern to copy
     //
     uint64_t numPages = this->arguments[0];
-    uint pattern = (uint)this->arguments[1];
+//    uint pattern = (uint)this->arguments[1];
 
 #if 0
     if(DEBUG_LOGIC)
@@ -153,7 +153,7 @@ public:
     //            2) Size
     //
     uint64_t sourceAddress = currentTransaction->address;
-    uint64_t destinationAddress = this->arguments[0]; //start of destination copy
+//    uint64_t destinationAddress = this->arguments[0]; //start of destination copy
     uint64_t sizeToCopy = this->arguments[1];  //number of 64-byte words to copy
 
 #if 0
@@ -217,8 +217,7 @@ public:
 
   bool request(Transaction *currentTransaction, vector<Transaction*> *outgoingQueue)
   {
-    uint64_t src_address;
-    src_address = currentTransaction->address;
+//    uint64_t src_address = currentTransaction->address;
     for (size_t i=0; i<this->arguments.size(); i++)
     {
         Transaction *trans = new Transaction(DATA_READ, 64, this->arguments[i]);

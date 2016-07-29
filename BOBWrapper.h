@@ -43,8 +43,6 @@ namespace BOBSim
 {
 class BOBWrapper
 {
-private:
-	unsigned TryToSendPending();
 public:
 	//Functions
     BOBWrapper();

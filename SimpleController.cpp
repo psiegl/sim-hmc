@@ -499,55 +499,53 @@ void SimpleController::AddTransaction(Transaction *trans)
 	//map physical address to rank/bank/row/col
 	AddressMapping(trans->address,mappedRank,mappedBank,mappedRow,mappedCol);
 
-	if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
-	{
-		//if requests from logic ops have priority, put them at the front so they go first
-        if(DEBUG_LOGIC) DEBUG("  == Simple Controller received transaction from logic op");
-		switch(trans->transactionType)
-		{
-		case DATA_READ:
-			readCounter++;
-			//create column read bus packet and add it to command queue
-			commandQueue.push_front(new BusPacket(READ_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp));
-			break;
-		case DATA_WRITE:
-			writeCounter++;
-			//create column write bus packet and add it to command queue
-			commandQueue.push_front(new BusPacket(WRITE_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp));
-			delete trans;
-			break;
-		default:
-            ERROR("== ERROR - Adding wrong transaction to simple controller");
-			abort();
-			break;
-		}
-		//since we're pushing front, add the ACT after so it ends up being first
-		commandQueue.push_front(new BusPacket(ACTIVATE, trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp));
-	}
-	else
-	{
-		//create the row activate bus packet and add it to command queue
-		commandQueue.push_back(new BusPacket(ACTIVATE, trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp));
-
-		switch(trans->transactionType)
-		{
-		case DATA_READ:
-			readCounter++;
-			//create column read bus packet and add it to command queue
-			commandQueue.push_back(new BusPacket(READ_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp));
-			break;
-		case DATA_WRITE:
-			writeCounter++;
-			//create column write bus packet and add it to command queue
-			commandQueue.push_back(new BusPacket(WRITE_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp));
-			delete trans;
-			break;
-		default:
-            ERROR("== ERROR - Adding wrong transaction to simple controller");
-			abort();
-			break;
-		}
-	}
+    //if requests from logic ops have priority, put them at the front so they go first
+    BusPacket *action, *activate = new BusPacket(ACTIVATE,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
+    switch(trans->transactionType)
+    {
+    case DATA_READ:
+        readCounter++;
+        action = new BusPacket(READ_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
+        if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
+        {
+          //create column read bus packet and add it to command queue
+          commandQueue.push_front(action);
+          //since we're pushing front, add the ACT after so it ends up being first
+          commandQueue.push_front(activate);
+        }
+        else
+        {
+          //create the row activate bus packet and add it to command queue
+          commandQueue.push_back(activate);
+          //create column read bus packet and add it to command queue
+          commandQueue.push_back(action);
+        }
+        break;
+    case DATA_WRITE:
+        writeCounter++;
+        action = new BusPacket(WRITE_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
+        if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
+        {
+          //create column write bus packet and add it to command queue
+          commandQueue.push_front(action);
+          //since we're pushing front, add the ACT after so it ends up being first
+          commandQueue.push_front(activate);
+        }
+        else
+        {
+          //create the row activate bus packet and add it to command queue
+          commandQueue.push_back(activate);
+          //create column write bus packet and add it to command queue
+          commandQueue.push_back(action);
+        }
+        delete trans;
+        break;
+    default:
+        ERROR("== ERROR - Adding wrong transaction to simple controller");
+        delete activate;
+        abort();
+        break;
+    }
 
 	waitingACTS++;
 }
