@@ -34,18 +34,12 @@
 #include <vector>
 #include "Transaction.h"
 
-using std::vector;
 namespace BOBSim
 {
 class Port
 {
 public:
-	//Functions
-    Port():
-      portID(0),
-      inputBusyCountdown(0),
-      outputBusyCountdown(0)
-    {}
+    //Functions
     Port(unsigned id):
       portID(id),
       inputBusyCountdown(0),
@@ -58,12 +52,12 @@ public:
 	
 	//Amount of time that the port's input is busy
 	unsigned inputBusyCountdown;
-	//Amount of time that the port's output is busy
-	unsigned outputBusyCountdown;
+    //Amount of time that the port's output is busy
+    unsigned outputBusyCountdown;
 
-	//Input and output storage for transactions 
-	vector<Transaction *> inputBuffer;
-	vector<Transaction *> outputBuffer;
+    //Input and output storage for transactions
+    std::vector<Transaction *> inputBuffer;
+    std::vector<Transaction *> outputBuffer;
 };
 }
 
