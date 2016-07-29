@@ -740,7 +740,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 	float bw = (1/dataperiod)*64/8;//64-bit bus, 8 bits/byte
 
 	unsigned numDevices = 64 / DEVICE_WIDTH;
-	unsigned long totalBytesPerDevice = (NUM_COLS * NUM_ROWS * NUM_BANKS * DEVICE_WIDTH) / 8L; //in bytes
+    unsigned long totalBytesPerDevice = ((unsigned long)NUM_COLS * (unsigned long)NUM_ROWS * (unsigned long)NUM_BANKS * (unsigned long)DEVICE_WIDTH) / 8L; //in bytes
 	unsigned long gigabytesPerRank = (numDevices * totalBytesPerDevice)>>30;
 
 	//calculate peak bandwidth for link bus

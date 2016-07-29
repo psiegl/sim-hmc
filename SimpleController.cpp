@@ -306,7 +306,7 @@ void SimpleController::Update()
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
 								bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + max(tCCD, (uint)TRANSACTION_SIZE/DRAM_BUS_WIDTH));
+                                                                currentClockCycle + max((uint)tCCD, (uint)TRANSACTION_SIZE/DRAM_BUS_WIDTH));
 								bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
 								                                 currentClockCycle + (tCL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS - tCWL));
 							}
@@ -361,7 +361,7 @@ void SimpleController::Update()
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
                                                                 currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWTR);
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle+(uint64_t)max(tCCD, (uint)TRANSACTION_SIZE/DRAM_BUS_WIDTH));
+                                                                 currentClockCycle+(uint64_t)max((uint)tCCD, (uint)TRANSACTION_SIZE/DRAM_BUS_WIDTH));
 							}
 						}
 						else
