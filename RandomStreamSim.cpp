@@ -59,7 +59,7 @@
 using namespace BOBSim;
 using namespace std;
 
-unsigned BOBSim::NUM_PORTS =4;
+unsigned BOBSim::NUM_PORTS =1;
 int BOBSim::SHOW_SIM_OUTPUT=1;
 
 long numCycles=30l;
