@@ -113,7 +113,6 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			bankStates[i].nextWrite = max(bankStates[i].nextWrite, currentClockCycle + tCCD);
 		}
 
-        std::cout << READ_P << " " << busPacket->busPacketType << std::endl;
         bankStates[busPacket->bank].lastCommand = READ_P;
 		bankStates[busPacket->bank].stateChangeCountdown = tRTP;
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tRTP + tRP;
