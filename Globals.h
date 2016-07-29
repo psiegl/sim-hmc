@@ -91,8 +91,6 @@ enum AddressMappingScheme
 //
 //Prints debug information relating to the DRAM channel
 static bool DEBUG_CHANNEL = false;
-//Prints debug information relating to the main BOB controller and link buses 
-static bool DEBUG_BOB =  false;
 //Prints debug information relating to the ports on the main BOB controller
 static bool DEBUG_PORTS = false;
 //prints debug information relating to the logic layer in each simple controller

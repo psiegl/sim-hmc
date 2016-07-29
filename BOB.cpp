@@ -95,8 +95,6 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 		exit(0);
 	}
 
-	if(DEBUG_BOB) DEBUG("== Channel-CPU clk ratio : "<<LINK_CPU_CLK_RATIO<<"  DRAM-CPU clk ratio : "<<DRAM_CPU_CLK_RATIO);
-
 	//Make port objects
 	for(unsigned i=0; i<NUM_PORTS; i++)
 	{
@@ -222,7 +220,6 @@ void BOB::Update(void)
 			{
 				//compute total time in serDes and travel up channel
 				inFlightRequestLink[i]->cyclesReqLink = currentClockCycle - inFlightRequestLink[i]->cyclesReqLink;
-                if(DEBUG_BOB) DEBUG("  == Adding to channel "<<inFlightRequestLink[i]->mappedChannel<<" (from link bus "<<i<<")");
 
 				//add to channel
                 channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i]); //0 is not used
@@ -264,8 +261,7 @@ void BOB::Update(void)
 
 	//
 	// NEW STUFF
-	//
-	if(DEBUG_BOB) DEBUG("== Moving from SerDe to channel bus");
+    //
 	for(unsigned c=0; c<NUM_LINK_BUSES; c++)
 	{
 		//
@@ -333,13 +329,7 @@ void BOB::Update(void)
 			{
 				ERROR("== Error - countdown is 0");
 				exit(0);
-			}
-
-			if(DEBUG_BOB)
-			{
-                DEBUG("  == Channel Bus "<<c<<" getting ");
-				DEBUG("     == CPU Clks:"<<inFlightRequestLinkCountdowns[c]<<"   Channel Clks:"<< totalChannelCycles<<" DDR?:"<<LINK_BUS_USE_DDR);
-			}
+            }
 		}
 	}
 
@@ -380,13 +370,11 @@ void BOB::Update(void)
 
 	//
 	//Move from input ports to serdes
-	//
-	if(DEBUG_BOB) DEBUG("== Moving from port buffer to SerDe");
+    //
 	for(unsigned port=0; port<NUM_PORTS; port++)
 	{
 		unsigned p = priorityPort;
 
-		if(DEBUG_BOB) DEBUG("  == Port "<<p);
 		//make sure the port isn't already sending something
 		//  and that there is an item there to send
 		if(ports[p].inputBusyCountdown==0 &&
@@ -439,8 +427,6 @@ void BOB::Update(void)
 						exit(0);
 					}
 
-                    if(DEBUG_BOB) DEBUG("    == Request SerDes "<<linkBusID<<" getting ");
-
 					priorityPort++;
 					if(priorityPort==NUM_PORTS) priorityPort = 0;
 
@@ -458,8 +444,6 @@ void BOB::Update(void)
 	priorityPort++;
 	if(priorityPort==NUM_PORTS) priorityPort = 0;
 
-
-	if(DEBUG_BOB) DEBUG("== Move from channel return queue to SerDe buffer");
 	for(unsigned link=0; link<NUM_LINK_BUSES; link++)
 	{
 		//make sure output is not busy sending something else
@@ -512,12 +496,6 @@ void BOB::Update(void)
 					//remove from channel
                     channels[chan]->pendingLogicResponse = NULL;
 
-					if(DEBUG_BOB)
-					{
-                        DEBUG("  == Link Bus "<<link<<" returning ");
-						DEBUG("     == CPU Clks:"<<inFlightResponseLinkCountdowns[link]<<"   Channel Clks:"<<totalChannelCycles<<" DDR?:"<<LINK_BUS_USE_DDR);
-					}
-
 					break;
 				}
                 else if(channels[chan]->readReturnQueue.size()>0)
@@ -567,12 +545,6 @@ void BOB::Update(void)
 							inFlightResponseLink[link] = pendingReads[p];
 							//note the time
 							inFlightResponseLink[link]->cyclesRspLink = currentClockCycle;
-
-							if(DEBUG_BOB)
-							{
-                                DEBUG("  == Link Bus "<<link<<" returning ");
-								DEBUG("     == CPU Clks:"<<inFlightResponseLinkCountdowns[link]<<"   Channel Clks:"<<totalChannelCycles<<" DDR?:"<<LINK_BUS_USE_DDR);
-							}
 
 							//remove pending queues
 							pendingReads.erase(pendingReads.begin()+p);
@@ -635,20 +607,13 @@ void BOB::Update(void)
 		}
 	}
 
-
-	if(DEBUG_BOB) DEBUG(endl<<" --------- BOB Update Ended ["<<currentClockCycle<<"] ---------");
-
 	//increment clock cycle
 	currentClockCycle++;
 }
 
 unsigned BOB::FindChannelID(Transaction* trans)
 {
-	unsigned channelID = 0;
-	unsigned bitWidth = log2(NUM_CHANNELS);
-	uint64_t channelMask = 0;
 	unsigned channelIDOffset;// = log2(BUS_ALIGNMENT_SIZE) + CHANNEL_ID_OFFSET;
-
     switch(MAPPINGSCHEME)
 	{
 	case BK_CLH_RW_RK_CH_CLL_BY://bank:col_high:row:rank:chan:col_low:by
@@ -679,22 +644,11 @@ unsigned BOB::FindChannelID(Transaction* trans)
 		ERROR("== ERROR - Unknown address mapping???");
 		exit(1);
 		break;
-	};
+    };
 
-    if(DEBUG_BOB) DEBUGN("    == Mapping ");
-
-	//build channel id mask
-	for(unsigned i=0; i<bitWidth; i++)
-	{
-		channelMask = channelMask<<1;
-		channelMask++;
-	}
-
-	channelMask = channelMask << channelIDOffset;
-	channelID = (trans->address & channelMask) >> channelIDOffset;
-
-	if(DEBUG_BOB) DEBUG(" to channel "<<channelID);
-	return channelID;
+    //build channel id mask
+    uint64_t channelMask = ((1 << ((unsigned)log2(NUM_CHANNELS)))-1) << channelIDOffset;
+    return ((trans->address & channelMask) >> channelIDOffset);
 }
 
 //This is also kind of kludgey, but essentially this function always prints the power
