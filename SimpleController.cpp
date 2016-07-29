@@ -35,12 +35,13 @@
 #include "BusPacket.h"
 #include "Globals.h"
 #include <math.h>
+#include <string.h>
 
 using namespace std;
 using namespace BOBSim;
 
 SimpleController::SimpleController(DRAMChannel *parent) :
-	refreshCounter(0),
+    refreshCounter(0),
 	readCounter(0),
 	writeCounter(0),
 	commandQueueMax(0),
@@ -52,6 +53,7 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	RRQFull(0),
 	waitingACTS(0),
 	idd2nCount(0),
+    channel(parent), //Registers the parent channel object
 	rankBitWidth(log2(NUM_RANKS)),
 	bankBitWidth(log2(NUM_BANKS)),
 	rowBitWidth(log2(NUM_ROWS)),
@@ -63,18 +65,11 @@ SimpleController::SimpleController(DRAMChannel *parent) :
     currentClockCycle(0)
 
 {
-	//Registers the parent channel object
-    channel = parent;
+    //Make the bank state objects
+    memset(bankStates, 0, sizeof(BankState) * NUM_RANKS * NUM_BANKS);
 
-	//Make the bank state objects
-	bankStates = (BankState**) malloc(sizeof(BankState*)*(NUM_RANKS));
-	for(unsigned i=0; i<NUM_RANKS; i++)
-	{
-		bankStates[i]= (BankState*) calloc(sizeof(BankState), NUM_BANKS);
-	}
-
-	//Used to keep track of refreshes 
-	refreshCounters = vector<unsigned>(NUM_RANKS,0);
+    //Used to keep track of refreshes
+    refreshCounters = vector<unsigned>(NUM_RANKS,0);
 
 	//make tFAW sliding window - one per rank
 	tFAWWindow.reserve(NUM_RANKS);

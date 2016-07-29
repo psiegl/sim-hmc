@@ -66,7 +66,7 @@ public:
 	deque<BusPacket*> commandQueue;
 
 	//Bank states for all banks in this channel
-	BankState** bankStates;
+    BankState bankStates[NUM_RANKS][NUM_BANKS];
 
 	//Storage and counters to determine write bursts
 	vector<unsigned> writeBurstCountdown;
