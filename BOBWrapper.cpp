@@ -247,6 +247,7 @@ inline int BOBWrapper::FindOpenPort(uint coreID)
 //
 //Creates Transaction object and determines which port should receive request
 //
+#if 0
 bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *logicOperation)
 {
 	int openPort;
@@ -281,6 +282,7 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 
 	return true;
 }
+#endif
 
 void BOBWrapper::RegisterCallbacks(
     void (*_readDone)(unsigned, uint64_t),
@@ -315,11 +317,11 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 		case DATA_WRITE:
 			issuedWrites++;
 			writesPerPort[port]++;
-			inFlightRequestCounter[port] = TRANSACTION_SIZE / PORT_WIDTH;
+            inFlightRequestCounter[port] = trans->transactionSize / PORT_WIDTH; // trans->transactionSize == TRANSACTION_SIZE
 			break;
 		case LOGIC_OPERATION:
 			issuedLogicOperations++;
-			inFlightRequestCounter[port] = TRANSACTION_SIZE / PORT_WIDTH;
+            inFlightRequestCounter[port] = trans->transactionSize / PORT_WIDTH; // trans->transactionSize == TRANSACTION_SIZE
 			break;
 		default:
 			ERROR(" = Error - wrong type");
@@ -454,19 +456,17 @@ void BOBWrapper::Update()
 			inFlightResponse[i] = bob->ports[i].outputBuffer[0];
 			inFlightResponseHeaderCounter[i] = 1;
 
-			if(inFlightResponse[i]->transactionType==RETURN_DATA)
-			{
-				inFlightResponseCounter[i] = TRANSACTION_SIZE / PORT_WIDTH;
-			}
-			else if(inFlightResponse[i]->transactionType==LOGIC_RESPONSE)
-			{
+            switch(inFlightResponse[i]->transactionType) {
+            case RETURN_DATA:
+                inFlightResponseCounter[i] = inFlightResponse[i]->transactionSize / PORT_WIDTH; // inFlightResponse[i]->transactionSize == TRANSACTION_SIZE
+                break;
+            case LOGIC_RESPONSE:
 				inFlightResponseCounter[i] = 1;
-			}
-			else
-			{
+                break;
+            default:
                 ERROR("== Error - wrong type of transaction out of");
-				exit(0);
-			}
+                exit(0);
+            }
 		}
 	}
 

@@ -50,7 +50,9 @@ public:
     BOBWrapper();
 	void Update();
 	bool AddTransaction(Transaction* trans, unsigned port);
+#if 0
 	bool AddTransaction(uint64_t addr, bool isWrite, int coreID, void *logicOp);
+#endif
 	void RegisterCallbacks(
         void (*readDone)(unsigned, uint64_t),
         void (*writeDone)(unsigned, uint64_t),

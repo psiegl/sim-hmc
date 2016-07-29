@@ -443,9 +443,9 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 	{
     case READ_P:
 		if(bankStates[rank][bank].currentBankState == ROW_ACTIVE &&
-		        bankStates[rank][bank].openRowAddress == busPacket->row &&
-		        currentClockCycle >= bankStates[rank][bank].nextRead &&
-                (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
+           bankStates[rank][bank].openRowAddress == busPacket->row &&
+           currentClockCycle >= bankStates[rank][bank].nextRead &&
+           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
         {
 			return true;
 		}

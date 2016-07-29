@@ -301,8 +301,9 @@ void BOB::Update(void)
 				//
 				//widths are in bits
 				//
-				totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE) * 8) / REQUEST_LINK_BUS_WIDTH +
-				                     !!(((WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE) * 8) % REQUEST_LINK_BUS_WIDTH);
+                // inFlightRequestLink[c]->transactionSize == TRANSACTION_SIZE
+                totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + inFlightRequestLink[c]->transactionSize) * 8) / REQUEST_LINK_BUS_WIDTH +
+                                     !!(((WR_REQUEST_PACKET_OVERHEAD + inFlightRequestLink[c]->transactionSize) * 8) % REQUEST_LINK_BUS_WIDTH);
                 break;
             case LOGIC_OPERATION:
 				//
@@ -352,15 +353,15 @@ void BOB::Update(void)
 		{
 			//check to see if something has been received from a channel
 			if(serDesBufferResponse[priorityLinkBus[p]]!=NULL &&
-			        serDesBufferResponse[priorityLinkBus[p]]->portID==p)
+               serDesBufferResponse[priorityLinkBus[p]]->portID==p)
 			{
 				serDesBufferResponse[priorityLinkBus[p]]->cyclesRspLink = currentClockCycle - serDesBufferResponse[priorityLinkBus[p]]->cyclesRspLink;
 				serDesBufferResponse[priorityLinkBus[p]]->cyclesRspPort = currentClockCycle;
 				ports[p].outputBuffer.push_back(serDesBufferResponse[priorityLinkBus[p]]);
 				switch(serDesBufferResponse[priorityLinkBus[p]]->transactionType)
 				{
-				case RETURN_DATA:
-					ports[p].outputBusyCountdown = TRANSACTION_SIZE / PORT_WIDTH;
+                case RETURN_DATA:
+                    ports[p].outputBusyCountdown = serDesBufferResponse[priorityLinkBus[p]]->transactionSize / PORT_WIDTH; // serDesBufferResponse[priorityLinkBus[p]]->transactionSize == TRANSACTION_SIZE
 					break;
 				case LOGIC_RESPONSE:
 					ports[p].outputBusyCountdown = 1;
@@ -532,9 +533,10 @@ void BOB::Update(void)
 
 							//calculate numbers to see how long the response is on the bus
 							//
-							//widths are in bits
-							unsigned totalChannelCycles = ((RD_RESPONSE_PACKET_OVERHEAD + TRANSACTION_SIZE) * 8) / RESPONSE_LINK_BUS_WIDTH +
-							                              !!(((RD_RESPONSE_PACKET_OVERHEAD+TRANSACTION_SIZE) * 8) % RESPONSE_LINK_BUS_WIDTH);
+                            //widths are in bits
+                            // pendingReads[p]->transactionSize == TRANSACTION_SIZE
+                            unsigned totalChannelCycles = ((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->transactionSize) * 8) / RESPONSE_LINK_BUS_WIDTH +
+                                                          !!(((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->transactionSize) * 8) % RESPONSE_LINK_BUS_WIDTH);
 
 							if(LINK_BUS_USE_DDR)
 							{
