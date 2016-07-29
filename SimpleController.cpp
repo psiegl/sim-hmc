@@ -202,8 +202,7 @@ void SimpleController::Update()
 		writeBurstCountdown.erase(writeBurstCountdown.begin());
 	}
 
-	bool issuingRefresh = false;
-	bool canIssueRefresh = true;
+    bool issuingRefresh = false;
 
     //Figure out if everyone who needs a refresh can actually receive one
 	for(unsigned r=0; r<NUM_RANKS; r++)
@@ -212,6 +211,7 @@ void SimpleController::Update()
 		{
 			if(DEBUG_CHANNEL) DEBUG("      !! -- Rank "<<r<<" needs refresh");
 			//Check to be sure we can issue a refresh
+            bool canIssueRefresh = true;
 			for(unsigned b=0; b<NUM_BANKS; b++)
 			{
 				if(bankStates[r][b].nextActivate > currentClockCycle ||
