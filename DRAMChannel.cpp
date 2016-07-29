@@ -41,16 +41,16 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*
     inFlightCommandCountdown(0),
     inFlightDataCountdown(0),
     channelID(id),
-	inFlightCommandPacket(NULL),
-	inFlightDataPacket(NULL),
-	readReturnQueueMax(0),
+    inFlightCommandPacket(NULL),
+    inFlightDataPacket(NULL),
+    readReturnQueueMax(0),
     logicLayer(new LogicLayerInterface(id, this)),
     bob(_bob),
     ReportCallback(reportCB),
     DRAMBusIdleCount(0)
 {
     for(unsigned i=0; i<NUM_RANKS; i++)
-	{
+    {
         ranks.push_back(Rank(i, this));
     }
 }
