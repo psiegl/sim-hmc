@@ -46,7 +46,7 @@ class LogicLayerInterface
 public:
     LogicLayerInterface(uint id, DRAMChannel *_channel);
 
-	void ReceiveLogicOperation(Transaction *trans, unsigned i);
+    void ReceiveLogicOperation(Transaction *trans);
     void Update(void);
 
     DRAMChannel *channel;

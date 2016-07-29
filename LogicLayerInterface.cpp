@@ -42,7 +42,7 @@ LogicLayerInterface::LogicLayerInterface(uint id, DRAMChannel *_channel):
 {}
 
 
-void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans, unsigned i)
+void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans)
 {
     if (DEBUG_LOGIC) DEBUG("== Received in logic layer "<<simpleControllerID<<" on cycle "<<currentClockCycle);
 	if (trans->transactionType == LOGIC_OPERATION)
@@ -55,7 +55,7 @@ void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans, unsigned i)
 	}
 }
 
-void LogicLayerInterface::Update()
+void LogicLayerInterface::Update(void)
 {
 	//send back to channel if there is something in the outgoing queue
     if(outgoingQueue.size()>0 && channel->AddTransaction(outgoingQueue[0]))

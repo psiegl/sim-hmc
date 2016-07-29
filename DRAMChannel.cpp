@@ -86,7 +86,7 @@ void DRAMChannel::Update()
 				//if the bus packet was from a request originating from a logic operation, send it back to logic layer
 				if(inFlightDataPacket->fromLogicOp)
 				{
-                    logicLayer->ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address),0);
+                    logicLayer->ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address));
 				}
 				//if it was a regular request, add to return queue
 				else
@@ -137,7 +137,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
     switch(trans->transactionType) {
       case LOGIC_OPERATION:
       {
-          logicLayer->ReceiveLogicOperation(trans,0);
+          logicLayer->ReceiveLogicOperation(trans);
           break;
       }
       case LOGIC_RESPONSE:
