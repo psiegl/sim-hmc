@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 		{
 			if(transactionBuffer[l].size()>0)
 			{
-                if(bobWrapper.AddTransaction(transactionBuffer[l][0],l))
+                if(bobWrapper.AddTransaction(*transactionBuffer[l].begin(),l))
 				{
 					transactionBuffer[l].erase(transactionBuffer[l].begin());
 				}

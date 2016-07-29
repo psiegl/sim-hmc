@@ -248,7 +248,7 @@ void BOB::Update(void)
 				inFlightResponseLink[i]->channelTimeTotal = currentClockCycle - inFlightResponseLink[i]->channelStartTime;
 
 				//remove from return queue
-                delete channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue[0];
+                delete *channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin();
                 channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
 
 
@@ -504,7 +504,7 @@ void BOB::Update(void)
 					for(unsigned p=0; p<pendingReads.size(); p++)
 					{
 						//find pending item in pending queue
-                        if(pendingReads[p]->transactionID == channels[chan]->readReturnQueue[0]->transactionID)
+                        if(pendingReads[p]->transactionID == (*channels[chan]->readReturnQueue.begin())->transactionID)
 						{
 							//make the return packet
 							pendingReads[p]->transactionType = RETURN_DATA;

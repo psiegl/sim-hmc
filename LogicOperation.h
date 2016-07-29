@@ -180,8 +180,8 @@ public:
 
   bool response(Transaction *currentTransaction, vector<Transaction *> *newOperationQueue, vector<Transaction*> *outgoingQueue)
   {
-//    if (DEBUG_LOGIC) DEBUG(newOperationQueue[0]->address - currentTransaction->address);
-    Transaction *t = new Transaction(DATA_WRITE, 64, (*newOperationQueue)[0]->address - currentTransaction->address + this->arguments[0]);
+//    if (DEBUG_LOGIC) DEBUG((*newOperationQueue->begin())->address - currentTransaction->address);
+    Transaction *t = new Transaction(DATA_WRITE, 64, (*newOperationQueue->begin())->address - currentTransaction->address + this->arguments[0]);
     t->originatedFromLogicOp = true;
 
 //    if(DEBUG_LOGIC) DEBUG("      == Logic Op Copy moved data");

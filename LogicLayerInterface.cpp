@@ -58,10 +58,10 @@ void LogicLayerInterface::ReceiveLogicOperation(Transaction *trans)
 void LogicLayerInterface::Update(void)
 {
 	//send back to channel if there is something in the outgoing queue
-    if(outgoingQueue.size()>0 && channel->AddTransaction(outgoingQueue[0]))
+    if(outgoingQueue.size()>0 && channel->AddTransaction(*outgoingQueue.begin()))
 	{
 		//if we just send the response, we are done and can clear the current stuff
-		if(outgoingQueue[0]->transactionType==LOGIC_RESPONSE)
+        if((*outgoingQueue.begin())->transactionType==LOGIC_RESPONSE)
 		{
 			currentTransaction = NULL;
 			currentLogicOperation = NULL;
@@ -74,13 +74,13 @@ void LogicLayerInterface::Update(void)
 	if (currentTransaction == NULL && !pendingLogicOpsQueue.empty())
 	{
 		//cast logic operation arguments from transaction
-		if(pendingLogicOpsQueue[0]->logicOpContents != NULL)
+        if((*pendingLogicOpsQueue.begin())->logicOpContents != NULL)
 		{
 
           if(DEBUG_LOGIC) DEBUG(" == In logic layer "<<simpleControllerID<<" : interpreting transaction");
 
 			//extract logic operation from transaction and grab handle to current operations
-            currentTransaction = pendingLogicOpsQueue[0];
+            currentTransaction = *pendingLogicOpsQueue.begin();
             currentLogicOperation = (LogicOperation *)currentTransaction->logicOpContents;
             currentLogicOperation->request(currentTransaction, &outgoingQueue);
 		}
@@ -96,7 +96,7 @@ void LogicLayerInterface::Update(void)
 
 
 	//if we're getting data, it is probably from a logic op that generated requests
-	if(!newOperationQueue.empty() && newOperationQueue[0]->transactionType == RETURN_DATA)
+    if(!newOperationQueue.empty() && (*newOperationQueue.begin())->transactionType == RETURN_DATA)
 	{
 		//
 		//do some checks to ensure the data makes sense

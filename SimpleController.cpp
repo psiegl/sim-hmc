@@ -193,10 +193,10 @@ void SimpleController::Update()
 	{
 		writeBurstCountdown[i]--;
 	}
-	if(writeBurstCountdown.size()>0&&writeBurstCountdown[0]==0)
+    if(writeBurstCountdown.size()>0&&(*writeBurstCountdown.begin())==0)
 	{
         if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : ");
-        channel->ReceiveOnDataBus(writeBurstQueue[0]);
+        channel->ReceiveOnDataBus(*writeBurstQueue.begin());
 		writeBurstQueue.erase(writeBurstQueue.begin());
 		writeBurstCountdown.erase(writeBurstCountdown.begin());
 	}
@@ -347,7 +347,7 @@ void SimpleController::Update()
 					writeData->busPacketType = WRITE_DATA;
 					writeBurstQueue.push_back(writeData);
 					writeBurstCountdown.push_back(tCWL);
-					if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurstQueue.size()<<" "<<writeBurstCountdown.size()<<" with head : "<<writeBurstCountdown[0]);
+                    if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurstQueue.size()<<" "<<writeBurstCountdown.size()<<" with head : "<<*writeBurstCountdown.begin());
 
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
                     bankstate->stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
