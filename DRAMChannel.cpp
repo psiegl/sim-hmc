@@ -88,19 +88,19 @@ void DRAMChannel::Update()
 				{
                     logicLayer->ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address));
 				}
-				//if it was a regular request, add to return queue
-				else
-				{
-					readReturnQueue.push_back(inFlightDataPacket);
+                //if it was a regular request, add to return queue
+                else
+                {
+                    readReturnQueue.push_back(inFlightDataPacket);
 
-					simpleController.outstandingReads--;
+                    simpleController.outstandingReads--;
 
                     (bob->*ReportCallback)(inFlightDataPacket, 0);
 
-					//keep track of total number of entries in return queue
-					if(readReturnQueue.size()>readReturnQueueMax)
-					{
-						readReturnQueueMax = readReturnQueue.size();
+                    //keep track of total number of entries in return queue
+                    if(readReturnQueue.size()>readReturnQueueMax)
+                    {
+                        readReturnQueueMax = readReturnQueue.size();
 					}
 				}
 				break;
@@ -166,7 +166,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
 	return true;
 }
 
-void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket, unsigned id)
+void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
 {
 	if(inFlightCommandPacket!=NULL)
 	{
@@ -185,7 +185,7 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket, unsigned id)
 	inFlightCommandCountdown = tCMDS;
 }
 
-void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket, unsigned id)
+void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket)
 {
 	if(!(busPacket->busPacketType==READ_DATA ||
        busPacket->busPacketType==WRITE_DATA))

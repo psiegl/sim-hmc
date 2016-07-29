@@ -51,8 +51,8 @@ public:
     DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned));
     bool AddTransaction(Transaction *trans);
     void Update(void);
-	void ReceiveOnDataBus(BusPacket *busPacket, unsigned ID);
-    void ReceiveOnCmdBus(BusPacket *busPacket, unsigned ID);
+    void ReceiveOnDataBus(BusPacket *busPacket);
+    void ReceiveOnCmdBus(BusPacket *busPacket);
 
 	//Fields
 	//Controller used to operate ranks of DRAM

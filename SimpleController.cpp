@@ -196,7 +196,7 @@ void SimpleController::Update()
 	if(writeBurstCountdown.size()>0&&writeBurstCountdown[0]==0)
 	{
         if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : ");
-        channel->ReceiveOnDataBus(writeBurstQueue[0],0);
+        channel->ReceiveOnDataBus(writeBurstQueue[0]);
 		writeBurstQueue.erase(writeBurstQueue.begin());
 		writeBurstCountdown.erase(writeBurstCountdown.begin());
 	}
@@ -231,7 +231,7 @@ void SimpleController::Update()
 				refreshPacket->channel = channel->channelID;
 
 				//Send to command bus
-                channel->ReceiveOnCmdBus(refreshPacket,0);
+                channel->ReceiveOnCmdBus(refreshPacket);
 
 				//make sure we don't send anythign else
 				issuingRefresh = true;
@@ -271,7 +271,7 @@ void SimpleController::Update()
                     continue;
 
 				//send to channel
-                channel->ReceiveOnCmdBus(commandQueue[i],0);
+                channel->ReceiveOnCmdBus(commandQueue[i]);
 
 				//update channel controllers bank state bookkeeping
 				unsigned rank = commandQueue[i]->rank;

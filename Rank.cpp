@@ -57,7 +57,7 @@ void Rank::Update(void)
 	}
 	if(readReturnCountdown.size()>0 && readReturnCountdown[0]==0)
     {
-        dramchannel->ReceiveOnDataBus(readReturnQueue[0],id);
+        dramchannel->ReceiveOnDataBus(readReturnQueue[0]);
 
 		readReturnCountdown.erase(readReturnCountdown.begin());
 		readReturnQueue.erase(readReturnQueue.begin());
