@@ -48,6 +48,19 @@ enum CurrentBankState
 class BankState
 {
 public:
+    //Fields
+    CurrentBankState currentBankState;
+    unsigned openRowAddress;
+    uint64_t nextActivate;
+    uint64_t nextRead;
+    uint64_t nextWrite;
+//	  uint64_t nextStrobeMin;
+//	  uint64_t nextStrobeMax;
+//	  uint64_t nextRefresh;     // ToDo!
+
+    BusPacketType lastCommand;
+    unsigned stateChangeCountdown;
+
 	//Functions
     BankState(void) :
       currentBankState(IDLE),
@@ -90,31 +103,6 @@ public:
         }
       }
     }
-
-    bool isBankOpen(void) {
-      return (this->currentBankState == ROW_ACTIVE ||
-              this->currentBankState == REFRESHING);
-    }
-
-    void refresh(uint64_t cycle) {
-      this->currentBankState = REFRESHING;
-      this->stateChangeCountdown = tRFC;
-      this->nextActivate = cycle + tRFC;
-      this->lastCommand = REFRESH;
-    }
-
-	//Fields
-	CurrentBankState currentBankState;
-	unsigned openRowAddress;
-	uint64_t nextActivate;
-	uint64_t nextRead;
-	uint64_t nextWrite;
-//	uint64_t nextStrobeMin;
-//	uint64_t nextStrobeMax;
-//	uint64_t nextRefresh;     // ToDo!
-
-	BusPacketType lastCommand;
-	unsigned stateChangeCountdown;
 };
 }
 

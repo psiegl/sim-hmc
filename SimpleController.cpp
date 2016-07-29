@@ -150,7 +150,8 @@ void SimpleController::Update()
         bool bankOpen;
 		for(unsigned b=0; b<NUM_RANKS; b++)
 		{
-          if( (bankOpen = bankStates[r][b].isBankOpen()) )
+          if( (bankOpen = (bankStates[r][b].currentBankState == ROW_ACTIVE ||
+                           bankStates[r][b].currentBankState == REFRESHING)) )
             break;
         }
 
@@ -178,8 +179,9 @@ void SimpleController::Update()
 
         //Updates the bank states for each rank
 		for(unsigned b=0; b<NUM_BANKS; b++)
-		{
-			bankStates[r][b].UpdateStateChange();
+        {
+            bankStates[r][b].UpdateStateChange();
+
         }
 
         //Handle refresh counters
@@ -214,7 +216,7 @@ void SimpleController::Update()
             bool canIssueRefresh = true;
 			for(unsigned b=0; b<NUM_BANKS; b++)
 			{
-				if(bankStates[r][b].nextActivate > currentClockCycle ||
+                if(bankStates[r][b].nextActivate > currentClockCycle ||
                    bankStates[r][b].currentBankState != IDLE)
 				{
 					canIssueRefresh = false;
@@ -240,8 +242,11 @@ void SimpleController::Update()
 				refreshEnergy[r] += (IDD5B-IDD3N) * tRFC * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
 				for(unsigned b=0; b<NUM_BANKS; b++)
-				{
-                    bankStates[r][b].refresh(currentClockCycle);
+                {
+                    bankStates[r][b].currentBankState = REFRESHING;
+                    bankStates[r][b].stateChangeCountdown = tRFC;
+                    bankStates[r][b].nextActivate = currentClockCycle + tRFC;
+                    bankStates[r][b].lastCommand = REFRESH;
 				}
 
 				//reset refresh counters

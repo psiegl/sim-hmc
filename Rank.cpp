@@ -159,7 +159,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		//
 		bankStates[busPacket->bank].currentBankState = ROW_ACTIVE;
 		bankStates[busPacket->bank].openRowAddress = busPacket->row;
-		bankStates[busPacket->bank].nextRead = currentClockCycle + tRCD;
+        bankStates[busPacket->bank].nextRead = currentClockCycle + tRCD;
 		bankStates[busPacket->bank].nextWrite = currentClockCycle + tRCD;
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tRC;
 
