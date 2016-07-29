@@ -32,6 +32,7 @@
 
 #include "SimpleController.h"
 #include "DRAMChannel.h"
+#include "BusPacket.h"
 #include <math.h>
 
 using namespace std;
@@ -304,11 +305,11 @@ void SimpleController::Update()
 						if(r==rank)
 						{
 							for(unsigned b=0; b<NUM_BANKS; b++)
-							{
+                            {
 								bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + max((uint)tCCD, (uint)TRANSACTION_SIZE/DRAM_BUS_WIDTH));
+                                                                currentClockCycle + max((uint)tCCD, commandQueue[i]->burstLength)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 								bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-								                                 currentClockCycle + (tCL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS - tCWL));
+                                                                 currentClockCycle + (tCL + commandQueue[i]->burstLength + tRTRS - tCWL)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 							}
 						}
 						else
@@ -316,9 +317,9 @@ void SimpleController::Update()
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
 								bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-								                                currentClockCycle + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS);
+                                                                currentClockCycle + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 								bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-								                                 currentClockCycle + (tCL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS - tCWL));
+                                                                 currentClockCycle + (tCL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS - tCWL));// commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 							}
 						}
 					}
@@ -348,9 +349,9 @@ void SimpleController::Update()
 					if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurstQueue.size()<<" "<<writeBurstCountdown.size()<<" with head : "<<writeBurstCountdown[0]);
 
 					bankStates[rank][bank].lastCommand = WRITE_P;
-					bankStates[rank][bank].stateChangeCountdown = tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR;
-					bankStates[rank][bank].nextActivate = currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR + tRP;
-//					bankStates[rank][bank].nextRefresh = currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR + tRP;
+                    bankStates[rank][bank].stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                    bankStates[rank][bank].nextActivate = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+//					bankStates[rank][bank].nextRefresh = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
 					{
@@ -359,9 +360,9 @@ void SimpleController::Update()
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWTR);
+                                                                currentClockCycle + tCWL + commandQueue[i]->burstLength + tWTR); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle+(uint64_t)max((uint)tCCD, (uint)TRANSACTION_SIZE/DRAM_BUS_WIDTH));
+                                                                 currentClockCycle+(uint64_t)max((uint)tCCD, commandQueue[i]->burstLength)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 							}
 						}
 						else
@@ -369,9 +370,9 @@ void SimpleController::Update()
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS - tCL);
+                                                                currentClockCycle + tCWL + commandQueue[i]->burstLength + tRTRS - tCL); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tRTRS);
+                                                                 currentClockCycle + commandQueue[i]->burstLength + tRTRS); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 							}
 						}
 					}

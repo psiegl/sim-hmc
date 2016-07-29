@@ -138,8 +138,8 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			bankStates[i].nextRead = max(bankStates[i].nextRead, currentClockCycle + tCCD);
 			bankStates[i].nextWrite = max(bankStates[i].nextWrite, currentClockCycle + tCCD);
 		}
-		bankStates[busPacket->bank].lastCommand = WRITE_P;
-		bankStates[busPacket->bank].stateChangeCountdown = tCWL + TRANSACTION_SIZE/DRAM_BUS_WIDTH + tWR;
+        bankStates[busPacket->bank].lastCommand = WRITE_P;
+        bankStates[busPacket->bank].stateChangeCountdown = tCWL + busPacket->burstLength + tWR; // busPacket->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tCWL + busPacket->burstLength + tWR + tRP;
 		bankStates[busPacket->bank].nextRead = bankStates[busPacket->bank].nextActivate;
 		bankStates[busPacket->bank].nextWrite = bankStates[busPacket->bank].nextActivate;

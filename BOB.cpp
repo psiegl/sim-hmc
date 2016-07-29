@@ -743,19 +743,14 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     unsigned long totalBytesPerDevice = ((unsigned long)NUM_COLS * (unsigned long)NUM_ROWS * (unsigned long)NUM_BANKS * (unsigned long)DEVICE_WIDTH) / 8L; //in bytes
 	unsigned long gigabytesPerRank = (numDevices * totalBytesPerDevice)>>30;
 
-	//calculate peak bandwidth for link bus
-	float reqbwpeak = 0;
-	float rspbwpeak = 0;
-	if(LINK_BUS_USE_DDR)
-	{
-		reqbwpeak = ((REQUEST_LINK_BUS_WIDTH * 2) / LINK_BUS_CLK_PERIOD)/8; //in bytes
-		rspbwpeak = ((RESPONSE_LINK_BUS_WIDTH * 2) / LINK_BUS_CLK_PERIOD)/8; //in bytes
-	}
-	else
-	{
-		reqbwpeak = (REQUEST_LINK_BUS_WIDTH / LINK_BUS_CLK_PERIOD) / 8; //in bytes
-		rspbwpeak = (RESPONSE_LINK_BUS_WIDTH / LINK_BUS_CLK_PERIOD) / 8; //in bytes
-	}
+    //calculate peak bandwidth for link bus
+    float reqbwpeak = (REQUEST_LINK_BUS_WIDTH / LINK_BUS_CLK_PERIOD) / 8; //in bytes
+    float rspbwpeak = (RESPONSE_LINK_BUS_WIDTH / LINK_BUS_CLK_PERIOD) / 8; //in bytes
+    if(LINK_BUS_USE_DDR)
+    {
+        reqbwpeak *= 2;
+        rspbwpeak *= 2;
+    }
 
 	PRINT(" == Link Bandwidth (!! Includes packet overhead and request packets !!)")
 	PRINT("    Req Link("<<reqbwpeak<<" GB/s peak)  Rsp Link("<<rspbwpeak<<" GB/s peak)");
@@ -813,13 +808,13 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 
 		        );
 
-        for(int r=0; r<NUM_RANKS; r++)
-        {
-            for(int b=0; b<NUM_BANKS; b++)
-            {
+//        for(int r=0; r<NUM_RANKS; r++)
+//        {
+//            for(int b=0; b<NUM_BANKS; b++)
+//            {
                 //PRINTN(channels[i]->simpleController.bankStates[r][b]);
-            }
-        }
+//            }
+//        }
 
 		//reset
         channels[i]->simpleController.commandQueueAverage=0;
