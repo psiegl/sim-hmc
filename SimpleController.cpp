@@ -33,6 +33,7 @@
 #include "SimpleController.h"
 #include "DRAMChannel.h"
 #include "BusPacket.h"
+#include "Globals.h"
 #include <math.h>
 
 using namespace std;
@@ -261,22 +262,19 @@ void SimpleController::Update()
 	//If no refresh is being issued then do this block
 	if(!issuingRefresh)
 	{
-		for(unsigned i=0; i<commandQueue.size(); i++)
+        for(unsigned i=0; i<commandQueue.size(); i++)
 		{
-			//Checks to see if this particular request can be issued
-			if(IsIssuable(commandQueue[i]))
+            //make sure we don't send a command ahead of its own ACTIVATE
+            if( ( ! (i>0 &&
+                     commandQueue[i]->transactionID == commandQueue[i-1]->transactionID)) &&
+                IsIssuable(commandQueue[i])) //Checks to see if this particular request can be issued
             {
-				//make sure we don't send a command ahead of its own ACTIVATE
-				if(i>0 && commandQueue[i]->transactionID == commandQueue[i-1]->transactionID)
-                    continue;
-
 				//send to channel
                 channel->ReceiveOnCmdBus(commandQueue[i]);
 
 				//update channel controllers bank state bookkeeping
 				unsigned rank = commandQueue[i]->rank;
 				unsigned bank = commandQueue[i]->bank;
-
 
 				//
 				//Main block for determining what to do with each type of command
@@ -328,7 +326,6 @@ void SimpleController::Update()
 					//prevents read or write being issued while waiting for auto-precharge to close page
                     bankstate->nextRead = bankstate->nextActivate;
                     bankstate->nextWrite = bankstate->nextActivate;
-
 					break;
 				case WRITE_P:
                 {
@@ -342,8 +339,7 @@ void SimpleController::Update()
 					//keep track of energy
 					burstEnergy[rank] += (IDD4W - IDD3N) * BL/2 * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
-                    BusPacket *writeData;
-					writeData = new BusPacket(*commandQueue[i]);
+                    BusPacket *writeData = new BusPacket(*commandQueue[i]);
 					writeData->busPacketType = WRITE_DATA;
 					writeBurstQueue.push_back(writeData);
 					writeBurstCountdown.push_back(tCWL);
@@ -352,7 +348,7 @@ void SimpleController::Update()
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
                     bankstate->stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
                     bankstate->nextActivate = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-//					bankstate->nextRefresh = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+//					bankstate->nextRefresh = bankstate->nextActivate; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
 					{
@@ -381,7 +377,6 @@ void SimpleController::Update()
 					//prevents read or write being issued while waiting for auto-precharge to close page
                     bankstate->nextRead = bankstate->nextActivate;
                     bankstate->nextWrite = bankstate->nextActivate;
-
 					break;
                 }
                 case ACTIVATE:
@@ -414,7 +409,7 @@ void SimpleController::Update()
 				//erase
 				commandQueue.erase(commandQueue.begin()+i);
 
-				break;
+                break;
 			}
 		}
     }
@@ -499,52 +494,38 @@ void SimpleController::AddTransaction(Transaction *trans)
 	//map physical address to rank/bank/row/col
 	AddressMapping(trans->address,mappedRank,mappedBank,mappedRow,mappedCol);
 
-    //if requests from logic ops have priority, put them at the front so they go first
     BusPacket *action, *activate = new BusPacket(ACTIVATE,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
     switch(trans->transactionType)
     {
     case DATA_READ:
         readCounter++;
         action = new BusPacket(READ_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
-        if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
-        {
-          //create column read bus packet and add it to command queue
-          commandQueue.push_front(action);
-          //since we're pushing front, add the ACT after so it ends up being first
-          commandQueue.push_front(activate);
-        }
-        else
-        {
-          //create the row activate bus packet and add it to command queue
-          commandQueue.push_back(activate);
-          //create column read bus packet and add it to command queue
-          commandQueue.push_back(action);
-        }
         break;
     case DATA_WRITE:
         writeCounter++;
         action = new BusPacket(WRITE_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
-        if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
-        {
-          //create column write bus packet and add it to command queue
-          commandQueue.push_front(action);
-          //since we're pushing front, add the ACT after so it ends up being first
-          commandQueue.push_front(activate);
-        }
-        else
-        {
-          //create the row activate bus packet and add it to command queue
-          commandQueue.push_back(activate);
-          //create column write bus packet and add it to command queue
-          commandQueue.push_back(action);
-        }
-        delete trans;
+        delete trans; // ToDo!
         break;
     default:
         ERROR("== ERROR - Adding wrong transaction to simple controller");
         delete activate;
-        abort();
-        break;
+        exit(-1);
+    }
+
+    //if requests from logic ops have priority, put them at the front so they go first
+    if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
+    {
+      //create column write bus packet and add it to command queue
+      commandQueue.push_front(action);
+      //since we're pushing front, add the ACT after so it ends up being first
+      commandQueue.push_front(activate);
+    }
+    else
+    {
+      //create the row activate bus packet and add it to command queue
+      commandQueue.push_back(activate);
+      //create column write bus packet and add it to command queue
+      commandQueue.push_back(action);
     }
 
 	waitingACTS++;
