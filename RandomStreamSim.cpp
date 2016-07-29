@@ -123,26 +123,13 @@ int main(int argc, char **argv)
 			{0, 0, 0, 0}
 		};
 		int option_index=0; //for getopt
-        int c = getopt_long (argc, argv, "c:n:bkq", long_options, &option_index);
+        int c = getopt_long (argc, argv, "c:n:q", long_options, &option_index);
 		if (c == -1)
 		{
 			break;
 		}
 		switch (c)
-		{
-		case 0: //TODO: figure out what the hell this does, cuz it never seems to get called
-			if (long_options[option_index].flag != 0) //do nothing on a flag
-			{
-				printf("setting flag\n");
-				break;
-			}
-			printf("option %s",long_options[option_index].name);
-			if (optarg)
-			{
-				printf(" with arg %s", optarg);
-			}
-			printf("\n");
-			break;
+        {
 		case 'h':
 		case '?':
 			usage();
