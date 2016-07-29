@@ -67,7 +67,7 @@ void DRAMChannel::Update()
 	{
 		inFlightCommandCountdown--;
 		if(inFlightCommandCountdown==0)
-		{
+        {
 			ranks[inFlightCommandPacket->rank].ReceiveFromBus(inFlightCommandPacket);
 			inFlightCommandPacket = NULL;
 		}

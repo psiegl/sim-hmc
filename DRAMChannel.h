@@ -58,7 +58,7 @@ public:
 	//Controller used to operate ranks of DRAM
 	SimpleController simpleController;
 	//Ranks of DRAM
-	vector<Rank> ranks;
+    vector<Rank> ranks;
 	//This channel's ID in relation to the entire system
 	unsigned channelID;
 	//Logic chip

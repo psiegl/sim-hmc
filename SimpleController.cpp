@@ -117,9 +117,9 @@ void SimpleController::Update()
 	commandQueueAverage += currentCount;
 
 	for(unsigned r=0; r<NUM_RANKS; r++)
-	{
+    {
 		for(unsigned b=0; b<NUM_BANKS; b++)
-		{
+        {
             switch(bankStates[r][b].currentBankState)
 			{
             //count the number of idle banks
@@ -141,7 +141,7 @@ void SimpleController::Update()
             case REFRESHING:
               numRefBanksAverage++;
               break;
-			}
+            }
         }
 
         //
@@ -152,7 +152,7 @@ void SimpleController::Update()
 		{
           if( (bankOpen = bankStates[r][b].isBankOpen()) )
             break;
-		}
+        }
 
 		if(bankOpen)
 		{
@@ -180,7 +180,7 @@ void SimpleController::Update()
 		for(unsigned b=0; b<NUM_BANKS; b++)
 		{
 			bankStates[r][b].UpdateStateChange();
-		}
+        }
 
         //Handle refresh counters
         if(refreshCounters[r]>0)
@@ -205,7 +205,7 @@ void SimpleController::Update()
 	bool issuingRefresh = false;
 	bool canIssueRefresh = true;
 
-	//Figure out if everyone who needs a refresh can actually receive one
+    //Figure out if everyone who needs a refresh can actually receive one
 	for(unsigned r=0; r<NUM_RANKS; r++)
 	{
 		if(refreshCounters[r]==0)
@@ -257,7 +257,7 @@ void SimpleController::Update()
 				break;
 			}
 		}
-	}
+    }
 
 	//If no refresh is being issued then do this block
 	if(!issuingRefresh)
@@ -278,7 +278,7 @@ void SimpleController::Update()
 
 				//
 				//Main block for determining what to do with each type of command
-				//
+                //
                 BankState *bankstate = &bankStates[rank][bank];
 				switch(commandQueue[i]->busPacketType)
 				{
@@ -386,7 +386,7 @@ void SimpleController::Update()
 						{
 							bankStates[rank][b].nextActivate = max(currentClockCycle + tRRD, bankStates[rank][b].nextActivate);
 						}
-					}
+                    }
 
 					actpreEnergy[rank] += ((IDD0 * tRC) - ((IDD3N * tRAS) + (IDD2N * (tRC - tRAS)))) * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
@@ -453,7 +453,7 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 			}
 
 			return false;
-		}
+        }
 
         break;
     case WRITE_P:
@@ -471,7 +471,7 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 				RRQFull++;
 			}
 			return false;
-		}
+        }
 		break;
     case ACTIVATE:
 		if(bankStates[rank][bank].currentBankState == IDLE &&
@@ -481,12 +481,12 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
         {
 			return true;
 		}
-		else return false;
+        else return false;
 		break;
 	default:
         ERROR("== Error - Checking issuability on unknown packet type");
 		exit(0);
-	}
+    }
 }
 
 void SimpleController::AddTransaction(Transaction *trans)
