@@ -424,7 +424,6 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 	unsigned rank = busPacket->rank;
 	unsigned bank = busPacket->bank;
 
-
 	//if((channel->readReturnQueue.size()+outstandingReads) * TRANSACTION_SIZE >= CHANNEL_RETURN_Q_MAX)
 	//if((channel->readReturnQueue.size()) * TRANSACTION_SIZE >= CHANNEL_RETURN_Q_MAX)
 	//	{
@@ -433,8 +432,6 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 	//exit(0);
 	//return false;
 	//}
-
-
 	switch(busPacket->busPacketType)
 	{
     case READ_P:
@@ -458,9 +455,9 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
         break;
     case WRITE_P:
 		if(bankStates[rank][bank].currentBankState == ROW_ACTIVE &&
-		        bankStates[rank][bank].openRowAddress == busPacket->row &&
-		        currentClockCycle >= bankStates[rank][bank].nextWrite &&
-                (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
+           bankStates[rank][bank].openRowAddress == busPacket->row &&
+           currentClockCycle >= bankStates[rank][bank].nextWrite &&
+           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
         {
 			return true;
 		}
@@ -474,15 +471,10 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
         }
 		break;
     case ACTIVATE:
-		if(bankStates[rank][bank].currentBankState == IDLE &&
-		        currentClockCycle >= bankStates[rank][bank].nextActivate &&
+        return (bankStates[rank][bank].currentBankState == IDLE &&
+                currentClockCycle >= bankStates[rank][bank].nextActivate &&
 		        refreshCounters[rank]>0 &&
-		        tFAWWindow[rank].size()<4)
-        {
-			return true;
-		}
-        else return false;
-		break;
+                tFAWWindow[rank].size()<4);
 	default:
         ERROR("== Error - Checking issuability on unknown packet type");
 		exit(0);
