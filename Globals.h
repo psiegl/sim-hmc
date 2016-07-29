@@ -113,9 +113,9 @@ extern int SHOW_SIM_OUTPUT;
 //NOTE : NUM_LINK_BUSES * CHANNELS_PER_LINK_BUS = NUM_CHANNELS
 //
 //Number of link buses in the system
-#define NUM_LINK_BUSES                4
+#define NUM_LINK_BUSES                1
 //Number of DRAM channels in the system
-#define NUM_CHANNELS                  8
+#define NUM_CHANNELS                  1
 //Multi-channel optimization degree
 #define CHANNELS_PER_LINK_BUS (NUM_CHANNELS / NUM_LINK_BUSES)
 
@@ -143,7 +143,7 @@ extern uint NUM_PORTS;
 //Number of transaction packets that each port buffer may hold
 #define PORT_QUEUE_DEPTH              8
 //Heuristic used for adding new requests to the available ports
-static PortHeuristicScheme portHeuristic = FIRST_AVAILABLE;
+#define PORT_HEURISTIC FIRST_AVAILABLE
 
 //Number of requests each simple controller can hold in its work queue
 #define CHANNEL_WORK_Q_MAX           16 //entries

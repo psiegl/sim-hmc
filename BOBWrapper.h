@@ -137,8 +137,6 @@ public:
     uint64_t currentClockCycle;
 
 };
-BOBWrapper *getMemorySystemInstance(uint64_t qemu_mem_size);
-void *getPageWalkLogicOp(uint64_t baseAddr, vector<uint64_t> *args);
 }
 
 

@@ -179,21 +179,6 @@ BOBWrapper::BOBWrapper() :
 	statsOut<<"!!EPOCH_DATA"<<endl;
 }
 
-BOBWrapper *getMemorySystemInstance()
-{
-    return new BOBWrapper();
-}
-void *getPageWalkLogicOp(uint64_t baseAddr, vector<uint64_t> *args)
-{
-	if (!args)
-	{
-		ERROR(" == Got a logic op without an arguments vector");
-	}
-
-	LogicOperation *lo = new LogicOperation(LogicOperation::PAGE_TABLE_WALK, *args);
-	return (void*)(lo);
-}
-
 inline bool BOBWrapper::isPortAvailable(unsigned port)
 {
 	return inFlightRequestCounter[port] == 0 &&
@@ -204,7 +189,7 @@ inline bool BOBWrapper::isPortAvailable(unsigned port)
 //Uses the port heuristic to determine which port should be used to receive a request
 inline int BOBWrapper::FindOpenPort(uint coreID)
 {
-	switch(portHeuristic)
+    switch(PORT_HEURISTIC)
 	{
 	case FIRST_AVAILABLE:
 		for (unsigned i=0; i<NUM_PORTS; i++)

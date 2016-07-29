@@ -1,78 +1,54 @@
-busoff:3 col:11 row:16 rank:2 bank:3 chan:3
+busoff:3 col:11 row:16 rank:2 bank:3 chan:0
 Channel to CPU ratio : 1
 DRAM to CPU ratio : 4
 DRAM_CPU_CLK_ADJUSTMENT : 6
 ==================Epoch [0]=======================
-per epoch] reads   : 192 writes : 107 (64.214% Reads) : 299
-lifetime ] reads   : 192 writes : 107 total : 299
+per epoch] reads   : 56 writes : 36 (60.8696% Reads) : 92
+lifetime ] reads   : 56 writes : 36 total : 92
 issued logic ops   : 0 returned logic responses : 0
-bandwidth          : 28.5149 GB/sec
+bandwidth          : 8.7738 GB/sec
 current cycle      : 2000
 --------------------------
-full time mean  : 79.0788 ns
-          std   : 23.414 ns
+full time mean  : 136.39 ns
+          std   : 38.4714 ns
           min   : 45.9375 ns
-          max   : 168.125 ns
-chan time mean  : 61.9157 ns
-           std  : 19.0615
-           min  : 43.75 ns
-           max  : 157.5 ns
-dram time mean  : 37.0182 ns
-          std   : 6.29636 ns
+          max   : 259.688 ns
+chan time mean  : 90.4799 ns
+           std  : 32.9723
+           min  : 44.0625 ns
+           max  : 185.938 ns
+dram time mean  : 52.1205 ns
+          std   : 19.4826 ns
           min   : 32.5 ns
-          max   : 62.5 ns
+          max   : 110 ns
 -- Per Channel Latency Components in nanoseconds (All from READs) : 
       reqPort    reqLink     workQ    access     rrq    rspLink   rspPort  total
-0]    8.6349    2.8125    7.1711   36.7763    5.1974    9.0132    1.2500   70.8553
-1]   11.0875    2.8125    8.8875   37.7000    3.1000    9.2625    1.2500   74.1000
-2]   11.4130    2.8125    0.8967   36.9565   11.2364    9.0625    1.2500   73.6277
-3]   12.0060    2.8125    7.8629   38.4274   16.6734    9.0827    1.2500   88.1149
-4]    8.3906    2.8125    3.8594   36.1250   13.2500    9.2969    1.2500   74.9844
-5]   14.2457    2.8125    5.3556   35.8190    7.3384    9.3858    1.2500   76.2069
-6]   28.6343    2.8125    3.5995   36.6204    6.0185    9.1319    1.2500   88.0671
-7]   23.6458    2.8125    3.2812   37.5000    4.2708    9.0104    1.2500   81.7708
+0]   44.3471    2.8125   16.7634   52.1205   10.6585    8.4375    1.2500  136.3895
  ---  Port stats (per epoch) : 
- 0]  request: 67.5% idle  response: 61.6% idle  rds:222 wrts:107 rtn:192 tot:329
+ 0]  request: 89.55% idle  response: 88.8% idle  rds:65 wrts:36 rtn:56 tot:101
  === BOB Print === 
  == Ports
-  -- Port 0 - inputBufferAvg : 7.7495 (8)   outputBufferAvg : 0.384 (1)
+  -- Port 0 - inputBufferAvg : 7.926 (8)   outputBufferAvg : 0.112 (0)
  == Link Bandwidth (!! Includes packet overhead and request packets !!)
     Req Link(6.4 GB/s peak)  Rsp Link(9.6 GB/s peak)
-      4.7648 GB/s             5.7312 GB/s
-      3.7152 GB/s             6.9984 GB/s
-      4.8896 GB/s             6.4224 GB/s
-      5.504 GB/s             5.9616 GB/s
+      5.4368 GB/s             7.3632 GB/s
      -----------
-      4.7184          6.2784 (avgs)
- == Channel Usage and Stats (32GB/Chan == 256 GB total)
+      5.4368          7.3632 (avgs)
+ == Channel Usage and Stats (32GB/Chan == 32 GB total)
      reqs   workQAvg  workQMax idleBanks   actBanks  preBanks  refBanks  (totalBanks) BusIdle  BW(10.6667)  RRQMax(16)   RRQFull lifetimeRequests
-0]       38    0.3413         2   29.3654    1.9062    0.7284    0.0000   32.0000     66.83     3.295         2(0)         0        38
-1]       38    0.5072         3   29.2500    1.9519    0.7981    0.0000   32.0000     63.46     3.630         2(1)         0        38
-2]       30    0.0769         1   30.0529    1.3582    0.5889    0.0000   32.0000     73.08     2.675         4(0)         0        30
-3]       44    0.5240         3   28.7788    2.3125    0.9087    0.0000   32.0000     59.62     4.012         4(0)         0        44
-4]       38    0.4591         3   29.4976    1.7885    0.7139    0.0000   32.0000     68.27     3.152         3(1)         0        38
-5]       45    0.3774         3   28.9832    2.1082    0.9087    0.0000   32.0000     58.65     4.107         3(1)         0        45
-6]       53    0.3822         2   28.0240    2.9591    1.0168    0.0000   32.0000     53.85     4.585         3(0)         0        53
-7]       35    0.2115         2   29.7163    1.6635    0.6202    0.0000   32.0000     71.63     2.818         3(0)         0        35
-                                                                                          AVG : 3.53425
+0]       93    3.3942         7   20.9567    9.4062    1.6370    0.0000   32.0000     27.40     7.212         4(1)         0        93
+                                                                                          AVG : 7.21178
  == Requests seen at Channels
-  -- Reads  : 215
-  -- Writes : 106
-            = 321
+  -- Reads  : 62
+  -- Writes : 31
+            = 93
  == Channel Power
-    -- Channel 0 -- DRAM Power : 6.9499 w
-    -- Channel 1 -- DRAM Power : 7.13654 w
-    -- Channel 2 -- DRAM Power : 6.4001 w
-    -- Channel 3 -- DRAM Power : 7.49856 w
-    -- Channel 4 -- DRAM Power : 6.94904 w
-    -- Channel 5 -- DRAM Power : 7.69442 w
-    -- Channel 6 -- DRAM Power : 8.33394 w
-    -- Channel 7 -- DRAM Power : 6.71423 w
-   Average Power  : 7.20959 w
-   Total Power    : 57.6767 w
-   SimpCont BG Power : 28 w
-   SimpCont Core Power : 28 w
-   System Power   : 113.677 w
+    -- Channel 0 -- DRAM Power : 11.2967 w
+   Average Power  : 11.2967 w
+   Total Power    : 11.2967 w
+   SimpCont BG Power : 7 w
+   SimpCont Core Power : 3.5 w
+   System Power   : 21.7967 w
  == Time Check
     CPU Time : 625ns
    DRAM Time : 624ns
