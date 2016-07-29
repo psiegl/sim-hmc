@@ -613,6 +613,9 @@ void BOB::Update(void)
 
 unsigned BOB::FindChannelID(Transaction* trans)
 {
+    if(NUM_CHANNELS == 1)
+       return 0;
+
 	unsigned channelIDOffset;// = log2(BUS_ALIGNMENT_SIZE) + CHANNEL_ID_OFFSET;
     switch(MAPPINGSCHEME)
 	{
