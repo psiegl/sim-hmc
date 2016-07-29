@@ -38,8 +38,7 @@ LogicLayerInterface::LogicLayerInterface(uint id, DRAMChannel *_channel):
     simpleControllerID(id),
 	currentClockCycle(0),
 	currentTransaction(NULL),
-	currentLogicOperation(NULL),
-    issuedRequests(0)
+    currentLogicOperation(NULL)
 {}
 
 
@@ -78,124 +77,21 @@ void LogicLayerInterface::Update()
 		if(pendingLogicOpsQueue[0]->logicOpContents != NULL)
 		{
 
+          if(DEBUG_LOGIC) DEBUG(" == In logic layer "<<simpleControllerID<<" : interpreting transaction");
+
 			//extract logic operation from transaction and grab handle to current operations
-			currentLogicOperation = (LogicOperation *)pendingLogicOpsQueue[0]->logicOpContents;
-			currentTransaction = pendingLogicOpsQueue[0];
-
-            if(DEBUG_LOGIC) DEBUG(" == In logic layer "<<simpleControllerID<<" : interpreting transaction");
-
-			// grabbed the pointers, now we can remove from queue
-			pendingLogicOpsQueue.pop_front();
-
-
-			//figure out what to do for each type
-			switch(currentLogicOperation->logicType)
-			{
-			case LogicOperation::PAGE_FILL:
-				//
-				//Arguments:  1) Number of continuous pages
-				//            2) Pattern to copy
-				//
-				uint64_t pageStart;
-				uint64_t numPages;
-				uint pattern;
-				if(currentLogicOperation->arguments.size()!=2)
-				{
-					ERROR("== ERROR - Incorrect number of arguments for logic operation "<<currentLogicOperation->logicType);
-					exit(-1);
-				}
-
-				//get arguments
-				pageStart = currentTransaction->address;
-				numPages = currentLogicOperation->arguments[0];
-				pattern = (uint)currentLogicOperation->arguments[1];
-
-				if(DEBUG_LOGIC)
-				{
-					DEBUG("       PAGE FILL");
-					DEBUG("        Start     : "<<pageStart);
-					DEBUG("        Num Pages : "<<numPages);
-					DEBUG("        Fill with : "<<pattern);
-				}
-
-				//generate the writes required to write a pattern to each page
-				for(int i=0; i<numPages; i++)
-				{
-					Transaction *trans = new Transaction(DATA_WRITE, 64, pageStart + i*(1<<(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))));
-					trans->originatedFromLogicOp = true;
-
-                    if(DEBUG_LOGIC) DEBUG("      == Logic Op created");
-
-					outgoingQueue.push_back(trans);
-
-					//pattern not used lol :(
-				}
-
-				//put the response at the back of the queue so when all the writes empty out, the response is ready to go
-				currentTransaction->transactionType = LOGIC_RESPONSE;
-				outgoingQueue.push_back(currentTransaction);
-
-				break;
-			case LogicOperation::MEM_COPY:
-				//
-				//Arguments : 1) Destination Address
-				//            2) Size
-                //
-
-                uint64_t sourceAddress;
-                uint64_t destinationAddress; //start of destination copy
-                uint64_t sizeToCopy; //number of 64-byte words to copy
-				if(currentLogicOperation->arguments.size()!=2)
-				{
-					ERROR("== ERROR - Incorrect number of arguments for logic operation "<<currentLogicOperation->logicType);
-					exit(-1);
-				}
-
-                sourceAddress = currentTransaction->address;
-                destinationAddress = currentLogicOperation->arguments[0];
-                sizeToCopy = currentLogicOperation->arguments[1];
-
-				if(DEBUG_LOGIC)
-				{
-					DEBUG("       MEM COPY");
-					DEBUG("        Source Address      : 0x"<<hex<<setw(8)<<setfill('0')<<sourceAddress);
-					DEBUG("        Dest Address        : 0x"<<hex<<setw(8)<<setfill('0')<<destinationAddress);
-					DEBUG("        Size to copy (x64B) : "<<dec<<sizeToCopy);
-				}
-
-				for(int i=0; i<sizeToCopy; i++)
-				{
-					Transaction *trans = new Transaction(DATA_READ, 64, sourceAddress + i*(1<<(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))));
-					trans->originatedFromLogicOp = true;
-
-                    if(DEBUG_LOGIC) DEBUG("      == Logic Op created");
-
-					outgoingQueue.push_back(trans);
-				}
-
-				break;
-			case LogicOperation::PAGE_TABLE_WALK:
-				uint64_t src_address;
-				src_address = currentTransaction->address;
-				for (size_t i=0; i<currentLogicOperation->arguments.size(); i++)
-				{
-					Transaction *trans = new Transaction(DATA_READ, 64, currentLogicOperation->arguments[i]);
-					trans->originatedFromLogicOp = true;
-					outgoingQueue.push_back(trans);
-				}
-
-				break;
-			default:
-				ERROR("== ERROR - Unknown logic type in logic layer : "<<currentLogicOperation->logicType);
-				exit(-1);
-			}
-
+            currentTransaction = pendingLogicOpsQueue[0];
+            currentLogicOperation = (LogicOperation *)currentTransaction->logicOpContents;
+            currentLogicOperation->request(currentTransaction, &outgoingQueue);
 		}
 		else
 		{
             ERROR(" == Error - Logic operation has no contents");
 			exit(-1);
 		}
+
+        // grabbed the pointers, now we can remove from queue
+        pendingLogicOpsQueue.pop_front();
 	}
 
 
@@ -213,57 +109,8 @@ void LogicLayerInterface::Update()
 
         if (DEBUG_LOGIC) DEBUG("   ==[L:"<<simpleControllerID<<"] oh hai, return data");
 		//handle the return data based on the logic op that is being executed
-		Transaction *t;
-		switch(currentLogicOperation->logicType)
-		{
-		case LogicOperation::MEM_COPY:
-			if (DEBUG_LOGIC) DEBUG(newOperationQueue[0]->address - currentTransaction->address);
-			t = new Transaction(DATA_WRITE, 64, newOperationQueue[0]->address - currentTransaction->address + currentLogicOperation->arguments[0]);
-			t->originatedFromLogicOp = true;
 
-            if(DEBUG_LOGIC) DEBUG("      == Logic Op Copy moved data");
-
-			outgoingQueue.push_back(t);
-
-			issuedRequests++;
-
-			newOperationQueue.erase(newOperationQueue.begin());
-
-			//check to see if we are done with the requests
-			if(issuedRequests==currentLogicOperation->arguments[1])
-			{
-				if(DEBUG_LOGIC) DEBUG("      == All WRITE commands issued for copy - creating response");
-
-				//send back response
-				currentTransaction->transactionType = LOGIC_RESPONSE;
-				outgoingQueue.push_back(currentTransaction);
-				issuedRequests = 0;
-			}
-			break;
-		case LogicOperation::PAGE_TABLE_WALK:
-			issuedRequests++;
-
-			if (DEBUG_LOGIC) DEBUG("   ==[L:"<<simpleControllerID<<"] Getting back PT read for 0x"<<std::hex<<(newOperationQueue[0]->address)<<std::dec<<"("<<issuedRequests<<"/3)");
-
-			//check to see if we are done with the requests
-			if(issuedRequests == currentLogicOperation->arguments.size())
-			{
-				if(DEBUG_LOGIC) DEBUG("      ==[L:"<<simpleControllerID<<"] All walked all page table levels, - creating response");
-
-				//send back response
-				currentTransaction->transactionType = LOGIC_RESPONSE;
-				outgoingQueue.push_back(currentTransaction);
-				issuedRequests = 0;
-			}
-			newOperationQueue.erase(newOperationQueue.begin());
-
-			break;
-
-		default:
-            ERROR("== ERROR - Getting data back for a logic op that doesnt create requests");
-			exit(-1);
-			break;
-		};
+        currentLogicOperation->response(currentTransaction, &newOperationQueue, &outgoingQueue);
 	}
 	currentClockCycle++;
 }

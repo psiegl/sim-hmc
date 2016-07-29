@@ -58,9 +58,6 @@ public:
 	deque<Transaction *> pendingLogicOpsQueue;
 	vector<Transaction *> newOperationQueue; //incoming LOGIC_OPERATION transactions
 	vector<Transaction *> outgoingQueue; //requests or responses generated from LOGIC_OPERATION transaction
-
-	//keeps track of how many requests have been issued from this logic op
-	uint issuedRequests;
 };
 }
 
