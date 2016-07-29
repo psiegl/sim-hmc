@@ -34,13 +34,8 @@
 //
 
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <getopt.h>
-#include <iomanip>
 #include <map>
-#include <bitset>
-#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <deque>
@@ -53,30 +48,21 @@
 
 
 //Total number of reads (as a percentage) in request stream
-static float READ_WRITE_RATIO = 66.6;//%
+#define READ_WRITE_RATIO 66.6f //%
 //Frequency of requests - 0.0 = no requests; 1.0 = as fast as possible
-static float PORT_UTILIZATION = 1.0;
+#define PORT_UTILIZATION  1.0f
 
 //Changes random seeding for request stream
-static uint SEED_CONSTANT = 11;
+#define SEED_CONSTANT 11
 
 
 using namespace BOBSim;
 using namespace std;
 
 unsigned BOBSim::NUM_PORTS =4;
-
 int BOBSim::SHOW_SIM_OUTPUT=1;
-int debugBus=0;
-string traceFileName = "traces/trace.trc";
-string pwdString = "";
-
-string tmp = "";
-size_t equalsign;
 
 long numCycles=30l;
-
-vector<unsigned> randomSeeds;
 
 vector<unsigned> waitCounters;
 vector<unsigned> useCounters;
@@ -87,19 +73,18 @@ void usage()
 }
 
 vector< vector<Transaction *> > transactionBuffer;
-vector<unsigned> transactionClockCycles;
 
 void FillTransactionBuffer(int port)
 {
 	useCounters[port] = 0;
 
 	//Fill with a random number of requests between 2 and 5 or 6
-	unsigned randomCount = rand_r(&randomSeeds[port]) % 5 + 2;
+    unsigned randomCount = rand() % 5 + 2;
 	//cout<<"port "<<port<<" - random count is "<<randomCount<<endl;
 	for(unsigned i=0; i<randomCount; i++)
 	{
 		unsigned long temp = rand();
-		unsigned long physicalAddress = (temp<<32)|rand_r(&randomSeeds[port]);
+        unsigned long physicalAddress = (temp<<32)|rand();
 		Transaction *newTrans;
 		
 		if(physicalAddress%1000<READ_WRITE_RATIO*10)
@@ -127,18 +112,18 @@ void FillTransactionBuffer(int port)
 
 int main(int argc, char **argv)
 {
+    srand(SEED_CONSTANT);
 	while (1)
 	{
 		static struct option long_options[] =
-		{
-			{"pwd", required_argument, 0, 'p'},
+        {
 			{"numcycles",  required_argument,	0, 'c'},
 			{"quiet",  no_argument, &BOBSim::SHOW_SIM_OUTPUT, 'q'},
 			{"help", no_argument, 0, 'h'},
 			{0, 0, 0, 0}
 		};
 		int option_index=0; //for getopt
-        int c = getopt_long (argc, argv, "c:n:p:bkq", long_options, &option_index);
+        int c = getopt_long (argc, argv, "c:n:bkq", long_options, &option_index);
 		if (c == -1)
 		{
 			break;
@@ -167,10 +152,7 @@ int main(int argc, char **argv)
 			numCycles = atol(optarg);
 			break;
 		case 'n':
-			BOBSim::NUM_PORTS = atoi(optarg);
-		case 'p':
-			pwdString = string(optarg);
-			break;
+            BOBSim::NUM_PORTS = atoi(optarg);
 		case 'q':
 			BOBSim::SHOW_SIM_OUTPUT=0;
 			break;
@@ -182,11 +164,6 @@ int main(int argc, char **argv)
 	waitCounters = vector<unsigned>(NUM_PORTS,0);
 	useCounters = vector<unsigned>(NUM_PORTS,0);
 
-	randomSeeds = vector<unsigned>(NUM_PORTS,0);
-	for(unsigned i=0; i<NUM_PORTS; i++)
-	{
-		randomSeeds[i]=i*SEED_CONSTANT + SEED_CONSTANT;
-	}
 
 	//iterate over total number of cycles
 	//  "main loop"

@@ -297,7 +297,7 @@ void BOBWrapper::RegisterCallbacks(
 bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 {
 	if(inFlightRequestCounter[port]==0 &&
-	        bob->ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH)
+       bob->ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH)
 	{
 		trans->fullStartTime = currentClockCycle;
 		requestCounterPerPort[port]++;
@@ -411,8 +411,8 @@ void BOBWrapper::Update()
 			inFlightResponseCounter[i]--;
 			if(inFlightResponseCounter[i]==0)
 			{
-				if(inFlightResponse[i]->transactionType==RETURN_DATA)
-				{
+                switch(inFlightResponse[i]->transactionType) {
+                case RETURN_DATA:
 					if (readDoneCallback)
 					{
 						(*readDoneCallback)(i, inFlightResponse[i]->address);
@@ -421,9 +421,9 @@ void BOBWrapper::Update()
 					UpdateLatencyStats(inFlightResponse[i]);
 
 					returnsPerPort[i]++;
-				}
-				else if(inFlightResponse[i]->transactionType==LOGIC_RESPONSE)
-				{
+                    break;
+
+                case LOGIC_RESPONSE:
 					if(logicDoneCallback)
 					{
 						(*logicDoneCallback)(inFlightResponse[i]->mappedChannel, (void*)inFlightResponse[i]->address);
@@ -431,10 +431,10 @@ void BOBWrapper::Update()
 
 					UpdateLatencyStats(inFlightResponse[i]);
 
-					totalLogicResponses++;
-				}
-				else
-				{
+                    totalLogicResponses++;
+                    break;
+
+                default:
                     ERROR("== ERROR - unknown packet type coming down ");
 					exit(0);
 				}
