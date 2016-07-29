@@ -35,11 +35,8 @@
 
 #include "Globals.h"
 
-using namespace std;
-
 namespace BOBSim
 {
-
 static unsigned globalID=0;
 
 enum TransactionType
@@ -73,7 +70,7 @@ public:
       channelStartTime(0),
       channelTimeTotal(0),
       portID(0),
-      coreID(0),
+//      coreID(0),
       originatedFromLogicOp(false)
     {
         transactionID = globalID++;
@@ -93,13 +90,13 @@ public:
 	//Port ID used to send request
 	unsigned portID;
 	//CPU Core which generated request
-	unsigned coreID;
+//	unsigned coreID;
 	void *logicOpContents;
 	bool originatedFromLogicOp;
 
 	//Latency break-up
 	uint64_t cyclesReqPort; //add to Port until remove from port
-	uint64_t cyclesRspPort; //add to port until remove from port
+    uint64_t cyclesRspPort; //add to port until remove from port
 
 	uint64_t cyclesReqLink; //add to request SerDe until remove from SerDe
 	uint64_t cyclesRspLink; //add to response SerDe until remove

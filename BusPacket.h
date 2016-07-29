@@ -69,19 +69,19 @@ public:
       fromLogicOp(fromLogic)
     {}
 
-	//Fields
-	bool fromLogicOp;
-	BusPacketType busPacketType;
-	unsigned column;
-	unsigned row;
-	unsigned bank;
-	unsigned rank;
-	unsigned transactionID;
-	unsigned port;
-	unsigned queueWaitTime;
-	unsigned burstLength;
+    //Fields
+    unsigned burstLength;
+    BusPacketType busPacketType;
+    unsigned transactionID;
+    unsigned column;
+    unsigned row;
+    unsigned bank;
+    unsigned rank;
+    unsigned port;
 	unsigned channel;
+    unsigned queueWaitTime;
 	uint64_t address;
+    bool fromLogicOp;
 };
 }
 

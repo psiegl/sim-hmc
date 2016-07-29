@@ -281,6 +281,7 @@ void SimpleController::Update()
 				//
 				//Main block for determining what to do with each type of command
 				//
+                BankState *bankstate = &bankStates[rank][bank];
 				switch(commandQueue[i]->busPacketType)
 				{
                 case READ_P:
@@ -295,10 +296,10 @@ void SimpleController::Update()
 					//keep track of energy
 					burstEnergy[rank] += (IDD4R - IDD3N) * BL/2 * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
-					bankStates[rank][bank].lastCommand = READ_P;
-					bankStates[rank][bank].stateChangeCountdown = (4*tCK>7.5)?tRTP:ceil(7.5/tCK); //4 clk or 7.5ns
-					bankStates[rank][bank].nextActivate = max(bankStates[rank][bank].nextActivate, currentClockCycle + tRTP + tRP);
-//					bankStates[rank][bank].nextRefresh = currentClockCycle + tRTP + tRP;
+                    bankstate->lastCommand = commandQueue[i]->busPacketType;
+                    bankstate->stateChangeCountdown = (4*tCK>7.5)?tRTP:ceil(7.5/tCK); //4 clk or 7.5ns
+                    bankstate->nextActivate = max(bankstate->nextActivate, currentClockCycle + tRTP + tRP);
+//					bankstate->nextRefresh = currentClockCycle + tRTP + tRP;
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
                     {
@@ -325,8 +326,8 @@ void SimpleController::Update()
 					}
 
 					//prevents read or write being issued while waiting for auto-precharge to close page
-					bankStates[rank][bank].nextRead = bankStates[rank][bank].nextActivate;
-					bankStates[rank][bank].nextWrite = bankStates[rank][bank].nextActivate;
+                    bankstate->nextRead = bankstate->nextActivate;
+                    bankstate->nextWrite = bankstate->nextActivate;
 
 					break;
 				case WRITE_P:
@@ -348,10 +349,10 @@ void SimpleController::Update()
 					writeBurstCountdown.push_back(tCWL);
 					if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurstQueue.size()<<" "<<writeBurstCountdown.size()<<" with head : "<<writeBurstCountdown[0]);
 
-					bankStates[rank][bank].lastCommand = WRITE_P;
-                    bankStates[rank][bank].stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-                    bankStates[rank][bank].nextActivate = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-//					bankStates[rank][bank].nextRefresh = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                    bankstate->lastCommand = commandQueue[i]->busPacketType;
+                    bankstate->stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                    bankstate->nextActivate = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+//					bankstate->nextRefresh = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
 					{
@@ -378,8 +379,8 @@ void SimpleController::Update()
 					}
 
 					//prevents read or write being issued while waiting for auto-precharge to close page
-					bankStates[rank][bank].nextRead = bankStates[rank][bank].nextActivate;
-					bankStates[rank][bank].nextWrite = bankStates[rank][bank].nextActivate;
+                    bankstate->nextRead = bankstate->nextActivate;
+                    bankstate->nextWrite = bankstate->nextActivate;
 
 					break;
                 }
@@ -394,12 +395,12 @@ void SimpleController::Update()
 
 					actpreEnergy[rank] += ((IDD0 * tRC) - ((IDD3N * tRAS) + (IDD2N * (tRC - tRAS)))) * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
-					bankStates[rank][bank].lastCommand = ACTIVATE;
-					bankStates[rank][bank].currentBankState = ROW_ACTIVE;
-					bankStates[rank][bank].openRowAddress = commandQueue[i]->row;
-					bankStates[rank][bank].nextActivate = currentClockCycle + tRC;
-					bankStates[rank][bank].nextRead = max(currentClockCycle + tRCD, bankStates[rank][bank].nextRead);
-					bankStates[rank][bank].nextWrite = max(currentClockCycle + tRCD, bankStates[rank][bank].nextWrite);
+                    bankstate->lastCommand = commandQueue[i]->busPacketType;
+                    bankstate->currentBankState = ROW_ACTIVE;
+                    bankstate->openRowAddress = commandQueue[i]->row;
+                    bankstate->nextActivate = currentClockCycle + tRC;
+                    bankstate->nextRead = max(currentClockCycle + tRCD, bankstate->nextRead);
+                    bankstate->nextWrite = max(currentClockCycle + tRCD, bankstate->nextWrite);
 
 					//keep track of sliding window
 					tFAWWindow[rank].push_back(tFAW);
