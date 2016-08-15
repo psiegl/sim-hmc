@@ -60,8 +60,8 @@ public:
 	vector<DRAMChannel *> channels;
 
 	//Bookkeeping for the number of requests to each channel
-	vector<unsigned> channelCounters;
-	vector<uint64_t> channelCountersLifetime;
+    unsigned channelCounters[NUM_CHANNELS];
+    uint64_t channelCountersLifetime[NUM_CHANNELS];
 
 	//Storage for pending read request information
 	vector<Transaction *> pendingReads;
@@ -74,35 +74,34 @@ public:
 	//Request Link Bus
 	//
 	//SerDes buffer for holding outgoing request packet
-	vector<Transaction *> serDesBufferRequest;
+    Transaction* serDesBufferRequest[NUM_LINK_BUSES];
 	//The packet which is currently being sent
-	vector<Transaction *> inFlightRequestLink;
+    Transaction* inFlightRequestLink[NUM_LINK_BUSES];
 	//Counter to determine how long packet is to be sent
-	vector<unsigned> inFlightRequestLinkCountdowns;
+    unsigned inFlightRequestLinkCountdowns[NUM_LINK_BUSES];
 	//Counts cycles that request link bus is idle
-	vector<unsigned> requestLinkIdle;
+    unsigned requestLinkIdle[NUM_LINK_BUSES];
 
 	//
 	//Response Link Bus
 	//
 	//SerDes buffer for holding incoming request packet
-	vector<Transaction *> serDesBufferResponse;
+    Transaction* serDesBufferResponse[NUM_LINK_BUSES];
 	//The packet which is currently being sent
-	vector<Transaction *> inFlightResponseLink;
+    Transaction* inFlightResponseLink[NUM_LINK_BUSES];
 	//Coutner to determine how long packet is to be sent
-	vector<unsigned> inFlightResponseLinkCountdowns;
-	//Counts cycles that response link bus is idle
-	vector<unsigned> responseLinkIdle;
+    unsigned inFlightResponseLinkCountdowns[NUM_LINK_BUSES];
+    //Counts cycles that response link bus is idle
+    unsigned responseLinkIdle[NUM_LINK_BUSES];
 
 	//Round-robin counter
-	vector<unsigned> responseLinkRoundRobin;
+    unsigned responseLinkRoundRobin[NUM_LINK_BUSES];
 
 	//Used for round-robin 
 	unsigned priorityPort;
 	vector<unsigned> priorityLinkBus;
 
-	//Bookkeeping 
-	vector<uint> cmdQFull;
+    //Bookkeeping
 	unsigned readCounter;
 	unsigned writeCounter;
 	unsigned committedWrites;

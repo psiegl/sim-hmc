@@ -30,6 +30,7 @@
 
 //BOB source
 #include <bitset>
+#include <cstring>
 #include <math.h>
 #include "BOB.h"
 #include "BOBWrapper.h"
@@ -102,27 +103,27 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 	}
 
 	//Initialize fields for bookkeeping
-	inFlightRequestLinkCountdowns = vector<unsigned>(NUM_LINK_BUSES,0);
-	inFlightResponseLinkCountdowns = vector<unsigned>(NUM_LINK_BUSES,0);
+    memset(inFlightRequestLinkCountdowns, 0, sizeof(unsigned) * NUM_LINK_BUSES);
+    memset(inFlightResponseLinkCountdowns, 0, sizeof(unsigned) * NUM_LINK_BUSES);
 
-	inFlightRequestLink = vector<Transaction *> (NUM_LINK_BUSES, (Transaction*)(NULL));
-	inFlightResponseLink = vector<Transaction *> (NUM_LINK_BUSES, (Transaction*)NULL);
+    for(unsigned i=0; i<NUM_LINK_BUSES; i++)
+    {
+        inFlightRequestLink[i] = NULL;
+        inFlightResponseLink[i] = NULL;
+        serDesBufferRequest[i] = NULL;
+        serDesBufferResponse[i] = NULL;
+    }
 
-	serDesBufferRequest = vector<Transaction *> (NUM_LINK_BUSES, (Transaction*)NULL);
-	serDesBufferResponse = vector<Transaction *> (NUM_LINK_BUSES, (Transaction*)NULL);
+    memset(responseLinkRoundRobin, 0, sizeof(unsigned) * NUM_LINK_BUSES);
 
-	responseLinkRoundRobin = vector<unsigned> (NUM_LINK_BUSES,0);
-
-	channelCounters = vector<unsigned>(NUM_CHANNELS,0);
-	channelCountersLifetime = vector<uint64_t>(NUM_CHANNELS,0);
+    memset(channelCounters, 0, sizeof(unsigned) * NUM_CHANNELS);
+    memset(channelCountersLifetime, 0, sizeof(uint64_t) * NUM_CHANNELS);
 
 	portInputBufferAvg = vector<uint> (NUM_PORTS, 0);
 	portOutputBufferAvg = vector<uint> (NUM_PORTS, 0);
 
-	requestLinkIdle = vector<unsigned> (NUM_LINK_BUSES,0);
-	responseLinkIdle = vector<unsigned> (NUM_LINK_BUSES,0);
-
-	cmdQFull = vector<uint>(NUM_CHANNELS,0);
+    memset(requestLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
+    memset(responseLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
 
 	//Create channels
 	channels.reserve(NUM_CHANNELS);
@@ -754,7 +755,6 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
         channels[i]->DRAMBusIdleCount=0;
 		channelCounters[i]=0;
         channels[i]->simpleController.RRQFull=0;
-		cmdQFull[i]=0;
 
 		PRINTN(tmp_str);
 	}
