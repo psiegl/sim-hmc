@@ -51,18 +51,17 @@ void Rank::Update(void)
 		bankStates[i].UpdateStateChange();
 	}
 
-    if(readReturnCountdown.size()>0)
+    if(readReturn.size()>0)
     {
-      for(unsigned i=0; i<readReturnCountdown.size(); i++)
+      for(unsigned i=0; i<readReturn.size(); i++)
       {
-          readReturnCountdown[i]--;
+          readReturn[i].first--;
       }
-      if((*readReturnCountdown.begin())==0)
+      if((*readReturn.begin()).first==0)
       {
-          dramchannel->ReceiveOnDataBus(*readReturnQueue.begin());
+          dramchannel->ReceiveOnDataBus((*readReturn.begin()).second);
 
-          readReturnCountdown.erase(readReturnCountdown.begin());
-          readReturnQueue.erase(readReturnQueue.begin());
+          readReturn.erase(readReturn.begin());
       }
     }
 
@@ -106,9 +105,8 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		//
 		//update bankstates
 		//
-		busPacket->busPacketType = READ_DATA;
-		readReturnQueue.push_back(busPacket);
-		readReturnCountdown.push_back(tCL);
+        busPacket->busPacketType = READ_DATA;
+        readReturn.push_back( make_pair(tCL, busPacket) );
 
 		for(unsigned i=0; i<NUM_BANKS; i++)
 		{

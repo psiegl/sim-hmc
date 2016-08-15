@@ -53,10 +53,8 @@ public:
 	//Rank ID in relation to the channel
 	unsigned id;
 
-	//Amount of time until data is returend from the DRAM
-	vector<unsigned> readReturnCountdown;
-	//Storage for response data
-	vector<BusPacket*> readReturnQueue;
+    //Amount of time until data is returned from the DRAM & Storage for response data
+    vector< pair<unsigned, BusPacket*> > readReturn; /* Countdown & Queue */
 
     //Callback for returning data
     DRAMChannel *dramchannel;
