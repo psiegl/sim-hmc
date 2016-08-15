@@ -271,7 +271,7 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 void BOBWrapper::RegisterCallbacks(
     void (*_readDone)(unsigned, uint64_t),
     void (*_writeDone)(unsigned, uint64_t),
-    void (*_logicDone)(unsigned, void *))
+    void (*_logicDone)(unsigned, uint64_t))
 {
 	readDoneCallback = _readDone;
 	writeDoneCallback = _writeDone;
@@ -379,7 +379,7 @@ void BOBWrapper::Update()
                 case LOGIC_RESPONSE:
                     if(logicDoneCallback)
                     {
-                        (*logicDoneCallback)(inFlightResponse[i]->mappedChannel, (void*)inFlightResponse[i]->address);
+                        (*logicDoneCallback)(inFlightResponse[i]->mappedChannel, inFlightResponse[i]->address);
                     }
 
                     UpdateLatencyStats(inFlightResponse[i]);

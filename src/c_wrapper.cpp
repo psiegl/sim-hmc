@@ -4,39 +4,46 @@
 
 extern "C" {
 
-BobWrapper* newBOBWrapper(unsigned num_ports)
+
+
+BobWrapper* BobNewWrapper(unsigned num_ports,
+            void(*readDone)(unsigned port, uint64_t addr),
+            void(*writeDone)(unsigned port, uint64_t addr),
+            void(*logicDone)(unsigned port, uint64_t addr))
 {
   BOBSim::NUM_PORTS = num_ports;
   BOBSim::SHOW_SIM_OUTPUT = 0;
-  return (BobWrapper*)new BOBSim::BOBWrapper();
+  BOBSim::BOBWrapper *bobwrapper = new BOBSim::BOBWrapper();
+  bobwrapper->RegisterCallbacks(readDone, writeDone, logicDone);
+  return (BobWrapper*)bobwrapper;
 }
 
-void freeBOBWrapper(BobWrapper *bobwrapper)
+void BobFreeWrapper(BobWrapper *bobwrapper)
 {
   delete (BOBSim::BOBWrapper*)bobwrapper;
 }
 
-bool SubmitTransaction(BobWrapper *bobwrapper, BobTransaction *bobtransaction, unsigned port)
+bool BobSubmitTransaction(BobWrapper *bobwrapper, BobTransaction *bobtransaction, unsigned port)
 {
   return ((BOBSim::BOBWrapper*)bobwrapper)->AddTransaction((BOBSim::Transaction*)bobtransaction, port);
 }
 
-void Update(BobWrapper *bobwrapper)
+void BobUpdate(BobWrapper *bobwrapper)
 {
   ((BOBSim::BOBWrapper*)bobwrapper)->Update();
 }
 
-void PrintStats(BobWrapper *bobwrapper)
+void BobPrintStats(BobWrapper *bobwrapper)
 {
   ((BOBSim::BOBWrapper*)bobwrapper)->PrintStats(true);
 }
 
-BobTransaction* CreateTransaction(TransactionType type, unsigned size, unsigned long addr)
+BobTransaction* BobCreateTransaction(TransactionType type, unsigned size, unsigned long addr)
 {
   return (BobTransaction*)new BOBSim::Transaction((BOBSim::TransactionType)type, size, addr);
 }
 
-void DeleteTransaction(BobTransaction *bobtransaction)
+void BobDeleteTransaction(BobTransaction *bobtransaction)
 {
   delete (BOBSim::Transaction*)bobtransaction;
 }

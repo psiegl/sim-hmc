@@ -76,6 +76,8 @@ public:
         transactionID = globalID++;
     }
 
+    // ToDo: psiegl: payload!
+
 	//Fields
 	//Type of transaction (defined above)
 	TransactionType transactionType;

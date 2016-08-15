@@ -2,6 +2,7 @@
 #define __C_WRAPPER_H__
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,15 +20,18 @@ enum TransactionType
 typedef struct BobWrapper BobWrapper;
 typedef struct BobTransaction BobTransaction;
 
-BobWrapper* newBOBWrapper(unsigned num_ports);
-void freeBOBWrapper(BobWrapper *bobwrapper);
+BobWrapper* BobNewWrapper(unsigned num_ports,
+            void(*readDone)(unsigned port, uint64_t addr),
+            void(*writeDone)(unsigned port, uint64_t addr),
+            void(*logicDone)(unsigned port, uint64_t addr));
+void BobFreeWrapper(BobWrapper *bobwrapper);
 
-bool SubmitTransaction(BobWrapper *bobwrapper, BobTransaction *bobtransaction, unsigned port);
-void Update(BobWrapper *bobwrapper);
-void PrintStats(BobWrapper *bobwrapper);
+bool BobSubmitTransaction(BobWrapper *bobwrapper, BobTransaction *bobtransaction, unsigned port);
+void BobUpdate(BobWrapper *bobwrapper);
+void BobPrintStats(BobWrapper *bobwrapper);
 
-BobTransaction* CreateTransaction(TransactionType type, unsigned size, unsigned long addr);
-void DeleteTransaction(BobTransaction *bobtransaction);
+BobTransaction* BobCreateTransaction(TransactionType type, unsigned size, unsigned long addr);
+void BobDeleteTransaction(BobTransaction *bobtransaction);
 
 #ifdef __cplusplus
 }

@@ -54,7 +54,7 @@ public:
 	void RegisterCallbacks(
         void (*readDone)(unsigned, uint64_t),
         void (*writeDone)(unsigned, uint64_t),
-        void (*logicDone)(unsigned, void *));
+        void (*logicDone)(unsigned, uint64_t));
 	void PrintStats(bool finalPrint);
 	void UpdateLatencyStats(Transaction *trans);
 	int FindOpenPort(uint coreID);
@@ -91,7 +91,7 @@ public:
 	//Callback functions
     void (*readDoneCallback)(unsigned, uint64_t);
     void (*writeDoneCallback)(unsigned, uint64_t);
-    void (*logicDoneCallback)(unsigned, void *);
+    void (*logicDoneCallback)(unsigned, uint64_t);
 
 	//More bookkeeping and statistics
 	vector< vector<unsigned> > perChanFullLatencies;
