@@ -171,7 +171,7 @@ int main(int argc, char **argv)
 			}
 			else
             {
-                if(waitCounters[l]>0) waitCounters[l]--;
+                waitCounters[l] -= (waitCounters[l]>0);
 
                 //make sure we are not waiting during idle time
                 if(waitCounters[l]==0)

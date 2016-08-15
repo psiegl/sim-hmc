@@ -41,11 +41,11 @@ static unsigned globalID=0;
 
 enum TransactionType
 {
-	DATA_READ,
-	DATA_WRITE,
-	RETURN_DATA,
-	LOGIC_OPERATION,
-	LOGIC_RESPONSE
+    DATA_READ       = 0x1,
+    DATA_WRITE      = 0x2,
+    RETURN_DATA     = 0x3,
+    LOGIC_OPERATION = 0x4,
+    LOGIC_RESPONSE  = 0x5
 };
 
 class Transaction
