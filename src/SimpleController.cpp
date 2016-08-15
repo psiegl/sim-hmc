@@ -521,23 +521,23 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		// - channel bits (already used)
 		//
 		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
-		physicalAddress = physicalAddress >> (channelBitWidth + cacheOffset);
+        physicalAddress >>= (channelBitWidth + cacheOffset);
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		mappedCol = tempA ^ tempB;
 
@@ -546,7 +546,7 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
@@ -559,29 +559,29 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		// - channel bits (already used)
 		//
 		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
-		physicalAddress = physicalAddress >> (channelBitWidth + cacheOffset);
+        physicalAddress >>= (channelBitWidth + cacheOffset);
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		mappedCol = tempA ^ tempB;
 
@@ -596,11 +596,11 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		// - channel bits (already used)
 		//
 		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
-		physicalAddress = physicalAddress >> (channelBitWidth + cacheOffset);
+        physicalAddress >>= (channelBitWidth + cacheOffset);
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		mappedCol = tempA ^ tempB;
 
@@ -609,83 +609,83 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		break;
 	case RW_CH_BK_RK_CL_BY://row:chan:bank:rank:col:by
 		//remove low order bits which account for the amount of data received on the bus (8 bytes)
-		physicalAddress = physicalAddress >> busOffsetBitWidth;
+        physicalAddress >>= busOffsetBitWidth;
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> colBitWidth;
+        physicalAddress >>= colBitWidth;
 		tempB = physicalAddress << colBitWidth;
 		mappedCol = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
 		//channel has already been mapped so just shift off the bits
-		physicalAddress = physicalAddress >> channelBitWidth;
+        physicalAddress >>= channelBitWidth;
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
 		break;
 	case RW_BK_RK_CH_CL_BY://row:bank:rank:chan:col:byte
 		//remove low order bits which account for the amount of data received on the bus (8 bytes)
-		physicalAddress = physicalAddress >> busOffsetBitWidth;
+        physicalAddress >>= busOffsetBitWidth;
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> colBitWidth;
+        physicalAddress >>= colBitWidth;
 		tempB = physicalAddress << colBitWidth;
 		mappedCol = tempA ^ tempB;
 
 		//channel has already been mapped so just shift off the bits
-		physicalAddress = physicalAddress >> channelBitWidth;
+        physicalAddress >>= channelBitWidth;
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
@@ -698,11 +698,11 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		// - channel bits (already used)
 		//
 		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
-		physicalAddress = physicalAddress >> (channelBitWidth + cacheOffset);
+        physicalAddress >>= (channelBitWidth + cacheOffset);
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		mappedCol = tempA ^ tempB;
 
@@ -711,19 +711,19 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
@@ -736,23 +736,23 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		// - channel bits (already used)
 		//
 		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
-		physicalAddress = physicalAddress >> (channelBitWidth + cacheOffset);
+        physicalAddress >>= (channelBitWidth + cacheOffset);
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		mappedCol = tempA ^ tempB;
 
@@ -761,36 +761,36 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
 		break;
 	case CH_RW_BK_RK_CL_BY:
 		//remove bits which would address the amount of data received on a request
-		physicalAddress = physicalAddress >> busOffsetBitWidth;
+        physicalAddress >>= busOffsetBitWidth;
 
 		//column bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> colBitWidth;
+        physicalAddress >>= colBitWidth;
 		tempB = physicalAddress << colBitWidth;
 		mappedCol = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rankBitWidth;
+        physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
 		mappedRank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> bankBitWidth;
+        physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
 		mappedBank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
-		physicalAddress = physicalAddress >> rowBitWidth;
+        physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
 		mappedRow = tempA ^ tempB;
 
