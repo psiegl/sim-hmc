@@ -37,6 +37,7 @@ using namespace std;
 namespace BOBSim
 {
 BOBWrapper::BOBWrapper() :
+    bob(new BOB(this)), //Create BOB object and register callbacks
 	readDoneCallback(NULL),
 	writeDoneCallback(NULL),
     logicDoneCallback(NULL),
@@ -54,7 +55,8 @@ BOBWrapper::BOBWrapper() :
 	maxReadsPerCycle(0),
 	maxWritesPerCycle(0),
 	readsPerCycle(0),
-	writesPerCycle(0)
+    writesPerCycle(0),
+    currentClockCycle(0)
 {
 #define TMP_STR_LEN 80
 
@@ -74,12 +76,7 @@ BOBWrapper::BOBWrapper() :
 		statsOut.open(tmp_str);
         strcpy(tmp_str, "BOBpower.txt");
 		powerOut.open(tmp_str);
-	}
-
-	currentClockCycle=0;
-
-	//Create BOB object and register callbacks
-    bob = new BOB(this);
+    }
 
 	//Incoming request packet fields (to be added to ports)
 	inFlightRequest = vector<Transaction*>(NUM_PORTS,NULL);
@@ -529,15 +526,11 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	//check - 1E9 or 2E30????
 	//
 	//
-	unsigned elapsedCycles;
-	if(currentClockCycle%EPOCH_LENGTH==0)
+    unsigned elapsedCycles = currentClockCycle%EPOCH_LENGTH;
+    if(elapsedCycles==0)
 	{
 		elapsedCycles = EPOCH_LENGTH;
-	}
-	else
-	{
-		elapsedCycles = currentClockCycle%EPOCH_LENGTH;
-	}
+    }
 
 
 	double bandwidth = ((issuedWrites+returnedReads)*TRANSACTION_SIZE)/(double)(elapsedCycles*CPU_CLK_PERIOD*1E-9)/(1<<30);
