@@ -76,7 +76,7 @@ public:
 	vector< vector<unsigned> > tFAWWindow;
 
 	//Refresh counters
-	vector<unsigned> refreshCounters;
+    unsigned refreshCounters[NUM_RANKS];
 
 	//More bookkeeping
 	unsigned refreshCounter;
@@ -87,12 +87,13 @@ public:
 	int waitingACTS;
 
 	//Power fields
-	vector<uint64_t> backgroundEnergy;
-	vector<uint64_t> burstEnergy;
-	vector<uint64_t> actpreEnergy;
-	vector<uint64_t> refreshEnergy;
+    uint64_t backgroundEnergy[NUM_RANKS];
+    uint64_t burstEnergy[NUM_RANKS];
+    uint64_t actpreEnergy[NUM_RANKS];
+    uint64_t refreshEnergy[NUM_RANKS];
 
-	vector<unsigned> idd2nCount;
+    unsigned idd2nCount[NUM_RANKS];
+
 private:
 	//Functions
 	void AddressMapping(uint64_t physicalAddress, unsigned &rank, unsigned &bank, unsigned &row, unsigned &col);

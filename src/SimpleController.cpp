@@ -50,8 +50,7 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	numPreBanksAverage(0),
 	numRefBanksAverage(0),
 	RRQFull(0),
-	waitingACTS(0),
-	idd2nCount(0),
+    waitingACTS(0),
     channel(parent), //Registers the parent channel object
 	rankBitWidth(log2(NUM_RANKS)),
 	bankBitWidth(log2(NUM_BANKS)),
@@ -67,9 +66,6 @@ SimpleController::SimpleController(DRAMChannel *parent) :
     //Make the bank state objects
     memset(bankStates, 0, sizeof(BankState) * NUM_RANKS * NUM_BANKS);
 
-    //Used to keep track of refreshes
-    refreshCounters = vector<unsigned>(NUM_RANKS,0);
-
 	//make tFAW sliding window - one per rank
 	tFAWWindow.reserve(NUM_RANKS);
 	for(unsigned i=0; i<NUM_RANKS; i++)
@@ -78,18 +74,18 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	}
 
 
-	//init power fields
-	backgroundEnergy = vector<uint64_t>(NUM_RANKS,0);
-	burstEnergy = vector<uint64_t>(NUM_RANKS,0);
-	actpreEnergy = vector<uint64_t>(NUM_RANKS,0);
-	refreshEnergy = vector<uint64_t>(NUM_RANKS,0);
-	idd2nCount = vector<unsigned>(NUM_RANKS,0);
 
-
-	//init refresh counters
 	for(unsigned i=0; i<NUM_RANKS; i++)
 	{
+        //init refresh counters
 		refreshCounters[i] = ((7800/tCK)/NUM_RANKS)*(i+1);
+
+        //init power fields
+        backgroundEnergy[i] = 0;
+        burstEnergy[i] = 0;
+        actpreEnergy[i] = 0;
+        refreshEnergy[i] = 0;
+        idd2nCount[i] = 0;
     }
 }
 
