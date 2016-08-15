@@ -190,7 +190,7 @@ void SimpleController::Update()
         if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : ");
         channel->ReceiveOnDataBus(*writeBurstQueue.begin());
 		writeBurstQueue.erase(writeBurstQueue.begin());
-		writeBurstCountdown.erase(writeBurstCountdown.begin());
+        writeBurstCountdown.erase(writeBurstCountdown.begin());
 	}
 
     bool issuingRefresh = false;
@@ -219,8 +219,7 @@ void SimpleController::Update()
 				if(DEBUG_CHANNEL) DEBUGN("-- !! Refresh is issuable - Sending : ");
 
 				//BusPacketType packtype, unsigned transactionID, unsigned col, unsigned rw, unsigned r, unsigned b, unsigned prt, unsigned bl
-				BusPacket *refreshPacket = new BusPacket(REFRESH, -1, 0, 0, r, 0, 0, 0, 0, 0, false);
-				refreshPacket->channel = channel->channelID;
+                BusPacket *refreshPacket = new BusPacket(REFRESH, -1, 0, 0, r, 0, 0, 0, channel->channelID, 0, false);
 
 				//Send to command bus
                 channel->ReceiveOnCmdBus(refreshPacket);

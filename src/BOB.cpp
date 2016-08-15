@@ -149,10 +149,7 @@ void BOB::Update(void)
 		{
 			//if the transaction IDs match, then the data is waiting there to return (it might not be ready yet,
 			//  which would not trigger this condition)
-            if(pendingReads[i]->transactionID==channels[pendingReads[i]->mappedChannel]->readReturnQueue[j]->transactionID)
-			{
-				pendingReads[i]->cyclesInReadReturnQ++;
-			}
+            pendingReads[i]->cyclesInReadReturnQ += (pendingReads[i]->transactionID==channels[pendingReads[i]->mappedChannel]->readReturnQueue[j]->transactionID);
 		}
 	}
 
@@ -161,10 +158,7 @@ void BOB::Update(void)
 	{
         for(unsigned j=0; j<channels[i]->simpleController.commandQueue.size(); j++)
 		{
-            if(channels[i]->simpleController.commandQueue[j]->busPacketType==ACTIVATE)
-			{
-                channels[i]->simpleController.commandQueue[j]->queueWaitTime++;
-			}
+            channels[i]->simpleController.commandQueue[j]->queueWaitTime += (channels[i]->simpleController.commandQueue[j]->busPacketType==ACTIVATE);
 		}
 	}
 
@@ -197,10 +191,7 @@ void BOB::Update(void)
 //			}
 		}
 
-		if(ports[i].outputBusyCountdown>0)
-		{
-			ports[i].outputBusyCountdown--;
-		}
+        ports[i].outputBusyCountdown -= (ports[i].outputBusyCountdown>0);
 	}
 
 	for(unsigned i=0; i<NUM_LINK_BUSES; i++)
@@ -235,12 +226,10 @@ void BOB::Update(void)
             delete *channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin();
             channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
 
-
             serDesBufferResponse[i] = inFlightResponseLink[i];
             inFlightResponseLink[i] = NULL;
         }
 	}
-
 
 	//
 	// NEW STUFF
@@ -477,7 +466,6 @@ void BOB::Update(void)
                     inFlightResponseLink[link] = channels[chan]->pendingLogicResponse;
 					//remove from channel
                     channels[chan]->pendingLogicResponse = NULL;
-
 					break;
 				}
                 else if(channels[chan]->readReturnQueue.size()>0)
@@ -532,7 +520,6 @@ void BOB::Update(void)
 							pendingReads.erase(pendingReads.begin()+p);
                             //delete channels[chan]->readReturnQueue[0];
                             //channels[chan]->readReturnQueue.erase(channels[chan]->readReturnQueue.begin());
-
 							break;
 						}
 					}
@@ -544,7 +531,6 @@ void BOB::Update(void)
 						responseLinkRoundRobin[link]++;
 						if(responseLinkRoundRobin[link]==CHANNELS_PER_LINK_BUS)
 							responseLinkRoundRobin[link]=0;
-
 						break;
 					}
 				}

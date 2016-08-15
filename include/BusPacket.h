@@ -54,7 +54,9 @@ class BusPacket
 {
 public:
     //Functions
-    BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned rw, unsigned rnk, unsigned bnk, unsigned prt, unsigned bl, unsigned mappedChannel, uint64_t addr, bool fromLogic) :
+    BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned rw,
+              unsigned rnk, unsigned bnk, unsigned prt, unsigned bl,
+              unsigned mappedChannel, uint64_t addr, bool fromLogic) :
       burstLength(bl),
       busPacketType(packtype),
       transactionID(id),
