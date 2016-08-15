@@ -76,7 +76,7 @@ public:
 
     void UpdateStateChange(void)
     {
-      if(this->stateChangeCountdown && !--this->stateChangeCountdown )
+      if(this->stateChangeCountdown && !--this->stateChangeCountdown)
       {
         switch(lastCommand)
         {

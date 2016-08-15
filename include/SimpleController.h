@@ -51,7 +51,7 @@ public:
 	//Functions
     SimpleController(DRAMChannel *parent);
 	bool IsIssuable(BusPacket *busPacket);
-	void Update();
+    void Update(void);
     void AddTransaction(Transaction *trans);
 
 	//Fields
@@ -70,8 +70,7 @@ public:
     BankState bankStates[NUM_RANKS][NUM_BANKS];
 
 	//Storage and counters to determine write bursts
-	vector<unsigned> writeBurstCountdown;
-	vector<BusPacket*> writeBurstQueue;
+    vector< pair<unsigned, BusPacket*> > writeBurst; /* Countdown & Queue */
 
 	//Sliding window for each rank to determine tFAW adherence
 	vector< vector<unsigned> > tFAWWindow;

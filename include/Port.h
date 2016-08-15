@@ -34,6 +34,8 @@
 #include <vector>
 #include "Transaction.h"
 
+using namespace std;
+
 namespace BOBSim
 {
 class Port
@@ -56,8 +58,8 @@ public:
     unsigned outputBusyCountdown;
 
     //Input and output storage for transactions
-    std::vector<Transaction *> inputBuffer;
-    std::vector<Transaction *> outputBuffer;
+    vector<Transaction *> inputBuffer;
+    vector<Transaction *> outputBuffer;
 };
 }
 

@@ -32,23 +32,31 @@
 #define BOBWRAPPER_H
 
 #include <deque>
-#include <math.h>
+#include <cmath>
 #include "BOB.h"
 #include "Transaction.h"
 
 using namespace std;
-
 
 namespace BOBSim
 {
 class BOBWrapper
 {
 private:
-  void UpdateLatencyStats(Transaction *trans);
+#if 0
+    //Round-robin counter
+    uint portRoundRobin;
+
+    int FindOpenPort(uint coreID);
+    bool isPortAvailable(unsigned port);
+#endif
+
+    void UpdateLatencyStats(Transaction *trans);
 
 public:
 	//Functions
     BOBWrapper(void);
+    ~BOBWrapper(void);
     void Update(void);
     bool AddTransaction(Transaction* trans, unsigned port);
 #if 0
@@ -59,24 +67,25 @@ public:
         void (*writeDone)(unsigned, uint64_t),
         void (*logicDone)(unsigned, uint64_t));
     void PrintStats(bool finalPrint);
-#if 0
-	int FindOpenPort(uint coreID);
-	bool isPortAvailable(unsigned port);
-#endif
 
 	//Fields
 	//BOB object
 	BOB *bob;
-	//Incoming transactions being sent to each port
-	vector<Transaction*> inFlightRequest;
-	//Counters for determining how long packet should be sent
-	vector<unsigned> inFlightRequestCounter;
-	vector<unsigned> inFlightRequestHeaderCounter;
 
-	//Outgoing transactiong being sent to cache
-	vector<Transaction*> inFlightResponse;
-	//Counters for determining how long packet should be sent
-    vector<unsigned> inFlightResponseCounter;
+    struct {
+      //Incoming transactions being sent to each port
+      vector<Transaction*> Cache;
+      //Counters for determining how long packet should be sent
+      vector<unsigned> Counter;
+      vector<unsigned> HeaderCounter;
+    } inFlightRequest;
+
+    struct {
+      //Outgoing transactiong being sent to cache
+      vector<Transaction*> Cache;
+      //Counters for determining how long packet should be sent
+      vector<unsigned> Counter;
+    } inFlightResponse;
 
 	//Bookkeeping on request stream
 	uint64_t maxReadsPerCycle;
@@ -85,12 +94,12 @@ public:
 	uint64_t writesPerCycle;
 
 	//Bookkeeping and statistics
-	vector<unsigned> requestPortEmptyCount;
-	vector<unsigned> responsePortEmptyCount;
-	vector<unsigned> requestCounterPerPort;
-	vector<unsigned> readsPerPort;
-	vector<unsigned> writesPerPort;
-	vector<unsigned> returnsPerPort;
+    unsigned* requestPortEmptyCount;
+    unsigned* responsePortEmptyCount;
+    unsigned* requestCounterPerPort;
+    unsigned* readsPerPort;
+    unsigned* writesPerPort;
+    unsigned* returnsPerPort;
 
 	//Callback functions
     void (*readDoneCallback)(unsigned, uint64_t);
@@ -98,14 +107,14 @@ public:
     void (*logicDoneCallback)(unsigned, uint64_t);
 
 	//More bookkeeping and statistics
-	vector< vector<unsigned> > perChanFullLatencies;
-	vector< vector<unsigned> > perChanReqPort;
-	vector< vector<unsigned> > perChanRspPort;
-	vector< vector<unsigned> > perChanReqLink;
-	vector< vector<unsigned> > perChanRspLink;
-	vector< vector<unsigned> > perChanAccess;
-	vector< vector<unsigned> > perChanRRQ;
-	vector< vector<unsigned> > perChanWorkQTimes;
+    vector<unsigned> perChanFullLatencies[NUM_CHANNELS];
+    vector<unsigned> perChanReqPort[NUM_CHANNELS];
+    vector<unsigned> perChanRspPort[NUM_CHANNELS];
+    vector<unsigned> perChanReqLink[NUM_CHANNELS];
+    vector<unsigned> perChanRspLink[NUM_CHANNELS];
+    vector<unsigned> perChanAccess[NUM_CHANNELS];
+    vector<unsigned> perChanRRQ[NUM_CHANNELS];
+    vector<unsigned> perChanWorkQTimes[NUM_CHANNELS];
 
     vector<unsigned> fullLatencies;
     vector<unsigned> dramLatencies;
@@ -126,10 +135,7 @@ public:
 
 	//Callback
 	void WriteIssuedCallback(unsigned port, uint64_t address);
-#if 0
-	//Round-robin counter
-	uint portRoundRobin;
-#endif
+
     uint64_t currentClockCycle;
 };
 }

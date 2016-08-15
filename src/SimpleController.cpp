@@ -181,16 +181,15 @@ void SimpleController::Update()
     }
 
 	//Send write data to data bus
-	for(unsigned i=0; i<writeBurstCountdown.size(); i++)
+    for(unsigned i=0; i<writeBurst.size(); i++)
 	{
-		writeBurstCountdown[i]--;
+        writeBurst[i].first--;
 	}
-    if(writeBurstCountdown.size()>0&&(*writeBurstCountdown.begin())==0)
+    if(writeBurst.size()>0&&(*writeBurst.begin()).first==0)
 	{
         if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : ");
-        channel->ReceiveOnDataBus(*writeBurstQueue.begin());
-		writeBurstQueue.erase(writeBurstQueue.begin());
-        writeBurstCountdown.erase(writeBurstCountdown.begin());
+        channel->ReceiveOnDataBus((*writeBurst.begin()).second);
+        writeBurst.erase(writeBurst.begin());
 	}
 
     bool issuingRefresh = false;
@@ -334,9 +333,8 @@ void SimpleController::Update()
 
                     BusPacket *writeData = new BusPacket(*commandQueue[i]);
 					writeData->busPacketType = WRITE_DATA;
-					writeBurstQueue.push_back(writeData);
-					writeBurstCountdown.push_back(tCWL);
-                    if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurstQueue.size()<<" "<<writeBurstCountdown.size()<<" with head : "<<*writeBurstCountdown.begin());
+                    writeBurst.push_back( make_pair(tCWL, writeData) );
+                    if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurst.size()<<" "<<writeBurst.size()<<" with head : "<<(*writeBurst.begin()).second);
 
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
                     bankstate->stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
