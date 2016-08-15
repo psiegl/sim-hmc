@@ -89,8 +89,7 @@ BOBWrapper::BOBWrapper() :
 
 	//Outgoing response packet fields (being sent back to cache)
 	inFlightResponse = vector<Transaction*>(NUM_PORTS,NULL);
-	inFlightResponseCounter = vector<unsigned>(NUM_PORTS,0);
-	inFlightResponseHeaderCounter = vector<unsigned>(NUM_PORTS,0);
+    inFlightResponseCounter = vector<unsigned>(NUM_PORTS,0);
 
 	//For statistics & bookkeeping
 	requestPortEmptyCount = vector<unsigned>(NUM_PORTS,0);
@@ -354,81 +353,59 @@ void BOBWrapper::Update()
 		//
 		//Requests
 		//
-		if(inFlightRequestHeaderCounter[i]>0)
-		{
-			inFlightRequestHeaderCounter[i]--;
-			//done
-			if(inFlightRequestHeaderCounter[i]==0)
-			{
-				if(inFlightRequest[i]!=NULL)
-				{
-                    if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
-					bob->ports[i].inputBuffer.push_back(inFlightRequest[i]);
-				}
-				else
-				{
-					ERROR("== Error - inFlightResponse null when not supposed to be");
-					exit(0);
-				}
-			}
-		}
+        if(inFlightRequestHeaderCounter[i]>0 && !--inFlightRequestHeaderCounter[i]) //done
+        {
+            if(inFlightRequest[i]!=NULL)
+            {
+                if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
+                bob->ports[i].inputBuffer.push_back(inFlightRequest[i]);
+            }
+            else
+            {
+                ERROR("== Error - inFlightResponse null when not supposed to be");
+                exit(0);
+            }
+        }
 
-		if(inFlightRequestCounter[i]>0)
-		{
-			inFlightRequestCounter[i]--;
-			if(inFlightRequestCounter[i]==0)
-			{
-				inFlightRequest[i]=NULL;
-			}
-		}
+        if(inFlightRequestCounter[i]>0 && !--inFlightRequestCounter[i])
+        {
+            inFlightRequest[i]=NULL;
+        }
 
-		//
-		//Responses
-		//
-		if(inFlightResponseHeaderCounter[i]>0)
-		{
-			//does nothing
-			inFlightResponseHeaderCounter[i]--;
-		}
+        if(inFlightResponseCounter[i]>0 && !--inFlightResponseCounter[i])
+        {
+            switch(inFlightResponse[i]->transactionType) {
+            case RETURN_DATA:
+                if (readDoneCallback)
+                {
+                    (*readDoneCallback)(i, inFlightResponse[i]->address);
+                }
 
-		if(inFlightResponseCounter[i]>0)
-		{
-			inFlightResponseCounter[i]--;
-			if(inFlightResponseCounter[i]==0)
-			{
-                switch(inFlightResponse[i]->transactionType) {
-                case RETURN_DATA:
-					if (readDoneCallback)
-					{
-						(*readDoneCallback)(i, inFlightResponse[i]->address);
-					}
+                UpdateLatencyStats(inFlightResponse[i]);
 
-					UpdateLatencyStats(inFlightResponse[i]);
+                returnsPerPort[i]++;
+                break;
 
-					returnsPerPort[i]++;
-                    break;
+            case LOGIC_RESPONSE:
+                if(logicDoneCallback)
+                {
+                    (*logicDoneCallback)(inFlightResponse[i]->mappedChannel, (void*)inFlightResponse[i]->address);
+                }
 
-                case LOGIC_RESPONSE:
-					if(logicDoneCallback)
-					{
-						(*logicDoneCallback)(inFlightResponse[i]->mappedChannel, (void*)inFlightResponse[i]->address);
-					}
+                UpdateLatencyStats(inFlightResponse[i]);
 
-					UpdateLatencyStats(inFlightResponse[i]);
+                totalLogicResponses++;
+                break;
 
-                    totalLogicResponses++;
-                    break;
+            default:
+                ERROR("== ERROR - unknown packet type coming down ");
+                exit(0);
+            }
 
-                default:
-                    ERROR("== ERROR - unknown packet type coming down ");
-					exit(0);
-				}
-
-				bob->ports[i].outputBuffer.erase(bob->ports[i].outputBuffer.begin());
-				delete inFlightResponse[i];
-				inFlightResponse[i]=NULL;
-			}
-		}
+            bob->ports[i].outputBuffer.erase(bob->ports[i].outputBuffer.begin());
+            delete inFlightResponse[i];
+            inFlightResponse[i]=NULL;
+        }
 	}
 
 	//NEW STUFF
@@ -438,8 +415,7 @@ void BOBWrapper::Update()
 		if(bob->ports[i].outputBuffer.size()>0 &&
 		        inFlightResponseCounter[i]==0)
 		{
-			inFlightResponse[i] = bob->ports[i].outputBuffer[0];
-			inFlightResponseHeaderCounter[i] = 1;
+            inFlightResponse[i] = bob->ports[i].outputBuffer[0];
 
             switch(inFlightResponse[i]->transactionType) {
             case RETURN_DATA:
@@ -464,15 +440,15 @@ void BOBWrapper::Update()
 
 void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 {
-	if(returnedRead->transactionType==LOGIC_RESPONSE)
-	{
+    switch(returnedRead->transactionType)
+    {
+    case LOGIC_RESPONSE:
         DEBUG("  == Got Logic Response");
 		DEBUG("  == Logic All Done!");
 		DEBUG("  == Took : "<<CPU_CLK_PERIOD*(currentClockCycle - returnedRead->fullStartTime)<<"ns");
-		return;
-	}
-	else if(returnedRead->transactionType==RETURN_DATA)
-	{
+        break;
+    case RETURN_DATA:
+      {
 		returnedRead->fullTimeTotal = currentClockCycle - returnedRead->fullStartTime;
 		returnedRead->cyclesRspPort = currentClockCycle - returnedRead->cyclesRspPort;
 
@@ -505,7 +481,11 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 		//latencies[((returnedRead->fullTimeTotal/10)*10)*CPU_CLK_PERIOD]++;
 
 		returnedReads++;
-	}
+      }
+        break;
+    default:
+        break;
+    }
 }
 
 //
@@ -702,13 +682,3 @@ void BOBWrapper::WriteIssuedCallback(unsigned port, uint64_t address)
 
 
 } //namespace BOBSim
-
-
-//for autoconf
-extern "C"
-{
-	void libbobsim_is_present(void)
-	{
-		;
-	}
-}

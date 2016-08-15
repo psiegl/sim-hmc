@@ -72,8 +72,7 @@ public:
 	//Outgoing transactiong being sent to cache
 	vector<Transaction*> inFlightResponse;
 	//Counters for determining how long packet should be sent
-	vector<unsigned> inFlightResponseCounter;
-	vector<unsigned> inFlightResponseHeaderCounter;
+    vector<unsigned> inFlightResponseCounter;
 
 	//Bookkeeping on request stream
 	uint64_t maxReadsPerCycle;

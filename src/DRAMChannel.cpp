@@ -125,27 +125,28 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
 {
     if(DEBUG_CHANNEL)DEBUG("    In AddTransaction - got");
 
-    switch(trans->transactionType) {
-      case LOGIC_OPERATION:
-          logicLayer->ReceiveLogicOperation(trans);
-          break;
-      case LOGIC_RESPONSE:
-          if(pendingLogicResponse==NULL)
-          {
-              if (DEBUG_LOGIC) DEBUG("== Made it back to channel ");
-              pendingLogicResponse = trans;
-              break;
-          }
-          else
-              return false;
-      default:
-          if(simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
-          {
-              simpleController.AddTransaction(trans);
-              break;
-          }
-          else
-              return false;
+    switch(trans->transactionType)
+    {
+    case LOGIC_OPERATION:
+        logicLayer->ReceiveLogicOperation(trans);
+        break;
+    case LOGIC_RESPONSE:
+        if(pendingLogicResponse==NULL)
+        {
+            if (DEBUG_LOGIC) DEBUG("== Made it back to channel ");
+            pendingLogicResponse = trans;
+            break;
+        }
+        else
+            return false;
+    default:
+        if(simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
+        {
+            simpleController.AddTransaction(trans);
+            break;
+        }
+        else
+            return false;
     }
 
 	return true;
