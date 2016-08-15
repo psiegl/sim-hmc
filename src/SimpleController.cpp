@@ -33,7 +33,6 @@
 #include "SimpleController.h"
 #include "DRAMChannel.h"
 #include "BusPacket.h"
-#include "Globals.h"
 #include <math.h>
 #include <string.h>
 

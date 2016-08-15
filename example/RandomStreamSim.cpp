@@ -47,6 +47,7 @@
 #include "LogicOperation.h"
 
 
+
 //Total number of reads (as a percentage) in request stream
 #define READ_WRITE_RATIO 66.6f //%
 //Frequency of requests - 0.0 = no requests; 1.0 = as fast as possible

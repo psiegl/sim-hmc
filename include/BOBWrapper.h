@@ -45,9 +45,9 @@ class BOBWrapper
 {
 public:
 	//Functions
-    BOBWrapper();
-	void Update();
-	bool AddTransaction(Transaction* trans, unsigned port);
+    BOBWrapper(void);
+    void Update(void);
+    bool AddTransaction(Transaction* trans, unsigned port);
 #if 0
 	bool AddTransaction(uint64_t addr, bool isWrite, int coreID, void *logicOp);
 #endif

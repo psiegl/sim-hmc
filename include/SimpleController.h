@@ -36,6 +36,7 @@
 #include "BusPacket.h"
 #include "Transaction.h"
 #include "BankState.h"
+#include "Globals.h"
 #include <deque>
 
 using namespace std;
