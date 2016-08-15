@@ -85,7 +85,7 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 }
 
 //Updates the state of everything 
-void SimpleController::Update()
+void SimpleController::Update(void)
 {
 	//
 	//Stats

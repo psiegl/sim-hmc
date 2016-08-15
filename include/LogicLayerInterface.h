@@ -31,7 +31,6 @@
 #ifndef LOGICLAYERINTERFACE_H
 #define LOGICLAYERINTERFACE_H
 
-
 #include "Transaction.h"
 #include "DRAMChannel.h"
 #include "LogicOperation.h"
@@ -44,14 +43,14 @@ namespace BOBSim
 class LogicLayerInterface
 {
 public:
-    LogicLayerInterface(uint id, DRAMChannel *_channel);
+    LogicLayerInterface(unsigned id, DRAMChannel *_channel);
 
     void ReceiveLogicOperation(Transaction *trans);
     void Update(void);
 
     DRAMChannel *channel;
 
-	uint simpleControllerID;
+    unsigned simpleControllerID;
 	uint64_t currentClockCycle;
 	Transaction *currentTransaction; //the current operation the logic layer is working on
 	LogicOperation *currentLogicOperation; //holds on to current logic operation object

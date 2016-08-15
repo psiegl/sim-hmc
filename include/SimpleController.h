@@ -47,21 +47,43 @@ namespace BOBSim
 class DRAMChannel;
 class SimpleController
 {
+private:
+    //Functions
+    bool IsIssuable(BusPacket *busPacket);
+    void AddressMapping(uint64_t physicalAddress, unsigned &rank, unsigned &bank, unsigned &row, unsigned &col);
+
+    //Fields
+    DRAMChannel *channel;
+
+    unsigned mappedRank;
+    unsigned mappedBank;
+    unsigned mappedRow;
+    unsigned mappedCol;
+
+    unsigned rankBitWidth;
+    unsigned bankBitWidth;
+    unsigned rowBitWidth;
+    unsigned colBitWidth;
+    unsigned busOffsetBitWidth;
+    unsigned channelBitWidth;
+    unsigned cacheOffset;
+
+    uint64_t currentClockCycle;
+
 public:
 	//Functions
     SimpleController(DRAMChannel *parent);
-	bool IsIssuable(BusPacket *busPacket);
     void Update(void);
     void AddTransaction(Transaction *trans);
 
 	//Fields
 	//Statistics and bookkeeping
 	unsigned commandQueueMax;
-	uint commandQueueAverage;
-	uint numIdleBanksAverage;
-	uint numActBanksAverage;
-	uint numPreBanksAverage;
-	uint numRefBanksAverage;
+    unsigned commandQueueAverage;
+    unsigned numIdleBanksAverage;
+    unsigned numActBanksAverage;
+    unsigned numPreBanksAverage;
+    unsigned numRefBanksAverage;
 
 	//Work queue for pending requests (DRAM specific commands go here)
 	deque<BusPacket*> commandQueue;
@@ -93,28 +115,6 @@ public:
     uint64_t refreshEnergy[NUM_RANKS];
 
     unsigned idd2nCount[NUM_RANKS];
-
-private:
-	//Functions
-	void AddressMapping(uint64_t physicalAddress, unsigned &rank, unsigned &bank, unsigned &row, unsigned &col);
-
-	//Fields
-	DRAMChannel *channel;
-
-	unsigned mappedRank;
-	unsigned mappedBank;
-	unsigned mappedRow;
-	unsigned mappedCol;
-
-	unsigned rankBitWidth;
-	unsigned bankBitWidth;
-	unsigned rowBitWidth;
-	unsigned colBitWidth;
-	unsigned busOffsetBitWidth;
-	unsigned channelBitWidth;
-    unsigned cacheOffset;
-
-    uint64_t currentClockCycle;
 };
 }
 

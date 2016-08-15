@@ -33,7 +33,7 @@
 using namespace BOBSim;
 using namespace std;
 
-LogicLayerInterface::LogicLayerInterface(uint id, DRAMChannel *_channel):
+LogicLayerInterface::LogicLayerInterface(unsigned id, DRAMChannel *_channel):
     channel(_channel),
     simpleControllerID(id),
 	currentClockCycle(0),

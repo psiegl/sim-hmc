@@ -30,19 +30,21 @@
 
 //Rank source
 
+#include <cstring>
 #include "Rank.h"
 #include "DRAMChannel.h"
 
 using namespace std;
 using namespace BOBSim;
 
-
 Rank::Rank(unsigned rankid,DRAMChannel *_channel):
     id(rankid),
     dramchannel(_channel),
-    bankStates((BankState*)calloc(sizeof(BankState), NUM_BANKS)),
+    bankStates(new BankState[NUM_BANKS]),
     currentClockCycle(0)
-{}
+{
+    memset(bankStates, 0, sizeof(BankState) * NUM_BANKS);
+}
 
 void Rank::Update(void)
 {
@@ -53,16 +55,16 @@ void Rank::Update(void)
 
     if(readReturn.size()>0)
     {
-      for(unsigned i=0; i<readReturn.size(); i++)
-      {
-          readReturn[i].first--;
-      }
-      if((*readReturn.begin()).first==0)
-      {
-          dramchannel->ReceiveOnDataBus((*readReturn.begin()).second);
+        for(unsigned i=0; i<readReturn.size(); i++)
+        {
+            readReturn[i].first--;
+        }
+        if((*readReturn.begin()).first==0)
+        {
+            dramchannel->ReceiveOnDataBus((*readReturn.begin()).second);
 
-          readReturn.erase(readReturn.begin());
-      }
+            readReturn.erase(readReturn.begin());
+        }
     }
 
 	//increment clock cycle
