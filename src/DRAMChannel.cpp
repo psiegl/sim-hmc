@@ -32,11 +32,12 @@
 
 #include "DRAMChannel.h"
 #include "LogicLayerInterface.h"
+#include "BOB.h"
 
 using namespace std;
 using namespace BOBSim;
 
-DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*)):
+DRAMChannel::DRAMChannel(unsigned id, BOB *_bob):
     simpleController(this),
     inFlightCommandCountdown(0),
     inFlightDataCountdown(0),
@@ -46,7 +47,6 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*
     readReturnQueueMax(0),
     logicLayer(new LogicLayerInterface(id, this)),
     bob(_bob),
-    ReportCallback(reportCB),
     DRAMBusIdleCount(0)
 {
     for(unsigned i=0; i<NUM_RANKS; i++)
@@ -86,7 +86,7 @@ void DRAMChannel::Update()
 
                 simpleController.outstandingReads--;
 
-                (bob->*ReportCallback)(inFlightDataPacket);
+                bob->ReportCallback(inFlightDataPacket);
 
                 //keep track of total number of entries in return queue
                 if(readReturnQueue.size()>readReturnQueueMax)
@@ -96,7 +96,7 @@ void DRAMChannel::Update()
             }
             break;
         case WRITE_DATA:
-            //(bob->*ReportCallback)(inFlightDataPacket);
+            //bob->ReportCallback(inFlightDataPacket);
             ranks[inFlightDataPacket->rank].ReceiveFromBus(inFlightDataPacket);
             break;
         default:
@@ -162,7 +162,7 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
     {
     case ACTIVATE:
     case WRITE_P: //Report the WRITE is finally going
-        (bob->*ReportCallback)(busPacket);
+        bob->ReportCallback(busPacket);
         break;
     default:
         break;

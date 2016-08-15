@@ -128,7 +128,7 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 	channels.reserve(NUM_CHANNELS);
 	for(unsigned i=0; i<NUM_CHANNELS; i++)
 	{
-        channels.push_back(new DRAMChannel(i, this, &BOB::ReportCallback));
+        channels.push_back(new DRAMChannel(i, this));
 	}
 
 	//Used for round-robin

@@ -48,7 +48,7 @@ class DRAMChannel
 {
 public:
     //Functions
-    DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*));
+    DRAMChannel(unsigned id, BOB *_bob);
     bool AddTransaction(Transaction *trans);
     void Update(void);
     void ReceiveOnDataBus(BusPacket *busPacket);
@@ -71,10 +71,7 @@ public:
 	//Bookkeeping for maximum number of requests waiting in queue
 	unsigned readReturnQueueMax;
 	//Storage for pending response data
-	deque<BusPacket*> readReturnQueue;
-	
-    //Callbacks
-    void (BOB::*ReportCallback)(BusPacket*);
+    deque<BusPacket*> readReturnQueue;
 
 	//Command packet being sent on DRAM command bus
 	BusPacket *inFlightCommandPacket;
