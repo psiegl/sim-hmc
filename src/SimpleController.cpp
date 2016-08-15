@@ -71,12 +71,7 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	for(unsigned i=0; i<NUM_RANKS; i++)
 	{
 		tFAWWindow.push_back(vector<unsigned>());
-	}
 
-
-
-	for(unsigned i=0; i<NUM_RANKS; i++)
-	{
         //init refresh counters
 		refreshCounters[i] = ((7800/tCK)/NUM_RANKS)*(i+1);
 
