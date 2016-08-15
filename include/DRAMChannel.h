@@ -48,7 +48,7 @@ class DRAMChannel
 {
 public:
     //Functions
-    DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned));
+    DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*));
     bool AddTransaction(Transaction *trans);
     void Update(void);
     void ReceiveOnDataBus(BusPacket *busPacket);
@@ -74,7 +74,7 @@ public:
 	deque<BusPacket*> readReturnQueue;
 	
     //Callbacks
-    void (BOB::*ReportCallback)(BusPacket*, unsigned);
+    void (BOB::*ReportCallback)(BusPacket*);
 
 	//Command packet being sent on DRAM command bus
 	BusPacket *inFlightCommandPacket;

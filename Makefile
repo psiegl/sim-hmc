@@ -20,7 +20,7 @@ all: ${EXE_NAME}
 
 #   $@ target name, $^ target deps, $< matched pattern
 $(EXE_NAME).shared: $(EXE_OBJ) lib$(LIB_NAME).so
-	$(CXX) -L$(shell pwd) -Wl,-rpath=$(shell pwd) -s $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< -lbobsim
+	$(CXX) -s -L$(shell pwd) -Wl,-rpath=$(shell pwd) -s $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< -lbobsim
 	@echo "Built $@ successfully" 
 
 $(EXE_NAME): $(EXE_OBJ) lib$(LIB_NAME).a
@@ -29,7 +29,7 @@ $(EXE_NAME): $(EXE_OBJ) lib$(LIB_NAME).a
 
 #for now, I'm assuming that -ltcmalloc will be linked with the binary, not the library
 lib$(LIB_NAME).so: $(LOBJ)
-	$(CXX) -shared -Wl,-soname,$@ -o $@ $^
+	$(CXX) -s -shared -Wl,-soname,$@ -o $@ $^
 	@echo "Built $@ successfully" 
 
 lib$(LIB_NAME).a: $(OBJ)

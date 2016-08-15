@@ -51,17 +51,20 @@ void Rank::Update(void)
 		bankStates[i].UpdateStateChange();
 	}
 
-	for(unsigned i=0; i<readReturnCountdown.size(); i++)
-	{
-		readReturnCountdown[i]--;
-	}
-    if(readReturnCountdown.size()>0 && (*readReturnCountdown.begin())==0)
+    if(readReturnCountdown.size()>0)
     {
-        dramchannel->ReceiveOnDataBus(*readReturnQueue.begin());
+      for(unsigned i=0; i<readReturnCountdown.size(); i++)
+      {
+          readReturnCountdown[i]--;
+      }
+      if((*readReturnCountdown.begin())==0)
+      {
+          dramchannel->ReceiveOnDataBus(*readReturnQueue.begin());
 
-		readReturnCountdown.erase(readReturnCountdown.begin());
-		readReturnQueue.erase(readReturnQueue.begin());
-	}
+          readReturnCountdown.erase(readReturnCountdown.begin());
+          readReturnQueue.erase(readReturnQueue.begin());
+      }
+    }
 
 	//increment clock cycle
 	currentClockCycle++;

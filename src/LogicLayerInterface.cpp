@@ -77,9 +77,9 @@ void LogicLayerInterface::Update(void)
         if((*pendingLogicOpsQueue.begin())->logicOpContents != NULL)
 		{
 
-          if(DEBUG_LOGIC) DEBUG(" == In logic layer "<<simpleControllerID<<" : interpreting transaction");
+            if(DEBUG_LOGIC) DEBUG(" == In logic layer "<<simpleControllerID<<" : interpreting transaction");
 
-			//extract logic operation from transaction and grab handle to current operations
+            //extract logic operation from transaction and grab handle to current operations
             currentTransaction = *pendingLogicOpsQueue.begin();
             currentLogicOperation = (LogicOperation *)currentTransaction->logicOpContents;
             currentLogicOperation->request(currentTransaction, &outgoingQueue);

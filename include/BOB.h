@@ -51,7 +51,7 @@ public:
 	unsigned FindChannelID(Transaction* trans);
 	void Update();
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
-	void ReportCallback(BusPacket *bp, unsigned i);
+    void ReportCallback(BusPacket *bp);
 
 	//Fields
 	//Ports used on main BOB controller to communicate with cache

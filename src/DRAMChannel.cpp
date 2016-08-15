@@ -36,7 +36,7 @@
 using namespace std;
 using namespace BOBSim;
 
-DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*, unsigned)):
+DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*)):
     simpleController(this),
     inFlightCommandCountdown(0),
     inFlightDataCountdown(0),
@@ -57,65 +57,56 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*
 
 void DRAMChannel::Update()
 {
-    if(inFlightDataPacket==NULL)
-	{
-		DRAMBusIdleCount++;
-	}
-
 	//update buses
-	if(inFlightCommandPacket!=NULL)
-	{
-		inFlightCommandCountdown--;
-		if(inFlightCommandCountdown==0)
+    if(inFlightCommandPacket!=NULL && !--inFlightCommandCountdown)
+    {
+        ranks[inFlightCommandPacket->rank].ReceiveFromBus(inFlightCommandPacket);
+        inFlightCommandPacket = NULL;
+    }
+
+    if(inFlightDataPacket==NULL)
+    {
+        DRAMBusIdleCount++;
+    }
+    else if(!--inFlightDataCountdown)
+    {
+        switch(inFlightDataPacket->busPacketType)
         {
-			ranks[inFlightCommandPacket->rank].ReceiveFromBus(inFlightCommandPacket);
-			inFlightCommandPacket = NULL;
-		}
-	}
+        case READ_DATA:
+            if(DEBUG_CHANNEL) DEBUG("     == Data burst complete");
 
-	if(inFlightDataPacket!=NULL)
-	{
-		inFlightDataCountdown--;
-		if(inFlightDataCountdown==0)
-		{
-			switch(inFlightDataPacket->busPacketType)
-			{
-			case READ_DATA:
-                if(DEBUG_CHANNEL) DEBUG("     == Data burst complete");
+            //if the bus packet was from a request originating from a logic operation, send it back to logic layer
+            if(inFlightDataPacket->fromLogicOp)
+            {
+                logicLayer->ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address));
+            }
+            //if it was a regular request, add to return queue
+            else
+            {
+                readReturnQueue.push_back(inFlightDataPacket);
 
-				//if the bus packet was from a request originating from a logic operation, send it back to logic layer
-				if(inFlightDataPacket->fromLogicOp)
-				{
-                    logicLayer->ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address));
-				}
-                //if it was a regular request, add to return queue
-                else
+                simpleController.outstandingReads--;
+
+                (bob->*ReportCallback)(inFlightDataPacket);
+
+                //keep track of total number of entries in return queue
+                if(readReturnQueue.size()>readReturnQueueMax)
                 {
-                    readReturnQueue.push_back(inFlightDataPacket);
+                    readReturnQueueMax = readReturnQueue.size();
+                }
+            }
+            break;
+        case WRITE_DATA:
+            //(bob->*ReportCallback)(inFlightDataPacket);
+            ranks[inFlightDataPacket->rank].ReceiveFromBus(inFlightDataPacket);
+            break;
+        default:
+            ERROR("Encountered unexpected bus packet type");
+            abort();
+        }
 
-                    simpleController.outstandingReads--;
-
-                    (bob->*ReportCallback)(inFlightDataPacket, 0);
-
-                    //keep track of total number of entries in return queue
-                    if(readReturnQueue.size()>readReturnQueueMax)
-                    {
-                        readReturnQueueMax = readReturnQueue.size();
-					}
-				}
-				break;
-			case WRITE_DATA:
-                //(bob->*ReportCallback)(inFlightDataPacket, 0);
-				ranks[inFlightDataPacket->rank].ReceiveFromBus(inFlightDataPacket);
-				break;
-			default:
-                ERROR("Encountered unexpected bus packet type");
-				abort();
-			}
-
-			inFlightDataPacket = NULL;
-		}
-	}
+        inFlightDataPacket = NULL;
+    }
 
 	//updates
 	if(logicLayer!=NULL)
@@ -136,12 +127,9 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
 
     switch(trans->transactionType) {
       case LOGIC_OPERATION:
-      {
           logicLayer->ReceiveLogicOperation(trans);
           break;
-      }
       case LOGIC_RESPONSE:
-      {
           if(pendingLogicResponse==NULL)
           {
               if (DEBUG_LOGIC) DEBUG("== Made it back to channel ");
@@ -150,9 +138,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
           }
           else
               return false;
-      }
       default:
-      {
           if(simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
           {
               simpleController.AddTransaction(trans);
@@ -160,7 +146,6 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
           }
           else
               return false;
-      }
     }
 
 	return true;
@@ -175,10 +160,14 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
 	}
 
 	//Report the time we waited in the queue
-    if(busPacket->busPacketType==ACTIVATE ||
-       busPacket->busPacketType==WRITE_P ) //Report the WRITE is finally going
-	{
-        (bob->*ReportCallback)(busPacket, 0);
+    switch(busPacket->busPacketType)
+    {
+    case ACTIVATE:
+    case WRITE_P: //Report the WRITE is finally going
+        (bob->*ReportCallback)(busPacket);
+        break;
+    default:
+        break;
     }
 
 	inFlightCommandPacket = busPacket;
@@ -187,12 +176,15 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
 
 void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket)
 {
-	if(!(busPacket->busPacketType==READ_DATA ||
-       busPacket->busPacketType==WRITE_DATA))
-	{
+    switch(busPacket->busPacketType)
+    {
+    default:
         ERROR("== Error - Trying to put non-data packet on data bus!");
-		exit(0);
-	}
+        exit(0);
+    case READ_DATA:
+    case WRITE_DATA:
+        break;
+    }
 
 	if(inFlightDataPacket!=NULL)
 	{

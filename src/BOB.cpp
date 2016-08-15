@@ -878,7 +878,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 //
 //Callback shit
 //
-void BOB::ReportCallback(BusPacket *bp, unsigned i)
+void BOB::ReportCallback(BusPacket *bp)
 {
     switch(bp->busPacketType) {
     case ACTIVATE:
