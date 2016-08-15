@@ -49,7 +49,7 @@ public:
 	//Functions
     BOB(BOBWrapper *_bobwrapper);
 	unsigned FindChannelID(Transaction* trans);
-	void Update();
+    void Update(void);
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
     void ReportCallback(BusPacket *bp);
 
@@ -57,7 +57,7 @@ public:
 	//Ports used on main BOB controller to communicate with cache
 	vector<Port> ports;
 	//All DRAM channel objects (which includes ranks of DRAM and the simple contorller)
-	vector<DRAMChannel *> channels;
+    DRAMChannel* channels[NUM_CHANNELS];
 
 	//Bookkeeping for the number of requests to each channel
     unsigned channelCounters[NUM_CHANNELS];

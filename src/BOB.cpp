@@ -62,7 +62,6 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 {
     dram_channel_clk = 0;
 
-
 #ifdef LOG_OUTPUT
 	string output_filename("BOBsim");
 	if (getenv("SIM_DESC"))
@@ -125,11 +124,10 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     memset(requestLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
     memset(responseLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
 
-	//Create channels
-	channels.reserve(NUM_CHANNELS);
+    //Create channels
 	for(unsigned i=0; i<NUM_CHANNELS; i++)
 	{
-        channels.push_back(new DRAMChannel(i, this));
+        channels[i] = new DRAMChannel(i, this);
 	}
 
 	//Used for round-robin
@@ -224,8 +222,9 @@ void BOB::Update(void)
             inFlightResponseLink[i]->channelTimeTotal = currentClockCycle - inFlightResponseLink[i]->channelStartTime;
 
             //remove from return queue
-            delete *channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin();
+            BusPacket* front = *channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin();
             channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
+            delete front;
 
             serDesBufferResponse[i] = inFlightResponseLink[i];
             inFlightResponseLink[i] = NULL;
