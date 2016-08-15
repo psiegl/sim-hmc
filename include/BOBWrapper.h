@@ -107,14 +107,9 @@ public:
 	vector< vector<unsigned> > perChanRRQ;
 	vector< vector<unsigned> > perChanWorkQTimes;
 
-	vector<unsigned> fullLatencies;
-	unsigned fullSum;
-
-	vector<unsigned> dramLatencies;
-	unsigned dramSum;
-
-	vector<unsigned> chanLatencies;
-	unsigned chanSum;
+    vector<unsigned> fullLatencies;
+    vector<unsigned> dramLatencies;
+    vector<unsigned> chanLatencies;
 
 	unsigned issuedLogicOperations;
 	unsigned issuedWrites;

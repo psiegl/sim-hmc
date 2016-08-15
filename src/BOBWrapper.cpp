@@ -39,10 +39,7 @@ namespace BOBSim
 BOBWrapper::BOBWrapper() :
 	readDoneCallback(NULL),
 	writeDoneCallback(NULL),
-	logicDoneCallback(NULL),
-	fullSum(0),
-	dramSum(0),
-	chanSum(0),
+    logicDoneCallback(NULL),
 	issuedWrites(0),
 	committedWrites(0),
 	issuedLogicOperations(0),
@@ -467,14 +464,9 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 			DEBUGN(" dram: "<< returnedRead->dramTimeTotal * CPU_CLK_PERIOD<<"ns");
 			DEBUG(" chan: "<< returnedRead->channelTimeTotal * CPU_CLK_PERIOD<<"ns");
 		*/
-		fullLatencies.push_back(returnedRead->fullTimeTotal);
-		fullSum+=returnedRead->fullTimeTotal;
-
-		dramLatencies.push_back(returnedRead->dramTimeTotal);
-		dramSum+=returnedRead->dramTimeTotal;
-
-		chanLatencies.push_back(returnedRead->channelTimeTotal);
-		chanSum+=returnedRead->channelTimeTotal;
+        fullLatencies.push_back(returnedRead->fullTimeTotal);
+        dramLatencies.push_back(returnedRead->dramTimeTotal);
+        chanLatencies.push_back(returnedRead->channelTimeTotal);
 
 		//latencies[((returnedRead->fullTimeTotal/10)*10)*CPU_CLK_PERIOD]++;
 
@@ -491,6 +483,15 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 //
 void BOBWrapper::PrintStats(bool finalPrint)
 {
+    unsigned fullSum = 0;
+    unsigned dramSum = 0;
+    unsigned chanSum = 0;
+    for(unsigned i=0; i<fullLatencies.size(); i++)
+    {
+      fullSum += fullLatencies[i];
+      dramSum += dramLatencies[i];
+      chanSum += chanLatencies[i];
+    }
 	float fullMean = (float)fullSum / returnedReads;
 	float dramMean = (float)dramSum / returnedReads;
 	float chanMean = (float)chanSum / returnedReads;
@@ -658,10 +659,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	}
 
 	issuedWrites = 0;
-	returnedReads = 0;
-	fullSum = 0;
-	dramSum = 0;
-	chanSum = 0;
+    returnedReads = 0;
 
 	fullLatencies.clear();
 	dramLatencies.clear();
