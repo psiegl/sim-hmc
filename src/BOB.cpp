@@ -172,7 +172,7 @@ void BOB::Update(void)
 	//keep track of average entries in port in/out-buffers
 	for(unsigned i=0; i<NUM_PORTS; i++)
 	{
-		portInputBufferAvg[i] += ports[i].inputBuffer.size();
+        portInputBufferAvg[i] += ports[i].inputBuffer.size();
 		portOutputBufferAvg[i] += ports[i].outputBuffer.size();
 
         //
@@ -353,9 +353,9 @@ void BOB::Update(void)
            ports[p].inputBuffer.size()>0)
 		{
 			//search out-of-order
-			for(unsigned i=0; i<ports[p].inputBuffer.size(); i++)
+            for(unsigned i=0; i<ports[p].inputBuffer.size(); i++)
 			{
-				unsigned channelID = FindChannelID(ports[p].inputBuffer[i]);
+                unsigned channelID = FindChannelID(ports[p].inputBuffer[i]);
 				unsigned linkBusID = channelID / CHANNELS_PER_LINK_BUS;
 
 				//make sure the serDe isn't busy and the queue isn't full
@@ -363,7 +363,7 @@ void BOB::Update(void)
                         channels[channelID]->simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
 				{
 					//put on channel bus
-					serDesBufferRequest[linkBusID] = ports[p].inputBuffer[i];
+                    serDesBufferRequest[linkBusID] = ports[p].inputBuffer[i];
 					serDesBufferRequest[linkBusID]->cyclesReqLink = currentClockCycle;
 					serDesBufferRequest[linkBusID]->cyclesReqPort = currentClockCycle - serDesBufferRequest[linkBusID]->cyclesReqPort;
 					serDesBufferRequest[linkBusID]->mappedChannel = channelID;
@@ -375,7 +375,7 @@ void BOB::Update(void)
                     case DATA_READ:
 						//put in pending queue
 						//  make it a RETURN_DATA type before we put it in pending queue
-						pendingReads.push_back(ports[p].inputBuffer[i]);
+                        pendingReads.push_back(ports[p].inputBuffer[i]);
 
 						readCounter++;
 
@@ -403,7 +403,7 @@ void BOB::Update(void)
 					if(priorityPort==NUM_PORTS) priorityPort = 0;
 
 					//remove from port input buffer
-					ports[p].inputBuffer.erase(ports[p].inputBuffer.begin()+i);
+                    ports[p].inputBuffer.erase(ports[p].inputBuffer.begin()+i);
 					break;
                 }
 			}

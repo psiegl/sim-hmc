@@ -133,7 +133,6 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		//
 		//update bank states
 		//
-
 		for(unsigned i=0; i<NUM_BANKS; i++)
 		{
 			bankStates[i].nextRead = max(bankStates[i].nextRead, currentClockCycle + tCCD);
@@ -193,4 +192,3 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		break;
 	}
 }
-

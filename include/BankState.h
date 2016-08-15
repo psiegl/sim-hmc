@@ -76,30 +76,25 @@ public:
 
     void UpdateStateChange(void)
     {
-      if(this->stateChangeCountdown)
+      if(this->stateChangeCountdown && !--this->stateChangeCountdown )
       {
-        this->stateChangeCountdown--;
-
-        if( ! this->stateChangeCountdown )
+        switch(lastCommand)
         {
-          switch(lastCommand)
-          {
-          case REFRESH:
-            this->currentBankState = IDLE;
-            break;
-          case WRITE_P:
-          case READ_P:
-            this->currentBankState = PRECHARGING;
-            this->stateChangeCountdown = tRP;
-            this->lastCommand = PRECHARGE;
-            break;
-          case PRECHARGE:
-            this->currentBankState = IDLE;
-            break;
-          default:
-            ERROR("== WTF STATE? : "<<this->lastCommand);
-            exit(0);
-          }
+        case REFRESH:
+          this->currentBankState = IDLE;
+          break;
+        case WRITE_P:
+        case READ_P:
+          this->currentBankState = PRECHARGING;
+          this->stateChangeCountdown = tRP;
+          this->lastCommand = PRECHARGE;
+          break;
+        case PRECHARGE:
+          this->currentBankState = IDLE;
+          break;
+        default:
+          ERROR("== WTF STATE? : "<<this->lastCommand);
+          exit(0);
         }
       }
     }

@@ -51,7 +51,7 @@ public:
 	unsigned portID;
 	
 	//Amount of time that the port's input is busy
-	unsigned inputBusyCountdown;
+    unsigned inputBusyCountdown;
     //Amount of time that the port's output is busy
     unsigned outputBusyCountdown;
 
