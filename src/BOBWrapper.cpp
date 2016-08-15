@@ -502,9 +502,11 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	float chanMean = (float)chanSum / returnedReads;
 
 	//calculate standard deviation
+#ifndef NO_OUTPUT
 	double fullstdsum = 0;
 	double dramstdsum = 0;
 	double chanstdsum = 0;
+#endif
 	unsigned fullLatMax = 0;
 	unsigned fullLatMin = -1;//max unsigned value
 	unsigned dramLatMax = 0;
@@ -515,15 +517,21 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	{
 		fullLatMax = max(fullLatencies[i],fullLatMax);
 		fullLatMin = min(fullLatencies[i], fullLatMin);
+#ifndef NO_OUTPUT
 		fullstdsum+=pow(fullLatencies[i]-fullMean,2);
+#endif
 
 		if(dramLatencies[i]>dramLatMax) dramLatMax = dramLatencies[i];
 		if(dramLatencies[i]<dramLatMin) dramLatMin = dramLatencies[i];
+#ifndef NO_OUTPUT
 		dramstdsum+=pow(dramLatencies[i]-dramMean,2);
+#endif
 
 		if(chanLatencies[i]>chanLatMax) chanLatMax = chanLatencies[i];
 		if(chanLatencies[i]<chanLatMin) chanLatMin = chanLatencies[i];
+#ifndef NO_OUTPUT
 		chanstdsum+=pow(chanLatencies[i]-chanMean,2);
+#endif
 	}
 #ifndef NO_OUTPUT
 	double fullstddev = sqrt(fullstdsum/returnedReads);
