@@ -80,7 +80,7 @@ void LogicLayerInterface::Update(void)
 
             //extract logic operation from transaction and grab handle to current operations
             currentTransaction = *pendingLogicOpsQueue.begin();
-            currentLogicOperation = (LogicOperation *)currentTransaction->logicOpContents;
+            currentLogicOperation = static_cast<LogicOperation *>(currentTransaction->logicOpContents);
             currentLogicOperation->request(currentTransaction, &outgoingQueue);
 		}
 		else

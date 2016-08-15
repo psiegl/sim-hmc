@@ -54,4 +54,6 @@ test: $(EXE_NAME)
 
 meld:
 	meld tmp.log example/zz_ref_C2000.log
-  
+
+cppcheck:
+	cppcheck --enable=all --enable=information $(INC) example $(SRCDIR) 2>&1 >/dev/null | less

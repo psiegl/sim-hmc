@@ -616,7 +616,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 #define MAX_STR 512
 		char tmp_str[MAX_STR];
 
-		snprintf(tmp_str,MAX_STR,"%d]%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f\n",
+        snprintf(tmp_str,MAX_STR,"%u]%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f\n",
 		         i,
 		         CPU_CLK_PERIOD*(reqPortSum/perChanReqPort[i].size()),
 		         CPU_CLK_PERIOD*(reqLinkSum/perChanReqLink[i].size()),

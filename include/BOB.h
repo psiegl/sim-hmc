@@ -105,7 +105,7 @@ public:
 	unsigned readCounter;
 	unsigned writeCounter;
 	unsigned committedWrites;
-	unsigned logicOpCounter;
+//	unsigned logicOpCounter;
 	
     //Callback
     BOBWrapper *bobwrapper;

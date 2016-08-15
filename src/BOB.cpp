@@ -389,7 +389,7 @@ void BOB::Update(void)
                         ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
                         break;
                     case LOGIC_OPERATION:
-						logicOpCounter++;
+//						logicOpCounter++;
 
 						//set port busy time
                         ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
@@ -713,7 +713,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 		channelCountersLifetime[i]+=channelCounters[i];
 
 		// since trying to actually format strings with stream operators is a huge pain
-		snprintf(tmp_str, MAX_TMP_STR, "%d]%9d%10.4f%10d%10.4f%10.4f%10.4f%10.4f%10.4f%10.2f%10.3f%10d(%d)%10d%10ld\n",
+        snprintf(tmp_str, MAX_TMP_STR, "%u]%9u%10.4f%10u%10.4f%10.4f%10.4f%10.4f%10.4f%10.2f%10.3f%10u(%d)%10u%10llu\n",
 		         i,
 		         channelCounters[i],
                  (float)channels[i]->simpleController.commandQueueAverage/dramCyclesElapsed,
@@ -731,8 +731,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
                  channels[i]->readReturnQueueMax,
                  (int)channels[i]->readReturnQueue.size(),
                  channels[i]->simpleController.RRQFull,
-		         channelCountersLifetime[i]
-
+                 (unsigned long long)channelCountersLifetime[i]
 		        );
 
 //        for(int r=0; r<NUM_RANKS; r++)
@@ -786,10 +785,6 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 		PRINTN("    -- Channel "<<c);
 		for(unsigned r=0; r<NUM_RANKS; r++)
 		{
-            float backgroundPower = ((float)channels[c]->simpleController.backgroundEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
-            float burstPower = ((float)channels[c]->simpleController.burstEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
-            float actprePower = ((float)channels[c]->simpleController.actpreEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
-            float refreshPower = ((float)channels[c]->simpleController.refreshEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
 
             float averagePower = ((float)(channels[c]->simpleController.actpreEnergy[r] +
                                           channels[c]->simpleController.backgroundEnergy[r] +
@@ -799,10 +794,15 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 
 			if(!shortOutput)
 			{
-				PRINTN("     -- Rank "<<r<<" : ");
+                PRINTN("     -- Rank "<<r<<" : ");
 				if(detailedOutput)
 				{
-					PRINT(setprecision(4)<<"TOT :"<<averagePower<<"  bkg:"<<backgroundPower<<" brst:"<<burstPower<<" ap:"<<actprePower<<" ref:"<<refreshPower);
+                    float backgroundPower = ((float)channels[c]->simpleController.backgroundEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+                    float burstPower = ((float)channels[c]->simpleController.burstEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+                    float actprePower = ((float)channels[c]->simpleController.actpreEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+                    float refreshPower = ((float)channels[c]->simpleController.refreshEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+
+                    PRINT(setprecision(4)<<"TOT :"<<averagePower<<"  bkg:"<<backgroundPower<<" brst:"<<burstPower<<" ap:"<<actprePower<<" ref:"<<refreshPower);
 				}
 				else
 				{

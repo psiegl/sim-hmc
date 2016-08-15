@@ -71,6 +71,7 @@ public:
       channelTimeTotal(0),
       portID(0),
 //      coreID(0),
+      logicOpContents(NULL),
       originatedFromLogicOp(false)
     {
         transactionID = globalID++;

@@ -466,7 +466,11 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 void SimpleController::AddTransaction(Transaction *trans)
 {
 	//map physical address to rank/bank/row/col
-	AddressMapping(trans->address,mappedRank,mappedBank,mappedRow,mappedCol);
+    unsigned mappedRank;
+    unsigned mappedBank;
+    unsigned mappedRow;
+    unsigned mappedCol;
+    AddressMapping(trans->address, &mappedRank, &mappedBank, &mappedRow, &mappedCol);
 
     BusPacket *action, *activate = new BusPacket(ACTIVATE,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
     switch(trans->transactionType)
@@ -505,7 +509,7 @@ void SimpleController::AddTransaction(Transaction *trans)
 	waitingACTS++;
 }
 
-void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, unsigned &bank, unsigned &row, unsigned &col)
+void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned *rank, unsigned *bank, unsigned *row, unsigned *col)
 {
 	uint64_t tempA, tempB;
 
@@ -527,28 +531,28 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		//column bits
 		tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//account for low order column bits
-		mappedCol = mappedCol << (cacheOffset-busOffsetBitWidth);
+        *col = *col << (cacheOffset-busOffsetBitWidth);
 
 		//bank bits
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		break;
 	case CLH_RW_RK_BK_CH_CLL_BY://col_high:row:rank:bank:chan:col_low:by
@@ -565,28 +569,28 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		//column bits
 		tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//account for low order column bits
-		mappedCol = mappedCol << (cacheOffset-busOffsetBitWidth);
+        *col = *col << (cacheOffset-busOffsetBitWidth);
 
 		break;
 	case RK_BK_RW_CLH_CH_CLL_BY://rank:bank:row:colhigh:chan:collow:by
@@ -602,28 +606,28 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//account for low order column bits
-		mappedCol = mappedCol << (cacheOffset-busOffsetBitWidth);
+        *col = *col << (cacheOffset-busOffsetBitWidth);
 
 		//row bits
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		break;
 	case RW_CH_BK_RK_CL_BY://row:chan:bank:rank:col:by
@@ -634,19 +638,19 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= colBitWidth;
 		tempB = physicalAddress << colBitWidth;
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		//channel has already been mapped so just shift off the bits
         physicalAddress >>= channelBitWidth;
@@ -655,7 +659,7 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		break;
 	case RW_BK_RK_CH_CL_BY://row:bank:rank:chan:col:byte
@@ -666,7 +670,7 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= colBitWidth;
 		tempB = physicalAddress << colBitWidth;
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//channel has already been mapped so just shift off the bits
         physicalAddress >>= channelBitWidth;
@@ -675,19 +679,19 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		break;
 	case RW_BK_RK_CLH_CH_CLL_BY://row:bank:rank:col_high:chan:col_low:byte
@@ -704,28 +708,28 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//account for low order column bits
-		mappedCol = mappedCol << (cacheOffset-busOffsetBitWidth);
+        *col = *col << (cacheOffset-busOffsetBitWidth);
 
 		//rank bits
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		break;
 	case RW_CLH_BK_RK_CH_CLL_BY://row:col_high:bank:rank:chan:col_low:byte
@@ -742,28 +746,28 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		//column bits
 		tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
 		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//account for low order column bits
-		mappedCol = mappedCol << (cacheOffset-busOffsetBitWidth);
+        *col = *col << (cacheOffset-busOffsetBitWidth);
 
 		//row bits
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		break;
 	case CH_RW_BK_RK_CL_BY:
@@ -774,25 +778,25 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		tempA = physicalAddress;
         physicalAddress >>= colBitWidth;
 		tempB = physicalAddress << colBitWidth;
-		mappedCol = tempA ^ tempB;
+        *col = tempA ^ tempB;
 
 		//rank bits
 		tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
 		tempB = physicalAddress << rankBitWidth;
-		mappedRank = tempA ^ tempB;
+        *rank = tempA ^ tempB;
 
 		//bank bits
 		tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
 		tempB = physicalAddress << bankBitWidth;
-		mappedBank = tempA ^ tempB;
+        *bank = tempA ^ tempB;
 
 		//row bits
 		tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
 		tempB = physicalAddress << rowBitWidth;
-		mappedRow = tempA ^ tempB;
+        *row = tempA ^ tempB;
 
 		break;
 	default:
@@ -801,5 +805,5 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned &rank, 
 		break;
 	};
 
-	if(DEBUG_CHANNEL) DEBUG(" to RK:"<<hex<<mappedRank<<" BK:"<<mappedBank<<" RW:"<<mappedRow<<" CL:"<<mappedCol<<dec);
+    if(DEBUG_CHANNEL) DEBUG(" to RK:"<<hex<<*rank<<" BK:"<<*bank<<" RW:"<<*row<<" CL:"<<*col<<dec);
 }

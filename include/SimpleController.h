@@ -50,15 +50,10 @@ class SimpleController
 private:
     //Functions
     bool IsIssuable(BusPacket *busPacket);
-    void AddressMapping(uint64_t physicalAddress, unsigned &rank, unsigned &bank, unsigned &row, unsigned &col);
+    void AddressMapping(uint64_t physicalAddress, unsigned *rank, unsigned *bank, unsigned *row, unsigned *col);
 
     //Fields
     DRAMChannel *channel;
-
-    unsigned mappedRank;
-    unsigned mappedBank;
-    unsigned mappedRow;
-    unsigned mappedCol;
 
     unsigned rankBitWidth;
     unsigned bankBitWidth;

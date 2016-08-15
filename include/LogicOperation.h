@@ -74,7 +74,7 @@ public:
 class LogicOperation_PAGE_FILL : private LogicOperation
 {
 public:
-  LogicOperation_PAGE_FILL(vector<uint64_t> &args) :
+  explicit LogicOperation_PAGE_FILL(vector<uint64_t> &args) :
     LogicOperation(PAGE_FILL, args)
   {
     if(this->arguments.size()!=2)
@@ -136,7 +136,7 @@ public:
 class LogicOperation_MEM_COPY : private LogicOperation
 {
 public:
-  LogicOperation_MEM_COPY(vector<uint64_t> &args) :
+  explicit LogicOperation_MEM_COPY(vector<uint64_t> &args) :
     LogicOperation(MEM_COPY, args)
   {
     if(this->arguments.size()!=2)
@@ -210,7 +210,7 @@ public:
 class LogicOperation_PAGE_TABLE_WALK : private LogicOperation
 {
 public:
-  LogicOperation_PAGE_TABLE_WALK(vector<uint64_t> &args) :
+  explicit LogicOperation_PAGE_TABLE_WALK(vector<uint64_t> &args) :
     LogicOperation(PAGE_TABLE_WALK, args)
   {
   }

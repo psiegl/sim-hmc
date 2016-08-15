@@ -71,6 +71,7 @@ public:
 //      nextStrobeMin(0),
 //      nextStrobeMax(0),
 //      nextRefresh(0),
+      lastCommand(REFRESH), // ToDo
       stateChangeCountdown(0)
     {}
 
