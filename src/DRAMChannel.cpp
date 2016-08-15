@@ -30,9 +30,9 @@
 
 //DRAM Channel source
 
+#include "BOB.h"
 #include "DRAMChannel.h"
 #include "LogicLayerInterface.h"
-#include "BOB.h"
 
 using namespace std;
 using namespace BOBSim;
@@ -106,10 +106,7 @@ void DRAMChannel::Update()
     }
 
 	//updates
-	if(logicLayer!=NULL)
-	{
-		logicLayer->Update();
-	}
+    logicLayer->Update();
 
 	simpleController.Update();
 	for(unsigned i=0; i<NUM_RANKS; i++)
