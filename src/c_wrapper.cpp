@@ -38,7 +38,7 @@ void BobPrintStats(BobWrapper *bobwrapper)
   ((BOBSim::BOBWrapper*)bobwrapper)->PrintStats(true);
 }
 
-BobTransaction* BobCreateTransaction(TransactionType type, unsigned size, unsigned long addr)
+BobTransaction* BobCreateTransaction(TransactionType type, unsigned size, unsigned long addr, void *payload)
 {
   return (BobTransaction*)new BOBSim::Transaction((BOBSim::TransactionType)type, size, addr);
 }
