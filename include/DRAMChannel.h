@@ -80,10 +80,10 @@ public:
 	BusPacket *inFlightCommandPacket;
 	//Time to send DRAM command packet
 	unsigned inFlightCommandCountdown;
-	//Data packet being sent on the DRAM data bus
-	BusPacket *inFlightDataPacket;
-	//Time to send DRAM data packet
-	unsigned inFlightDataCountdown;
+    //Data packet being sent on the DRAM data bus
+    BusPacket *inFlightDataPacket;
+    //Time to send DRAM data packet
+    unsigned inFlightDataCountdown;
 
 	//Number of cycles there is no data on the DRAM bus
 	unsigned DRAMBusIdleCount;

@@ -171,15 +171,8 @@ void BOB::Update(void)
 	//keep track of idle link buses
 	for(unsigned i=0; i<NUM_LINK_BUSES; i++)
 	{
-		if(inFlightRequestLink[i]==NULL)
-		{
-			requestLinkIdle[i]++;
-		}
-
-		if(inFlightResponseLink[i]==NULL)
-		{
-			responseLinkIdle[i]++;
-		}
+        requestLinkIdle[i] += (inFlightRequestLink[i]==NULL);
+        responseLinkIdle[i] += (inFlightResponseLink[i]==NULL);
 	}
 
 	//keep track of average entries in port in/out-buffers
@@ -212,50 +205,40 @@ void BOB::Update(void)
 
 	for(unsigned i=0; i<NUM_LINK_BUSES; i++)
 	{
-		if(inFlightRequestLinkCountdowns[i]>0)
-		{
-			inFlightRequestLinkCountdowns[i]--;
+        if(inFlightRequestLinkCountdowns[i]>0 && !--inFlightRequestLinkCountdowns[i])
+        {
+            //compute total time in serDes and travel up channel
+            inFlightRequestLink[i]->cyclesReqLink = currentClockCycle - inFlightRequestLink[i]->cyclesReqLink;
 
-			if(inFlightRequestLinkCountdowns[i]==0)
-			{
-				//compute total time in serDes and travel up channel
-				inFlightRequestLink[i]->cyclesReqLink = currentClockCycle - inFlightRequestLink[i]->cyclesReqLink;
+            //add to channel
+            channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i]); //0 is not used
 
-				//add to channel
-                channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i]); //0 is not used
+            //remove from channel bus
+            inFlightRequestLink[i] = NULL;
 
-				//remove from channel bus
-				inFlightRequestLink[i] = NULL;
+            //remove from SerDe buffer
+            serDesBufferRequest[i] = NULL;
+        }
 
-				//remove from SerDe buffer
-				serDesBufferRequest[i] = NULL;
-			}
-		}
+        if(inFlightResponseLinkCountdowns[i]>0 && !--inFlightResponseLinkCountdowns[i])
+        {
+            if(serDesBufferResponse[i]!=NULL)
+            {
+                ERROR("== Error - Response SerDe Buffer "<<i<<" collision");
+                exit(0);
+            }
 
-		if(inFlightResponseLinkCountdowns[i]>0)
-		{
-			inFlightResponseLinkCountdowns[i]--;
+            //note the time
+            inFlightResponseLink[i]->channelTimeTotal = currentClockCycle - inFlightResponseLink[i]->channelStartTime;
 
-			if(inFlightResponseLinkCountdowns[i]==0)
-			{
-				if(serDesBufferResponse[i]!=NULL)
-				{
-					ERROR("== Error - Response SerDe Buffer "<<i<<" collision");
-					exit(0);
-				}
-
-				//note the time
-				inFlightResponseLink[i]->channelTimeTotal = currentClockCycle - inFlightResponseLink[i]->channelStartTime;
-
-				//remove from return queue
-                delete *channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin();
-                channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
+            //remove from return queue
+            delete *channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin();
+            channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
 
 
-				serDesBufferResponse[i] = inFlightResponseLink[i];
-				inFlightResponseLink[i] = NULL;
-			}
-		}
+            serDesBufferResponse[i] = inFlightResponseLink[i];
+            inFlightResponseLink[i] = NULL;
+        }
 	}
 
 
@@ -316,7 +299,7 @@ void BOB::Update(void)
 			//if the channel uses DDR signaling, the cycles is cut in half
 			if(LINK_BUS_USE_DDR)
 			{
-				totalChannelCycles = totalChannelCycles / 2 + !!(totalChannelCycles % 2);
+                totalChannelCycles = totalChannelCycles / 2 + (totalChannelCycles & 0x1);
 			}
 
 			//since the channel is faster than the CPU, figure out how many CPU
@@ -439,7 +422,6 @@ void BOB::Update(void)
 
 		priorityPort++;
 		if(priorityPort==NUM_PORTS) priorityPort = 0;
-
 	}
 	priorityPort++;
 	if(priorityPort==NUM_PORTS) priorityPort = 0;
@@ -466,7 +448,7 @@ void BOB::Update(void)
 
 					if(LINK_BUS_USE_DDR)
 					{
-						totalChannelCycles = totalChannelCycles / 2 + !!(totalChannelCycles % 2);
+                        totalChannelCycles = totalChannelCycles / 2 + (totalChannelCycles & 0x1);
 					}
 
 					//channel countdown
@@ -518,7 +500,7 @@ void BOB::Update(void)
 
 							if(LINK_BUS_USE_DDR)
 							{
-								totalChannelCycles = totalChannelCycles / 2 + !!(totalChannelCycles % 2);
+                                totalChannelCycles = totalChannelCycles / 2 + (totalChannelCycles & 0x1);
 							}
 
 							//channel countdown

@@ -58,13 +58,12 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, void(BOB::*reportCB)(BusPacket*
 void DRAMChannel::Update()
 {
 	//update buses
-    if(inFlightCommandPacket!=NULL && !--inFlightCommandCountdown)
+    if(inFlightCommandCountdown>0 && !--inFlightCommandCountdown)
     {
         ranks[inFlightCommandPacket->rank].ReceiveFromBus(inFlightCommandPacket);
-        inFlightCommandPacket = NULL;
     }
 
-    if(inFlightDataPacket==NULL)
+    if(!inFlightDataCountdown)
     {
         DRAMBusIdleCount++;
     }
@@ -104,8 +103,6 @@ void DRAMChannel::Update()
             ERROR("Encountered unexpected bus packet type");
             abort();
         }
-
-        inFlightDataPacket = NULL;
     }
 
 	//updates
@@ -154,7 +151,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
 
 void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
 {
-	if(inFlightCommandPacket!=NULL)
+    if(inFlightCommandCountdown)
 	{
 		ERROR("== Error - Bus collision while trying to receive from controller");
 		exit(0);
@@ -187,13 +184,13 @@ void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket)
         break;
     }
 
-	if(inFlightDataPacket!=NULL)
+    if(inFlightDataCountdown)
 	{
 		ERROR("== Error - Bus collision while trying to receive from a rank in channel "<<channelID);
         ERROR("               (Time Left) : "<<inFlightDataCountdown);
 		exit(0);
 	}
 
-	inFlightDataPacket = busPacket;
-	inFlightDataCountdown = busPacket->burstLength;
+    inFlightDataPacket = busPacket;
+    inFlightDataCountdown = busPacket->burstLength;
 }

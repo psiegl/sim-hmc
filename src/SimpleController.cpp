@@ -141,7 +141,7 @@ void SimpleController::Update()
         //
         //Power
         //
-        bool bankOpen;
+        bool bankOpen = false;
 		for(unsigned b=0; b<NUM_RANKS; b++)
 		{
           if( (bankOpen = (bankStates[r][b].currentBankState == ROW_ACTIVE ||
@@ -166,23 +166,18 @@ void SimpleController::Update()
         //
         //Updates the sliding window for tFAW
 		for(unsigned i=0; i<tFAWWindow[r].size(); i++)
-		{
-			tFAWWindow[r][i]--;
-			if(tFAWWindow[r][i]==0) tFAWWindow[r].erase(tFAWWindow[r].begin());
+        {
+            if(!--tFAWWindow[r][i]) tFAWWindow[r].erase(tFAWWindow[r].begin());
 		}
 
         //Updates the bank states for each rank
 		for(unsigned b=0; b<NUM_BANKS; b++)
         {
             bankStates[r][b].UpdateStateChange();
-
         }
 
         //Handle refresh counters
-        if(refreshCounters[r]>0)
-        {
-            refreshCounters[r]--;
-        }
+        refreshCounters[r] -= (refreshCounters[r]>0);
     }
 
 	//Send write data to data bus

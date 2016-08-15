@@ -338,73 +338,67 @@ void BOBWrapper::Update()
 
 	//BOOK-KEEPING
 	for(unsigned i=0; i<NUM_PORTS; i++)
-	{
-		//STATS
-		if(inFlightResponse[i]==NULL)
-		{
-			responsePortEmptyCount[i]++;
-		}
-
-		if(inFlightRequest[i]==NULL)
-		{
-			requestPortEmptyCount[i]++;
-		}
-
+    {
 		//
 		//Requests
 		//
         if(inFlightRequestHeaderCounter[i]>0 && !--inFlightRequestHeaderCounter[i]) //done
         {
-            if(inFlightRequest[i]!=NULL)
-            {
-                if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
-                bob->ports[i].inputBuffer.push_back(inFlightRequest[i]);
-            }
-            else
-            {
-                ERROR("== Error - inFlightResponse null when not supposed to be");
-                exit(0);
-            }
+            if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
+            bob->ports[i].inputBuffer.push_back(inFlightRequest[i]);
         }
 
-        if(inFlightRequestCounter[i]>0 && !--inFlightRequestCounter[i])
+        if(inFlightRequestCounter[i]>0)
         {
-            inFlightRequest[i]=NULL;
+            if(!--inFlightRequestCounter[i])
+            {
+                inFlightRequest[i]=NULL;
+            }
+        }
+        else //STATS
+        {
+            requestPortEmptyCount[i]++;
         }
 
-        if(inFlightResponseCounter[i]>0 && !--inFlightResponseCounter[i])
+        if(inFlightResponseCounter[i]>0)
         {
-            switch(inFlightResponse[i]->transactionType) {
-            case RETURN_DATA:
-                if (readDoneCallback)
-                {
-                    (*readDoneCallback)(i, inFlightResponse[i]->address);
+            if(!--inFlightResponseCounter[i])
+            {
+                switch(inFlightResponse[i]->transactionType) {
+                case RETURN_DATA:
+                    if (readDoneCallback)
+                    {
+                        (*readDoneCallback)(i, inFlightResponse[i]->address);
+                    }
+
+                    UpdateLatencyStats(inFlightResponse[i]);
+
+                    returnsPerPort[i]++;
+                    break;
+
+                case LOGIC_RESPONSE:
+                    if(logicDoneCallback)
+                    {
+                        (*logicDoneCallback)(inFlightResponse[i]->mappedChannel, (void*)inFlightResponse[i]->address);
+                    }
+
+                    UpdateLatencyStats(inFlightResponse[i]);
+
+                    totalLogicResponses++;
+                    break;
+
+                default:
+                    ERROR("== ERROR - unknown packet type coming down ");
+                    exit(0);
                 }
 
-                UpdateLatencyStats(inFlightResponse[i]);
-
-                returnsPerPort[i]++;
-                break;
-
-            case LOGIC_RESPONSE:
-                if(logicDoneCallback)
-                {
-                    (*logicDoneCallback)(inFlightResponse[i]->mappedChannel, (void*)inFlightResponse[i]->address);
-                }
-
-                UpdateLatencyStats(inFlightResponse[i]);
-
-                totalLogicResponses++;
-                break;
-
-            default:
-                ERROR("== ERROR - unknown packet type coming down ");
-                exit(0);
+                bob->ports[i].outputBuffer.erase(bob->ports[i].outputBuffer.begin());
+                delete inFlightResponse[i];
             }
-
-            bob->ports[i].outputBuffer.erase(bob->ports[i].outputBuffer.begin());
-            delete inFlightResponse[i];
-            inFlightResponse[i]=NULL;
+        }
+        else //STATS
+        {
+            responsePortEmptyCount[i]++;
         }
 	}
 
