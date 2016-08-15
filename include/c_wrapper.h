@@ -20,15 +20,17 @@ enum TransactionType
 typedef struct BobWrapper BobWrapper;
 typedef struct BobTransaction BobTransaction;
 
-BobWrapper* BobNewWrapper(unsigned num_ports,
+BobWrapper* BobNewWrapper(unsigned num_ports);
+void BobFreeWrapper(BobWrapper *bobwrapper);
+
+void BobUpdate(BobWrapper *bobwrapper);
+bool BobSubmitTransaction(BobWrapper *bobwrapper, BobTransaction *bobtransaction, unsigned port);
+void BobRegisterCallbacks(BobWrapper *bobwrapper,
             void(*readDone)(unsigned port, uint64_t addr),
             void(*writeDone)(unsigned port, uint64_t addr),
             void(*logicDone)(unsigned port, uint64_t addr));
-void BobFreeWrapper(BobWrapper *bobwrapper);
-
-bool BobSubmitTransaction(BobWrapper *bobwrapper, BobTransaction *bobtransaction, unsigned port);
-void BobUpdate(BobWrapper *bobwrapper);
 void BobPrintStats(BobWrapper *bobwrapper);
+
 
 BobTransaction* BobCreateTransaction(TransactionType type, unsigned size, unsigned long addr, void *payload);
 void BobDeleteTransaction(BobTransaction *bobtransaction);

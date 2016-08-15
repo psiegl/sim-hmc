@@ -43,6 +43,9 @@ namespace BOBSim
 {
 class BOBWrapper
 {
+private:
+  void UpdateLatencyStats(Transaction *trans);
+
 public:
 	//Functions
     BOBWrapper(void);
@@ -55,10 +58,11 @@ public:
         void (*readDone)(unsigned, uint64_t),
         void (*writeDone)(unsigned, uint64_t),
         void (*logicDone)(unsigned, uint64_t));
-	void PrintStats(bool finalPrint);
-	void UpdateLatencyStats(Transaction *trans);
+    void PrintStats(bool finalPrint);
+#if 0
 	int FindOpenPort(uint coreID);
 	bool isPortAvailable(unsigned port);
+#endif
 
 	//Fields
 	//BOB object
@@ -127,12 +131,11 @@ public:
 
 	//Callback
 	void WriteIssuedCallback(unsigned port, uint64_t address);
-	
+#if 0
 	//Round-robin counter
 	uint portRoundRobin;
-
+#endif
     uint64_t currentClockCycle;
-
 };
 }
 

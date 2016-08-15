@@ -51,7 +51,9 @@ BOBWrapper::BOBWrapper() :
 	totalReturnedReads(0),
 	totalIssuedWrites(0),
 	totalTransactionsServiced(0),
+#if 0
 	portRoundRobin(0),
+#endif
 	maxReadsPerCycle(0),
 	maxWritesPerCycle(0),
 	readsPerCycle(0),
@@ -178,6 +180,7 @@ BOBWrapper::BOBWrapper() :
 	statsOut<<"!!EPOCH_DATA"<<endl;
 }
 
+#if 0
 inline bool BOBWrapper::isPortAvailable(unsigned port)
 {
 	return inFlightRequestCounter[port] == 0 &&
@@ -226,6 +229,7 @@ inline int BOBWrapper::FindOpenPort(uint coreID)
 	};
 	return -1;
 }
+#endif
 
 //MARSS uses this function 
 //
