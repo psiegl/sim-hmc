@@ -666,9 +666,11 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 	float dataperiod = tCK/2;
 	float bw = (1/dataperiod)*64/8;//64-bit bus, 8 bits/byte
 
+#ifndef NO_OUTPUT
 	unsigned numDevices = 64 / DEVICE_WIDTH;
     unsigned long totalBytesPerDevice = ((unsigned long)NUM_COLS * (unsigned long)NUM_ROWS * (unsigned long)NUM_BANKS * (unsigned long)DEVICE_WIDTH) / 8L; //in bytes
 	unsigned long gigabytesPerRank = (numDevices * totalBytesPerDevice)>>30;
+#endif
 
     //calculate peak bandwidth for link bus
     float reqbwpeak = (REQUEST_LINK_BUS_WIDTH / LINK_BUS_CLK_PERIOD) / 8; //in bytes
@@ -797,10 +799,12 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
                 PRINTN("     -- Rank "<<r<<" : ");
 				if(detailedOutput)
 				{
+#ifndef NO_OUTPUT
                     float backgroundPower = ((float)channels[c]->simpleController.backgroundEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
                     float burstPower = ((float)channels[c]->simpleController.burstEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
                     float actprePower = ((float)channels[c]->simpleController.actpreEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
                     float refreshPower = ((float)channels[c]->simpleController.refreshEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
+#endif
 
                     PRINT(setprecision(4)<<"TOT :"<<averagePower<<"  bkg:"<<backgroundPower<<" brst:"<<burstPower<<" ap:"<<actprePower<<" ref:"<<refreshPower);
 				}

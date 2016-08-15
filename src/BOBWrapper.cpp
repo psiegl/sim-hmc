@@ -525,9 +525,11 @@ void BOBWrapper::PrintStats(bool finalPrint)
 		if(chanLatencies[i]<chanLatMin) chanLatMin = chanLatencies[i];
 		chanstdsum+=pow(chanLatencies[i]-chanMean,2);
 	}
+#ifndef NO_OUTPUT
 	double fullstddev = sqrt(fullstdsum/returnedReads);
 	double dramstddev = sqrt(dramstdsum/returnedReads);
 	double chanstddev = sqrt(chanstdsum/returnedReads);
+#endif
 
 	//
 	//
