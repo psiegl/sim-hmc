@@ -48,6 +48,8 @@ enum CurrentBankState
 class BankState
 {
 public:
+    uint64_t *callback;
+
     //Fields
     CurrentBankState currentBankState;
     unsigned openRowAddress;
@@ -57,9 +59,8 @@ public:
 //	  uint64_t nextStrobeMin;
 //	  uint64_t nextStrobeMax;
 //	  uint64_t nextRefresh;     // ToDo!
-
-    BusPacketType lastCommand;
     unsigned stateChangeCountdown;
+    BusPacketType lastCommand;
 
 	//Functions
     BankState(void) :
@@ -77,7 +78,7 @@ public:
 
     void UpdateStateChange(void)
     {
-      if(this->stateChangeCountdown && !--this->stateChangeCountdown)
+      if(this->stateChangeCountdown>0 && !--this->stateChangeCountdown)
       {
         switch(lastCommand)
         {

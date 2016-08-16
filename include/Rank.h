@@ -46,6 +46,7 @@ class Rank
 public:
     //Functions
     Rank(unsigned id, DRAMChannel *_dramchannel);
+    ~Rank(void);
     void Update(void);
     void ReceiveFromBus(BusPacket *busPacket);
 
@@ -60,6 +61,7 @@ public:
     DRAMChannel *dramchannel;
 	
     //State of all banks in the DRAM channel
+    uint64_t banksNeedUpdate;
 	BankState *bankStates;
 
     uint64_t currentClockCycle;

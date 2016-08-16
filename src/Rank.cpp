@@ -40,18 +40,28 @@ using namespace BOBSim;
 Rank::Rank(unsigned rankid,DRAMChannel *_channel):
     id(rankid),
     dramchannel(_channel),
+    banksNeedUpdate(0),
     bankStates(new BankState[NUM_BANKS]),
     currentClockCycle(0)
 {
     memset(bankStates, 0, sizeof(BankState) * NUM_BANKS);
+    for(unsigned i=0; i<NUM_BANKS; i++)
+    {
+        bankStates->callback = &banksNeedUpdate;
+    }
+}
+
+Rank::~Rank(void)
+{
+    delete[] bankStates;
 }
 
 void Rank::Update(void)
 {
-	for(unsigned i=0; i<NUM_BANKS; i++)
-	{
-		bankStates[i].UpdateStateChange();
-	}
+    for(unsigned i=0; i<NUM_BANKS; i++)
+    {
+        bankStates[i].UpdateStateChange();
+    }
 
     if(readReturn.size()>0)
     {
@@ -62,7 +72,6 @@ void Rank::Update(void)
         if((*readReturn.begin()).first==0)
         {
             dramchannel->ReceiveOnDataBus((*readReturn.begin()).second);
-
             readReturn.erase(readReturn.begin());
         }
     }
@@ -89,7 +98,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 
             bankStates[i].lastCommand = REFRESH;
 			bankStates[i].currentBankState = REFRESHING;
-			bankStates[i].stateChangeCountdown = tRFC;
+            bankStates[i].stateChangeCountdown = tRFC;
 			bankStates[i].nextActivate = currentClockCycle + tRFC;
 		}
 		delete busPacket;
@@ -117,7 +126,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		}
 
         bankStates[busPacket->bank].lastCommand = READ_P;
-		bankStates[busPacket->bank].stateChangeCountdown = tRTP;
+        bankStates[busPacket->bank].stateChangeCountdown = tRTP;
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tRTP + tRP;
 		bankStates[busPacket->bank].nextRead = bankStates[busPacket->bank].nextActivate;
 		bankStates[busPacket->bank].nextWrite = bankStates[busPacket->bank].nextActivate;
@@ -184,7 +193,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			exit(0);
 		}
 
-		bankStates[busPacket->bank].stateChangeCountdown = tWR;
+        bankStates[busPacket->bank].stateChangeCountdown = tWR;
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tWR + tRP;
 
 		delete busPacket;

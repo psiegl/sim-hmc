@@ -66,12 +66,8 @@ SimpleController::SimpleController(DRAMChannel *parent) :
     //Make the bank state objects
     memset(bankStates, 0, sizeof(BankState) * NUM_RANKS * NUM_BANKS);
 
-	//make tFAW sliding window - one per rank
-	tFAWWindow.reserve(NUM_RANKS);
 	for(unsigned i=0; i<NUM_RANKS; i++)
-	{
-		tFAWWindow.push_back(vector<unsigned>());
-
+    {
         //init refresh counters
 		refreshCounters[i] = ((7800/tCK)/NUM_RANKS)*(i+1);
 
@@ -158,7 +154,8 @@ void SimpleController::Update(void)
         //Updates the sliding window for tFAW
 		for(unsigned i=0; i<tFAWWindow[r].size(); i++)
         {
-            if(!--tFAWWindow[r][i]) tFAWWindow[r].erase(tFAWWindow[r].begin());
+            if(!--tFAWWindow[r][i])
+                tFAWWindow[r].erase(tFAWWindow[r].begin());
 		}
 
         //Updates the bank states for each rank

@@ -90,7 +90,7 @@ public:
     vector< pair<unsigned, BusPacket*> > writeBurst; /* Countdown & Queue */
 
 	//Sliding window for each rank to determine tFAW adherence
-	vector< vector<unsigned> > tFAWWindow;
+    vector<unsigned> tFAWWindow[NUM_RANKS];
 
 	//Refresh counters
     unsigned refreshCounters[NUM_RANKS];
