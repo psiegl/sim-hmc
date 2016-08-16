@@ -32,7 +32,7 @@ void BobRegisterCallbacks(BobWrapper *bobwrapper,
 void BobPrintStats(BobWrapper *bobwrapper);
 
 
-BobTransaction* BobCreateTransaction(TransactionType type, unsigned size, unsigned long addr, void *payload);
+BobTransaction* BobCreateTransaction(enum TransactionType type, unsigned size, unsigned long addr, void *payload);
 void BobDeleteTransaction(BobTransaction *bobtransaction);
 
 #ifdef __cplusplus
