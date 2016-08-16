@@ -48,8 +48,6 @@ enum CurrentBankState
 class BankState
 {
 public:
-    uint64_t *callback;
-
     //Fields
     CurrentBankState currentBankState;
     unsigned openRowAddress;
