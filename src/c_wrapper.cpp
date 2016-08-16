@@ -3,6 +3,9 @@
 #include "Transaction.h"
 #include "Globals.h"
 
+unsigned BOBSim::NUM_PORTS =1;
+int BOBSim::SHOW_SIM_OUTPUT=1;
+
 extern "C" {
 
 BobWrapper* BobNewWrapper(unsigned num_ports)
