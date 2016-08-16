@@ -108,13 +108,13 @@ public:
 
 	//More bookkeeping and statistics
     vector<unsigned> perChanFullLatencies[NUM_CHANNELS];
-    vector<unsigned> perChanReqPort[NUM_CHANNELS];
-    vector<unsigned> perChanRspPort[NUM_CHANNELS];
-    vector<unsigned> perChanReqLink[NUM_CHANNELS];
-    vector<unsigned> perChanRspLink[NUM_CHANNELS];
-    vector<unsigned> perChanAccess[NUM_CHANNELS];
-    vector<unsigned> perChanRRQ[NUM_CHANNELS];
-    vector<unsigned> perChanWorkQTimes[NUM_CHANNELS];
+    double perChanReqPort[NUM_CHANNELS];
+    double perChanRspPort[NUM_CHANNELS];
+    double perChanReqLink[NUM_CHANNELS];
+    double perChanRspLink[NUM_CHANNELS];
+    double perChanAccess[NUM_CHANNELS];
+    double perChanRRQ[NUM_CHANNELS];
+    double perChanWorkQTimes[NUM_CHANNELS];
 
     vector<unsigned> fullLatencies;
     vector<unsigned> dramLatencies;

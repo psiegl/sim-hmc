@@ -101,6 +101,14 @@ BOBWrapper::BOBWrapper() :
     memset(writesPerPort, 0, sizeof(unsigned)*NUM_PORTS);
     memset(returnsPerPort, 0, sizeof(unsigned)*NUM_PORTS);
 
+    memset(perChanReqPort, 0, sizeof(perChanReqPort));
+    memset(perChanReqLink, 0, sizeof(perChanReqLink));
+    memset(perChanRspPort, 0, sizeof(perChanRspPort));
+    memset(perChanRspLink, 0, sizeof(perChanRspLink));
+    memset(perChanAccess, 0, sizeof(perChanAccess));
+    memset(perChanRRQ, 0, sizeof(perChanRRQ));
+    memset(perChanWorkQTimes, 0, sizeof(perChanWorkQTimes));
+
 	//Write configuration stuff to output file
 	//
 	//System Parameters
@@ -334,7 +342,7 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 //
 //Updates the state of the memory system
 //
-void BOBWrapper::Update()
+void BOBWrapper::Update(void)
 {
 	maxReadsPerCycle = max<uint64_t>(maxReadsPerCycle, readsPerCycle);
 	maxWritesPerCycle = max<uint64_t>(maxWritesPerCycle, writesPerCycle);
@@ -429,14 +437,17 @@ void BOBWrapper::Update()
                 exit(0);
             }
 		}
-	}
+    }
 
-	if(currentClockCycle%EPOCH_LENGTH==0 && currentClockCycle>0)
-	{
-		PrintStats(false);
-	}
+       if(currentClockCycle%EPOCH_LENGTH==0 && currentClockCycle>0)
+       {
+               PrintStats(false);
+       }
+
+
 	currentClockCycle++;
 }
+
 
 void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 {
@@ -456,13 +467,13 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 
 		//add latencies to lists
 		perChanFullLatencies[chanID].push_back(returnedRead->fullTimeTotal);
-		perChanReqPort[chanID].push_back(returnedRead->cyclesReqPort);
-		perChanRspPort[chanID].push_back(returnedRead->cyclesRspPort);
-		perChanReqLink[chanID].push_back(returnedRead->cyclesReqLink);
-		perChanRspLink[chanID].push_back(returnedRead->cyclesRspLink);
-		perChanAccess[chanID].push_back(returnedRead->dramTimeTotal);
-		perChanRRQ[chanID].push_back(returnedRead->cyclesInReadReturnQ);
-		perChanWorkQTimes[chanID].push_back(returnedRead->cyclesInWorkQueue);
+        perChanReqPort[chanID] += returnedRead->cyclesReqPort;
+        perChanRspPort[chanID] += returnedRead->cyclesRspPort;
+        perChanReqLink[chanID] += returnedRead->cyclesReqLink;
+        perChanRspLink[chanID] += returnedRead->cyclesRspLink;
+        perChanAccess[chanID] += returnedRead->dramTimeTotal;
+        perChanRRQ[chanID] += returnedRead->cyclesInReadReturnQ;
+        perChanWorkQTimes[chanID] += returnedRead->cyclesInWorkQueue;
 		/*
 			DEBUGN("== Read Returned");
 			DEBUGN(" full: "<< returnedRead->fullTimeTotal * CPU_CLK_PERIOD<<"ns");
@@ -488,6 +499,7 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 //
 void BOBWrapper::PrintStats(bool finalPrint)
 {
+#ifndef NO_OUTPUT
     unsigned fullSum = 0;
     unsigned dramSum = 0;
     unsigned chanSum = 0;
@@ -501,12 +513,10 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	float dramMean = (float)dramSum / returnedReads;
 	float chanMean = (float)chanSum / returnedReads;
 
-	//calculate standard deviation
-#ifndef NO_OUTPUT
+    //calculate standard deviation
 	double fullstdsum = 0;
 	double dramstdsum = 0;
-	double chanstdsum = 0;
-#endif
+    double chanstdsum = 0;
 	unsigned fullLatMax = 0;
 	unsigned fullLatMin = -1;//max unsigned value
 	unsigned dramLatMax = 0;
@@ -516,42 +526,34 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	for(unsigned i=0; i<fullLatencies.size(); i++)
 	{
 		fullLatMax = max(fullLatencies[i],fullLatMax);
-		fullLatMin = min(fullLatencies[i], fullLatMin);
-#ifndef NO_OUTPUT
-		fullstdsum+=pow(fullLatencies[i]-fullMean,2);
-#endif
+        fullLatMin = min(fullLatencies[i], fullLatMin);
+        fullstdsum+=pow(fullLatencies[i]-fullMean,2);
 
 		if(dramLatencies[i]>dramLatMax) dramLatMax = dramLatencies[i];
-		if(dramLatencies[i]<dramLatMin) dramLatMin = dramLatencies[i];
-#ifndef NO_OUTPUT
-		dramstdsum+=pow(dramLatencies[i]-dramMean,2);
-#endif
+        if(dramLatencies[i]<dramLatMin) dramLatMin = dramLatencies[i];
+        dramstdsum+=pow(dramLatencies[i]-dramMean,2);
 
 		if(chanLatencies[i]>chanLatMax) chanLatMax = chanLatencies[i];
 		if(chanLatencies[i]<chanLatMin) chanLatMin = chanLatencies[i];
-#ifndef NO_OUTPUT
-		chanstdsum+=pow(chanLatencies[i]-chanMean,2);
-#endif
-	}
-#ifndef NO_OUTPUT
+        chanstdsum+=pow(chanLatencies[i]-chanMean,2);
+    }
 	double fullstddev = sqrt(fullstdsum/returnedReads);
 	double dramstddev = sqrt(dramstdsum/returnedReads);
 	double chanstddev = sqrt(chanstdsum/returnedReads);
 #endif
 
-	//
-	//
-	//check - 1E9 or 2E30????
-	//
-	//
     unsigned elapsedCycles = currentClockCycle%EPOCH_LENGTH;
     if(elapsedCycles==0)
-	{
-		elapsedCycles = EPOCH_LENGTH;
+    {
+        elapsedCycles = EPOCH_LENGTH;
     }
 
+    double clockperiod_ns = CPU_CLK_PERIOD * 1E-9 /* ns */;
+//    double frequency_GHz = 1/(clockperiod_ns / 1E-9) /* GHz */;
+    double transferamount_Bytes = (issuedWrites+returnedReads)*TRANSACTION_SIZE;
+    double one_GB = (1<<30);
 
-	double bandwidth = ((issuedWrites+returnedReads)*TRANSACTION_SIZE)/(double)(elapsedCycles*CPU_CLK_PERIOD*1E-9)/(1<<30);
+    double bandwidth = transferamount_Bytes/(double)(elapsedCycles*clockperiod_ns)/one_GB;
 
 	double rw_ratio = ((double)returnedReads/(double)committedWrites)*100.0f;
 
@@ -589,28 +591,14 @@ void BOBWrapper::PrintStats(bool finalPrint)
 		unsigned tempMax=0;
 		unsigned tempMin=-1;
 		double stdsum=0;
-		double mean=0;
-		double reqLinkSum=0;
-		double rspLinkSum=0;
-		double reqPortSum=0;
-		double rspPortSum=0;
-		double vSum=0;
-		double rrqSum=0;
-		double workQSum=0;
+        double mean=0;
 
 		for(unsigned j=0; j<perChanFullLatencies[i].size(); j++)
 		{
 			if(perChanFullLatencies[i][j]>tempMax) tempMax = perChanFullLatencies[i][j];
 			if(perChanFullLatencies[i][j]<tempMin) tempMin = perChanFullLatencies[i][j];
 
-			tempSum+=perChanFullLatencies[i][j];
-			reqLinkSum+=perChanReqLink[i][j];
-			rspLinkSum+=perChanRspLink[i][j];
-			reqPortSum+=perChanReqPort[i][j];
-			rspPortSum+=perChanRspPort[i][j];
-			vSum+=perChanAccess[i][j];
-			rrqSum+=perChanRRQ[i][j];
-			workQSum+=perChanWorkQTimes[i][j];
+            tempSum+=perChanFullLatencies[i][j];
 		}
 
 		mean=tempSum/(float)perChanFullLatencies[i].size();
@@ -628,25 +616,25 @@ void BOBWrapper::PrintStats(bool finalPrint)
 
         snprintf(tmp_str,MAX_STR,"%u]%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f\n",
 		         i,
-		         CPU_CLK_PERIOD*(reqPortSum/perChanReqPort[i].size()),
-		         CPU_CLK_PERIOD*(reqLinkSum/perChanReqLink[i].size()),
-		         CPU_CLK_PERIOD*(workQSum/perChanWorkQTimes[i].size()),
-		         CPU_CLK_PERIOD*(vSum/perChanAccess[i].size()),
-		         CPU_CLK_PERIOD*(rrqSum/perChanRRQ[i].size()),
-		         CPU_CLK_PERIOD*(rspLinkSum/perChanRspLink[i].size()),
-		         CPU_CLK_PERIOD*(rspPortSum/perChanRspPort[i].size()),
+                 CPU_CLK_PERIOD*(perChanReqPort[i]/perChanFullLatencies[i].size()),
+                 CPU_CLK_PERIOD*(perChanReqLink[i]/perChanFullLatencies[i].size()),
+                 CPU_CLK_PERIOD*(perChanWorkQTimes[i]/perChanFullLatencies[i].size()),
+                 CPU_CLK_PERIOD*(perChanAccess[i]/perChanFullLatencies[i].size()),
+                 CPU_CLK_PERIOD*(perChanRRQ[i]/perChanFullLatencies[i].size()),
+                 CPU_CLK_PERIOD*(perChanRspLink[i]/perChanFullLatencies[i].size()),
+                 CPU_CLK_PERIOD*(perChanRspPort[i]/perChanFullLatencies[i].size()),
 		         CPU_CLK_PERIOD*(mean));
 
 		PRINTN(tmp_str);
 		//clear
-		perChanWorkQTimes[i].clear();
-		perChanFullLatencies[i].clear();
-		perChanReqLink[i].clear();
-		perChanRspLink[i].clear();
-		perChanReqPort[i].clear();
-		perChanRspPort[i].clear();
-		perChanAccess[i].clear();
-		perChanRRQ[i].clear();
+        perChanWorkQTimes[i] = 0;
+        perChanFullLatencies[i].clear();
+        perChanReqLink[i] = 0;
+        perChanRspLink[i] = 0;
+        perChanReqPort[i] = 0;
+        perChanRspPort[i] = 0;
+        perChanAccess[i] = 0;
+        perChanRRQ[i] = 0;
 	}
 
 	PRINT(" ---  Port stats (per epoch) : ");

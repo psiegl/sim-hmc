@@ -41,6 +41,7 @@
 #include <cstdlib>
 #include <stdint.h>
 
+//Flag for quiet mode (-q)
 #if defined(LOG_OUTPUT)
 #define PRINT(str)  {logOutput<< str<<std::endl;}
 #define PRINTN(str) {logOutput<< str;}
@@ -67,6 +68,8 @@ extern std::ofstream logOutput; //defined in BOBWrapper.cpp
 
 namespace BOBSim
 {
+extern int SHOW_SIM_OUTPUT;
+
 enum PortHeuristicScheme
 {
 	FIRST_AVAILABLE,
@@ -90,19 +93,17 @@ enum AddressMappingScheme
 //Debug Flags
 //
 //Prints debug information relating to the DRAM channel
-static bool DEBUG_CHANNEL = false;
+#define DEBUG_CHANNEL     false
 //Prints debug information relating to the ports on the main BOB controller
-static bool DEBUG_PORTS = false;
+#define DEBUG_PORTS       false
 //prints debug information relating to the logic layer in each simple controller
-static bool DEBUG_LOGIC = false;
+#define DEBUG_LOGIC       false
 
 //
 //Random Stream Sim stuff
 //
 //Number of CPU cycles between epoch boundaries.  
-static uint EPOCH_LENGTH = 1000000; 
-//Flag for quiet mode (-q)
-extern int SHOW_SIM_OUTPUT;
+#define EPOCH_LENGTH                  1000000
 
 //
 //BOB Architecture Config
@@ -123,11 +124,11 @@ extern int SHOW_SIM_OUTPUT;
 
 //Clock frequency for link buses
 //static float LINK_BUS_CLK_PERIOD = .15625; // ns - 6.4 GHz
-static float LINK_BUS_CLK_PERIOD = .3125; // ns - 3.2 GHz
+#define LINK_BUS_CLK_PERIOD           0.3125f // ns - 3.2 GHz
 //Ratio between CPU and link bus clocks - computed at runtime
 extern uint LINK_CPU_CLK_RATIO;
 //Flag to turn on/off double-data rate transfer on link bus
-static bool LINK_BUS_USE_DDR = true;
+#define LINK_BUS_USE_DDR            true
 
 //Size of DRAM request
 #define TRANSACTION_SIZE             64 // psiegl: changes as of packet size!
@@ -190,7 +191,7 @@ extern uint DRAM_CPU_CLK_RATIO;
 //CPU
 //
 //CPU clock frequency in nanoseconds
-#define CPU_CLK_PERIOD          0.3125 //ns
+#define CPU_CLK_PERIOD          0.3125f //ns
 
 //
 //DRAM Timing
