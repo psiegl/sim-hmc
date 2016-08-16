@@ -36,7 +36,7 @@ using namespace std;
 
 namespace BOBSim
 {
-BOBWrapper::BOBWrapper() :
+BOBWrapper::BOBWrapper(void) :
     bob(new BOB(this)), //Create BOB object and register callbacks
 	readDoneCallback(NULL),
 	writeDoneCallback(NULL),
@@ -75,13 +75,22 @@ BOBWrapper::BOBWrapper() :
     }
 
 	//Incoming request packet fields (to be added to ports)
-    inFlightRequest.Cache = vector<Transaction*>(NUM_PORTS,NULL);
-    inFlightRequest.Counter = vector<unsigned>(NUM_PORTS,0);
-    inFlightRequest.HeaderCounter = vector<unsigned>(NUM_PORTS,0);
+    inFlightRequest.Cache = new Transaction*[NUM_PORTS];
+    for(unsigned i=0; i<NUM_PORTS; i++) {
+        inFlightRequest.Cache[i] = NULL;
+    }
+    inFlightRequest.Counter = new unsigned[NUM_PORTS];
+    memset(inFlightRequest.Counter, 0, sizeof(unsigned)*NUM_PORTS);
+    inFlightRequest.HeaderCounter = new unsigned[NUM_PORTS];
+    memset(inFlightRequest.HeaderCounter, 0, sizeof(unsigned)*NUM_PORTS);
 
 	//Outgoing response packet fields (being sent back to cache)
-    inFlightResponse.Cache = vector<Transaction*>(NUM_PORTS,NULL);
-    inFlightResponse.Counter = vector<unsigned>(NUM_PORTS,0);
+    inFlightResponse.Cache = new Transaction*[NUM_PORTS];
+    for(unsigned i=0; i<NUM_PORTS; i++) {
+        inFlightResponse.Cache[i] = NULL;
+    }
+    inFlightResponse.Counter = new unsigned[NUM_PORTS];
+    memset(inFlightResponse.Counter, 0, sizeof(unsigned)*NUM_PORTS);
 
 	//For statistics & bookkeeping
     requestPortEmptyCount = new unsigned[NUM_PORTS];
@@ -184,6 +193,14 @@ BOBWrapper::~BOBWrapper(void)
   delete[] readsPerPort;
   delete[] writesPerPort;
   delete[] returnsPerPort;
+  delete[] inFlightRequest.Cache;
+  delete[] inFlightRequest.Counter;
+  delete[] inFlightRequest.HeaderCounter;
+  delete[] inFlightResponse.Cache;
+  delete[] inFlightResponse.Counter;
+  powerOut.close();
+  statsOut.close();
+  delete bob;
 }
 
 #if 0

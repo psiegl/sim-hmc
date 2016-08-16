@@ -51,16 +51,24 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob):
 {
     for(unsigned i=0; i<NUM_RANKS; i++)
     {
-        ranks.push_back(Rank(i, this));
+        ranks[i] = new Rank(i, this);
     }
 }
 
-void DRAMChannel::Update()
+DRAMChannel::~DRAMChannel(void)
+{
+    for(unsigned i=0; i<NUM_RANKS; i++)
+    {
+        delete ranks[i];
+    }
+}
+
+void DRAMChannel::Update(void)
 {
 	//update buses
     if(inFlightCommandCountdown>0 && !--inFlightCommandCountdown)
     {
-        ranks[inFlightCommandPacket->rank].ReceiveFromBus(inFlightCommandPacket);
+        ranks[inFlightCommandPacket->rank]->ReceiveFromBus(inFlightCommandPacket);
     }
 
     if(!inFlightDataCountdown)
@@ -97,7 +105,7 @@ void DRAMChannel::Update()
             break;
         case WRITE_DATA:
             //bob->ReportCallback(inFlightDataPacket);
-            ranks[inFlightDataPacket->rank].ReceiveFromBus(inFlightDataPacket);
+            ranks[inFlightDataPacket->rank]->ReceiveFromBus(inFlightDataPacket);
             break;
         default:
             ERROR("Encountered unexpected bus packet type");
@@ -111,7 +119,7 @@ void DRAMChannel::Update()
 	simpleController.Update();
 	for(unsigned i=0; i<NUM_RANKS; i++)
 	{
-		ranks[i].Update();
+        ranks[i]->Update();
     }
 }
 

@@ -74,17 +74,17 @@ public:
 
     struct {
       //Incoming transactions being sent to each port
-      vector<Transaction*> Cache;
+      Transaction** Cache;
       //Counters for determining how long packet should be sent
-      vector<unsigned> Counter;
-      vector<unsigned> HeaderCounter;
+      unsigned* Counter;
+      unsigned* HeaderCounter;
     } inFlightRequest;
 
     struct {
       //Outgoing transactiong being sent to cache
-      vector<Transaction*> Cache;
+      Transaction** Cache;
       //Counters for determining how long packet should be sent
-      vector<unsigned> Counter;
+      unsigned* Counter;
     } inFlightResponse;
 
 	//Bookkeeping and statistics

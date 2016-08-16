@@ -48,6 +48,7 @@ class BOB
 public:
 	//Functions
     BOB(BOBWrapper *_bobwrapper);
+    ~BOB(void);
 	unsigned FindChannelID(Transaction* trans);
     void Update(void);
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
@@ -64,11 +65,11 @@ public:
     uint64_t channelCountersLifetime[NUM_CHANNELS];
 
 	//Storage for pending read request information
-	vector<Transaction *> pendingReads;
+    vector<Transaction*> pendingReads;
 
 	//Bookkeeping for port statistics
-	vector<uint> portInputBufferAvg;
-	vector<uint> portOutputBufferAvg;
+    unsigned* portInputBufferAvg;
+    unsigned* portOutputBufferAvg;
 
 	//
 	//Request Link Bus
@@ -99,7 +100,7 @@ public:
 
 	//Used for round-robin 
 	unsigned priorityPort;
-	vector<unsigned> priorityLinkBus;
+    unsigned* priorityLinkBus;
 
     //Bookkeeping
 	unsigned readCounter;

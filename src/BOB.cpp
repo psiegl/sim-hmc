@@ -118,8 +118,10 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     memset(channelCounters, 0, sizeof(unsigned) * NUM_CHANNELS);
     memset(channelCountersLifetime, 0, sizeof(uint64_t) * NUM_CHANNELS);
 
-	portInputBufferAvg = vector<uint> (NUM_PORTS, 0);
-	portOutputBufferAvg = vector<uint> (NUM_PORTS, 0);
+    portInputBufferAvg = new unsigned[NUM_PORTS];
+    memset(portInputBufferAvg, 0, sizeof(unsigned)*NUM_PORTS);
+    portOutputBufferAvg = new unsigned[NUM_PORTS];
+    memset(portOutputBufferAvg, 0, sizeof(unsigned)*NUM_PORTS);
 
     memset(requestLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
     memset(responseLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
@@ -131,7 +133,20 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 	}
 
 	//Used for round-robin
-	priorityLinkBus = vector<unsigned>(NUM_PORTS,0);
+    priorityLinkBus = new unsigned[NUM_PORTS];
+    memset(priorityLinkBus, 0, sizeof(unsigned)*NUM_PORTS);
+}
+
+BOB::~BOB(void)
+{
+    delete[] portInputBufferAvg;
+    delete[] portOutputBufferAvg;
+    delete[] priorityLinkBus;
+
+    for(unsigned i=0; i<NUM_CHANNELS; i++)
+    {
+        delete channels[i];
+    }
 }
 
 void BOB::Update(void)

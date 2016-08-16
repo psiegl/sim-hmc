@@ -49,6 +49,7 @@ class DRAMChannel
 public:
     //Functions
     DRAMChannel(unsigned id, BOB *_bob);
+    ~DRAMChannel(void);
     bool AddTransaction(Transaction *trans);
     void Update(void);
     void ReceiveOnDataBus(BusPacket *busPacket);
@@ -58,7 +59,7 @@ public:
 	//Controller used to operate ranks of DRAM
 	SimpleController simpleController;
 	//Ranks of DRAM
-    vector<Rank> ranks;
+    Rank* ranks[NUM_RANKS];
 	//This channel's ID in relation to the entire system
 	unsigned channelID;
 	//Logic chip
