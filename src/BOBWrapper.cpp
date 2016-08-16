@@ -52,10 +52,6 @@ BOBWrapper::BOBWrapper() :
 #if 0
 	portRoundRobin(0),
 #endif
-	maxReadsPerCycle(0),
-	maxWritesPerCycle(0),
-	readsPerCycle(0),
-    writesPerCycle(0),
     currentClockCycle(0)
 {
 #define TMP_STR_LEN 80
@@ -265,11 +261,7 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 		if(currentClockCycle<5000)
 		{
             DEBUG("!! to port "<<openPort);
-		}
-		if (isWrite)
-			writesPerCycle++;
-		else
-			readsPerCycle++;
+        }
 
 		AddTransaction(trans, openPort);
 	}
@@ -344,10 +336,6 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 //
 void BOBWrapper::Update(void)
 {
-	maxReadsPerCycle = max<uint64_t>(maxReadsPerCycle, readsPerCycle);
-	maxWritesPerCycle = max<uint64_t>(maxWritesPerCycle, writesPerCycle);
-	readsPerCycle = writesPerCycle = 0;
-
 	bob->Update();
 
 	//BOOK-KEEPING
@@ -582,8 +570,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	PRINT("          std   : "<<dramstddev*CPU_CLK_PERIOD<<" ns");
 	PRINT("          min   : "<<dramLatMin*CPU_CLK_PERIOD<<" ns");
 	PRINT("          max   : "<<dramLatMax*CPU_CLK_PERIOD<<" ns");
-	PRINT("-- Per Channel Latency Components in nanoseconds (All from READs) : ");
-	maxReadsPerCycle = maxWritesPerCycle = 0;
+    PRINT("-- Per Channel Latency Components in nanoseconds (All from READs) : ");
 	PRINT("      reqPort    reqLink     workQ    access     rrq    rspLink   rspPort  total");
 	for(unsigned i=0; i<NUM_CHANNELS; i++)
 	{

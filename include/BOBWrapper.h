@@ -87,12 +87,6 @@ public:
       vector<unsigned> Counter;
     } inFlightResponse;
 
-	//Bookkeeping on request stream
-	uint64_t maxReadsPerCycle;
-	uint64_t maxWritesPerCycle;
-	uint64_t readsPerCycle;
-	uint64_t writesPerCycle;
-
 	//Bookkeeping and statistics
     unsigned* requestPortEmptyCount;
     unsigned* responsePortEmptyCount;
