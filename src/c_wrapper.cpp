@@ -1,6 +1,7 @@
 #include "c_wrapper.h"
 #include "BOBWrapper.h"
 #include "Transaction.h"
+#include "Globals.h"
 
 extern "C" {
 
