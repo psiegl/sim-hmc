@@ -45,10 +45,6 @@ Rank::Rank(unsigned rankid,DRAMChannel *_channel):
     currentClockCycle(0)
 {
     memset(bankStates, 0, sizeof(BankState) * NUM_BANKS);
-    for(unsigned i=0; i<NUM_BANKS; i++)
-    {
-        bankStates->callback = &banksNeedUpdate;
-    }
 }
 
 Rank::~Rank(void)

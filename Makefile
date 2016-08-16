@@ -16,7 +16,7 @@ EXE_OBJ = $(wildcard example/*.cpp)
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 LOBJ = $(addsuffix .lo, $(basename $(SRC)))
 
-all: ${EXE_NAME}
+all: ${EXE_NAME} lib${LIB_NAME}.a lib${LIB_NAME}.so
 
 #   $@ target name, $^ target deps, $< matched pattern
 $(EXE_NAME).shared: $(EXE_OBJ) lib$(LIB_NAME).so
