@@ -48,7 +48,7 @@ void BobPrintStats(BobWrapper *bobwrapper)
 
 BobTransaction* BobCreateTransaction(enum TransactionType type, unsigned size, unsigned long addr, void *payload)
 {
-  return (BobTransaction*)new BOBSim::Transaction((BOBSim::TransactionType)type, size, addr);
+  return (BobTransaction*)new BOBSim::Transaction((BOBSim::TransactionType)type, size, addr, payload);
 }
 
 void BobDeleteTransaction(BobTransaction *bobtransaction)

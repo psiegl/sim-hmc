@@ -52,11 +52,12 @@ class Transaction
 {
 public:
 	//Functions
-    Transaction(TransactionType transType, unsigned size, uint64_t addr):
+    Transaction(TransactionType transType, unsigned size, uint64_t addr, void *_payload = NULL):
       transactionType(transType),
       address(addr),
       mappedChannel(0),
       transactionSize(size),
+      payload(_payload),
       cyclesReqPort(0),
       cyclesRspPort(0),
       cyclesReqLink(0),
@@ -77,8 +78,6 @@ public:
         transactionID = globalID++;
     }
 
-    // ToDo: psiegl: payload!
-
 	//Fields
 	//Type of transaction (defined above)
 	TransactionType transactionType;
@@ -96,6 +95,8 @@ public:
 //	unsigned coreID;
 	void *logicOpContents;
 	bool originatedFromLogicOp;
+
+    void *payload;
 
 	//Latency break-up
 	uint64_t cyclesReqPort; //add to Port until remove from port
