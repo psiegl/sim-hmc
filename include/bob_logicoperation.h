@@ -34,9 +34,9 @@
 #include <vector>
 #include <cstdlib>
 #include <stdint.h>
-#include <math.h>
-#include "Globals.h"
-#include "Transaction.h"
+#include <cmath>
+#include "bob_globals.h"
+#include "bob_transaction.h"
 
 using namespace std;
 

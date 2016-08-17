@@ -28,88 +28,63 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************************/
 
-#ifndef SIMPLECONTROLLER_H
-#define SIMPLECONTROLLER_H
+#ifndef DRAMCHANNEL_H
+#define DRAMCHANNEL_H
 
-//Simple Controller header
+//DRAM Channel header
 
-#include "BusPacket.h"
-#include "Transaction.h"
-#include "BankState.h"
-#include "Globals.h"
+#include "bob_transaction.h"
+#include "bob_simplecontroller.h"
+#include "bob_rank.h"
 #include <deque>
 
 using namespace std;
 
 namespace BOBSim
 {
-//forward declaration
-class DRAMChannel;
-class SimpleController
+class BOB;
+class LogicLayerInterface;
+class DRAMChannel
 {
-private:
-    //Functions
-    bool IsIssuable(BusPacket *busPacket);
-    void AddressMapping(uint64_t physicalAddress, unsigned *rank, unsigned *bank, unsigned *row, unsigned *col);
-
-    //Fields
-    DRAMChannel *channel;
-
-    unsigned rankBitWidth;
-    unsigned bankBitWidth;
-    unsigned rowBitWidth;
-    unsigned colBitWidth;
-    unsigned busOffsetBitWidth;
-    unsigned channelBitWidth;
-    unsigned cacheOffset;
-
-    uint64_t currentClockCycle;
-
 public:
-	//Functions
-    SimpleController(DRAMChannel *parent);
+    //Functions
+    DRAMChannel(unsigned id, BOB *_bob);
+    ~DRAMChannel(void);
+    bool AddTransaction(Transaction *trans);
     void Update(void);
-    void AddTransaction(Transaction *trans);
+    void ReceiveOnDataBus(BusPacket *busPacket);
+    void ReceiveOnCmdBus(BusPacket *busPacket);
 
 	//Fields
-	//Statistics and bookkeeping
-	unsigned commandQueueMax;
-    unsigned commandQueueAverage;
-    unsigned numIdleBanksAverage;
-    unsigned numActBanksAverage;
-    unsigned numPreBanksAverage;
-    unsigned numRefBanksAverage;
+	//Controller used to operate ranks of DRAM
+	SimpleController simpleController;
+	//Ranks of DRAM
+    Rank* ranks[NUM_RANKS];
+	//This channel's ID in relation to the entire system
+	unsigned channelID;
+	//Logic chip
+	LogicLayerInterface *logicLayer;
+    // bob interface
+    BOB *bob;
+	//Pending outgoing logic response
+	Transaction *pendingLogicResponse;
 
-	//Work queue for pending requests (DRAM specific commands go here)
-	deque<BusPacket*> commandQueue;
+	//Bookkeeping for maximum number of requests waiting in queue
+	unsigned readReturnQueueMax;
+	//Storage for pending response data
+    deque<BusPacket*> readReturnQueue;
 
-	//Bank states for all banks in this channel
-    BankState bankStates[NUM_RANKS][NUM_BANKS];
+	//Command packet being sent on DRAM command bus
+	BusPacket *inFlightCommandPacket;
+	//Time to send DRAM command packet
+	unsigned inFlightCommandCountdown;
+    //Data packet being sent on the DRAM data bus
+    BusPacket *inFlightDataPacket;
+    //Time to send DRAM data packet
+    unsigned inFlightDataCountdown;
 
-	//Storage and counters to determine write bursts
-    vector< pair<unsigned, BusPacket*> > writeBurst; /* Countdown & Queue */
-
-	//Sliding window for each rank to determine tFAW adherence
-    vector<unsigned> tFAWWindow[NUM_RANKS];
-
-	//Refresh counters
-    unsigned refreshCounters[NUM_RANKS];
-
-	//More bookkeeping
-	unsigned refreshCounter;
-	unsigned readCounter;
-	unsigned writeCounter;
-	unsigned RRQFull;
-	unsigned outstandingReads;
-	int waitingACTS;
-
-	//Power fields
-    uint64_t backgroundEnergy[NUM_RANKS];
-    uint64_t burstEnergy[NUM_RANKS];
-    uint64_t actpreEnergy[NUM_RANKS];
-    uint64_t refreshEnergy[NUM_RANKS];
-
-    unsigned idd2nCount[NUM_RANKS];
+	//Number of cycles there is no data on the DRAM bus
+	unsigned DRAMBusIdleCount;
 };
 }
 

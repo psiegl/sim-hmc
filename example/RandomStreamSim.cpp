@@ -36,15 +36,15 @@
 #include <iostream>
 #include <getopt.h>
 #include <map>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <deque>
-#include "Globals.h"
-#include "Transaction.h"
-#include "BOB.h"
-#include "BOBWrapper.h"
-#include "LogicLayerInterface.h"
-#include "LogicOperation.h"
+#include "bob_globals.h"
+#include "bob_transaction.h"
+#include "bob.h"
+#include "bob_wrapper.h"
+#include "bob_logiclayerinterface.h"
+#include "bob_logicoperation.h"
 
 
 

@@ -33,8 +33,8 @@
 
 //Rank header
 
-#include "Globals.h"
-#include "BankState.h"
+#include "bob_globals.h"
+#include "bob_bankstate.h"
 
 using namespace std;
 

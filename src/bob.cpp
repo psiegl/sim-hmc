@@ -31,9 +31,9 @@
 //BOB source
 #include <bitset>
 #include <cstring>
-#include <math.h>
-#include "BOB.h"
-#include "BOBWrapper.h"
+#include <cmath>
+#include "bob.h"
+#include "bob_wrapper.h"
 
 using namespace std;
 

@@ -33,7 +33,7 @@
 
 //Transaction header
 
-#include "Globals.h"
+#include "bob_globals.h"
 
 namespace BOBSim
 {

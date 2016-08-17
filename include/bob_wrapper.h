@@ -33,8 +33,8 @@
 
 #include <deque>
 #include <cmath>
-#include "BOB.h"
-#include "Transaction.h"
+#include "bob.h"
+#include "bob_transaction.h"
 
 using namespace std;
 

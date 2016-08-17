@@ -30,9 +30,9 @@
 
 //DRAM Channel source
 
-#include "BOB.h"
-#include "DRAMChannel.h"
-#include "LogicLayerInterface.h"
+#include "bob.h"
+#include "bob_dramchannel.h"
+#include "bob_logiclayerinterface.h"
 
 using namespace std;
 using namespace BOBSim;

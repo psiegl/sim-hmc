@@ -33,10 +33,10 @@
 
 //BOB header
 
-#include "Transaction.h"
-#include "DRAMChannel.h"
-#include "SimpleController.h"
-#include "Port.h"
+#include "bob_transaction.h"
+#include "bob_dramchannel.h"
+#include "bob_simplecontroller.h"
+#include "bob_port.h"
 
 using namespace std;
 

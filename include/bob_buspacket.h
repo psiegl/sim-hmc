@@ -28,63 +28,62 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************************/
 
-#ifndef DRAMCHANNEL_H
-#define DRAMCHANNEL_H
+#ifndef BUSPACKET_H
+#define BUSPACKET_H
 
-//DRAM Channel header
+//Bus Packet header
 
-#include "Transaction.h"
-#include "SimpleController.h"
-#include "Rank.h"
-#include <deque>
-
-using namespace std;
+#include "bob_globals.h"
 
 namespace BOBSim
 {
-class BOB;
-class LogicLayerInterface;
-class DRAMChannel
+enum BusPacketType
+{
+	READ,
+	READ_P,
+	WRITE,
+	WRITE_P,
+	ACTIVATE,
+	REFRESH,
+	PRECHARGE,
+	READ_DATA,
+	WRITE_DATA
+};
+
+class BusPacket
 {
 public:
     //Functions
-    DRAMChannel(unsigned id, BOB *_bob);
-    ~DRAMChannel(void);
-    bool AddTransaction(Transaction *trans);
-    void Update(void);
-    void ReceiveOnDataBus(BusPacket *busPacket);
-    void ReceiveOnCmdBus(BusPacket *busPacket);
+    BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned rw,
+              unsigned rnk, unsigned bnk, unsigned prt, unsigned bl,
+              unsigned mappedChannel, uint64_t addr, bool fromLogic) :
+      burstLength(bl),
+      busPacketType(packtype),
+      transactionID(id),
+      column(col),
+      row(rw),
+      bank(bnk),
+      rank(rnk),
+      port(prt),
+      channel(mappedChannel),
+      queueWaitTime(0),
+      address(addr),
+      fromLogicOp(fromLogic)
+    {}
 
-	//Fields
-	//Controller used to operate ranks of DRAM
-	SimpleController simpleController;
-	//Ranks of DRAM
-    Rank* ranks[NUM_RANKS];
-	//This channel's ID in relation to the entire system
-	unsigned channelID;
-	//Logic chip
-	LogicLayerInterface *logicLayer;
-    // bob interface
-    BOB *bob;
-	//Pending outgoing logic response
-	Transaction *pendingLogicResponse;
-
-	//Bookkeeping for maximum number of requests waiting in queue
-	unsigned readReturnQueueMax;
-	//Storage for pending response data
-    deque<BusPacket*> readReturnQueue;
-
-	//Command packet being sent on DRAM command bus
-	BusPacket *inFlightCommandPacket;
-	//Time to send DRAM command packet
-	unsigned inFlightCommandCountdown;
-    //Data packet being sent on the DRAM data bus
-    BusPacket *inFlightDataPacket;
-    //Time to send DRAM data packet
-    unsigned inFlightDataCountdown;
-
-	//Number of cycles there is no data on the DRAM bus
-	unsigned DRAMBusIdleCount;
+    //Fields
+    unsigned burstLength;
+    BusPacketType busPacketType;
+    unsigned transactionID;
+    unsigned column;
+    unsigned row;
+    unsigned bank;
+    unsigned rank;
+    unsigned port;
+	unsigned channel;
+    unsigned queueWaitTime;
+	uint64_t address;
+    bool fromLogicOp;
 };
 }
 

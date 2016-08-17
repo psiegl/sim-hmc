@@ -28,7 +28,7 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************************/
 
-#include "LogicLayerInterface.h"
+#include "bob_logiclayerinterface.h"
 
 using namespace BOBSim;
 using namespace std;

@@ -1,7 +1,7 @@
-#include "c_wrapper.h"
-#include "BOBWrapper.h"
-#include "Transaction.h"
-#include "Globals.h"
+#include "bob_c_wrapper.h"
+#include "bob_wrapper.h"
+#include "bob_transaction.h"
+#include "bob_globals.h"
 
 unsigned BOBSim::NUM_PORTS =1;
 int BOBSim::SHOW_SIM_OUTPUT=1;

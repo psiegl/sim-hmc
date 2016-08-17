@@ -197,11 +197,11 @@ extern uint DRAM_CPU_CLK_RATIO;
 //DRAM Timing
 //
 #if defined(DDR3_1333)
-#include "cfg/ddr3_1333.h"
+#include "cfg/bob_ddr3_1333.h"
 #elif defined(DDR3_1600)
-#include "cfg/ddr3_1600.h"
+#include "cfg/bob_ddr3_1600.h"
 #elif defined(DDR3_1066)
-#include "cfg/ddr3_1066.h"
+#include "cfg/bob_ddr3_1066.h"
 #endif
 
 uint inline log2(unsigned value)

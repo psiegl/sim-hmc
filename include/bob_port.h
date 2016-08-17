@@ -32,7 +32,7 @@
 #define PORT_H
 
 #include <vector>
-#include "Transaction.h"
+#include "bob_transaction.h"
 
 using namespace std;
 

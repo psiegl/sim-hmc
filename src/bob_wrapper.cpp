@@ -28,9 +28,9 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************************/
 
-#include "BOBWrapper.h"
-#include "LogicOperation.h"
 #include <cstring>
+#include "bob_wrapper.h"
+#include "bob_logicoperation.h"
 
 using namespace std;
 

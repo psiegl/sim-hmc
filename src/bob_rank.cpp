@@ -31,8 +31,8 @@
 //Rank source
 
 #include <cstring>
-#include "Rank.h"
-#include "DRAMChannel.h"
+#include "bob_rank.h"
+#include "bob_dramchannel.h"
 
 using namespace std;
 using namespace BOBSim;

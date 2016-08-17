@@ -30,11 +30,11 @@
 
 //Simple Controller source
 
-#include "SimpleController.h"
-#include "DRAMChannel.h"
-#include "BusPacket.h"
-#include <math.h>
-#include <string.h>
+#include <cmath>
+#include <cstring>
+#include "bob_simplecontroller.h"
+#include "bob_dramchannel.h"
+#include "bob_buspacket.h"
 
 using namespace std;
 using namespace BOBSim;

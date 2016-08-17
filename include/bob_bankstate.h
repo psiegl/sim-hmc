@@ -28,62 +28,76 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************************/
 
-#ifndef BUSPACKET_H
-#define BUSPACKET_H
+#ifndef BANKSTATE_H
+#define BANKSTATE_H
 
-//Bus Packet header
+//Bank State header
 
-#include "Globals.h"
+#include "bob_buspacket.h"
 
 namespace BOBSim
 {
-enum BusPacketType
+enum CurrentBankState
 {
-	READ,
-	READ_P,
-	WRITE,
-	WRITE_P,
-	ACTIVATE,
-	REFRESH,
-	PRECHARGE,
-	READ_DATA,
-	WRITE_DATA
+	IDLE,
+	ROW_ACTIVE,
+	PRECHARGING,
+	REFRESHING
 };
 
-class BusPacket
+class BankState
 {
 public:
-    //Functions
-    BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned rw,
-              unsigned rnk, unsigned bnk, unsigned prt, unsigned bl,
-              unsigned mappedChannel, uint64_t addr, bool fromLogic) :
-      burstLength(bl),
-      busPacketType(packtype),
-      transactionID(id),
-      column(col),
-      row(rw),
-      bank(bnk),
-      rank(rnk),
-      port(prt),
-      channel(mappedChannel),
-      queueWaitTime(0),
-      address(addr),
-      fromLogicOp(fromLogic)
+    //Fields
+    CurrentBankState currentBankState;
+    unsigned openRowAddress;
+    uint64_t nextActivate;
+    uint64_t nextRead;
+    uint64_t nextWrite;
+//	  uint64_t nextStrobeMin;
+//	  uint64_t nextStrobeMax;
+//	  uint64_t nextRefresh;     // ToDo!
+    unsigned stateChangeCountdown;
+    BusPacketType lastCommand;
+
+	//Functions
+    BankState(void) :
+      currentBankState(IDLE),
+      openRowAddress(0),
+      nextActivate(0),
+      nextRead(0),
+      nextWrite(0),
+//      nextStrobeMin(0),
+//      nextStrobeMax(0),
+//      nextRefresh(0),
+      lastCommand(REFRESH), // ToDo
+      stateChangeCountdown(0)
     {}
 
-    //Fields
-    unsigned burstLength;
-    BusPacketType busPacketType;
-    unsigned transactionID;
-    unsigned column;
-    unsigned row;
-    unsigned bank;
-    unsigned rank;
-    unsigned port;
-	unsigned channel;
-    unsigned queueWaitTime;
-	uint64_t address;
-    bool fromLogicOp;
+    void UpdateStateChange(void)
+    {
+      if(this->stateChangeCountdown>0 && !--this->stateChangeCountdown)
+      {
+        switch(lastCommand)
+        {
+        case REFRESH:
+          this->currentBankState = IDLE;
+          break;
+        case WRITE_P:
+        case READ_P:
+          this->currentBankState = PRECHARGING;
+          this->stateChangeCountdown = tRP;
+          this->lastCommand = PRECHARGE;
+          break;
+        case PRECHARGE:
+          this->currentBankState = IDLE;
+          break;
+        default:
+          ERROR("== WTF STATE? : "<<this->lastCommand);
+          exit(0);
+        }
+      }
+    }
 };
 }
 
