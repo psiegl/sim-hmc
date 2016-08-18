@@ -31,11 +31,15 @@ void BobRegisterCallbacks(BobWrapper *bobwrapper,
             void(*logicDone)(unsigned port, uint64_t addr));
 void BobPrintStats(BobWrapper *bobwrapper);
 
-
-BobTransaction* BobCreateTransaction(enum TransactionType type, unsigned size, unsigned long addr, void *payload);
+BobTransaction* BobCreateTransaction(enum TransactionType type, unsigned sizeInBytes, unsigned long addr, void *payload);
 void BobDeleteTransaction(BobTransaction *bobtransaction);
+
+
+void BobAddHMCSIMCallback(BobWrapper *bobwrapper, void *vault, bool (*callback)(void *_vault, void *packet));
+
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* __C_WRAPPER_H__ */
+
+#endif /* #ifndef __C_WRAPPER_H__ */

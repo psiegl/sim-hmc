@@ -57,7 +57,9 @@ public:
       address(addr),
       mappedChannel(0),
       transactionSize(size),
+#ifdef HMCSIM_SUPPORT
       payload(_payload),
+#endif
       cyclesReqPort(0),
       cyclesRspPort(0),
       cyclesReqLink(0),
@@ -96,7 +98,9 @@ public:
 	void *logicOpContents;
 	bool originatedFromLogicOp;
 
+#ifdef HMCSIM_SUPPORT
     void *payload;
+#endif
 
 	//Latency break-up
 	uint64_t cyclesReqPort; //add to Port until remove from port

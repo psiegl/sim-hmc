@@ -1,3 +1,4 @@
+#ifdef HMCSIM_SUPPORT
 #include "bob_c_wrapper.h"
 #include "bob_wrapper.h"
 #include "bob_transaction.h"
@@ -46,9 +47,9 @@ void BobPrintStats(BobWrapper *bobwrapper)
 
 
 
-BobTransaction* BobCreateTransaction(enum TransactionType type, unsigned size, unsigned long addr, void *payload)
+BobTransaction* BobCreateTransaction(enum TransactionType type, unsigned sizeInBytes, unsigned long addr, void *payload)
 {
-  return (BobTransaction*)new BOBSim::Transaction((BOBSim::TransactionType)type, size, addr, payload);
+  return (BobTransaction*)new BOBSim::Transaction((BOBSim::TransactionType)type, sizeInBytes, addr, payload);
 }
 
 void BobDeleteTransaction(BobTransaction *bobtransaction)
@@ -56,4 +57,12 @@ void BobDeleteTransaction(BobTransaction *bobtransaction)
   delete (BOBSim::Transaction*)bobtransaction;
 }
 
+void BobAddHMCSIMCallback(BobWrapper *bobwrapper, void *vault, bool (*callback)(void *_vault, void *packet))
+{
+  ((BOBSim::BOBWrapper*)bobwrapper)->vault = vault;
+  ((BOBSim::BOBWrapper*)bobwrapper)->callback = callback;
 }
+
+
+}
+#endif /* #ifdef HMCSIM_SUPPORT */

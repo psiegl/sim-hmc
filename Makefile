@@ -3,7 +3,7 @@ CC=clang
 CXX=clang++
 SRCDIR=src
 DEVICE?=DDR3_1333
-CXXFLAGS=-O3 #-g
+CXXFLAGS=-O3 -DHMCSIM_SUPPORT #-g
 LIB_NAME=bobsim
 EXE_NAME=BOBSim
 LINKFLAGS=
@@ -20,16 +20,16 @@ all: ${EXE_NAME} lib${LIB_NAME}.a lib${LIB_NAME}.so
 
 #   $@ target name, $^ target deps, $< matched pattern
 $(EXE_NAME).shared: $(EXE_OBJ) lib$(LIB_NAME).so
-	$(CXX) -s -L$(shell pwd) -Wl,-rpath=$(shell pwd) -s $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< -lbobsim
+	$(CXX) -L$(shell pwd) -Wl,-rpath=$(shell pwd) -s $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< -lbobsim
 	@echo "Built $@ successfully" 
 
 $(EXE_NAME): $(EXE_OBJ) lib$(LIB_NAME).a
-	$(CXX) -s $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< lib$(LIB_NAME).a
+	$(CXX) $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< lib$(LIB_NAME).a
 	@echo "Built $@ successfully" 
 
 #for now, I'm assuming that -ltcmalloc will be linked with the binary, not the library
 lib$(LIB_NAME).so: $(LOBJ)
-	$(CXX) -s -shared -Wl,-soname,$@ -o $@ $^
+	$(CXX) -shared -Wl,-soname,$@ -o $@ $^
 	@echo "Built $@ successfully" 
 
 lib$(LIB_NAME).a: $(OBJ)

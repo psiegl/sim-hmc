@@ -221,7 +221,7 @@ void BOB::Update(void)
             //remove from channel bus
             inFlightRequestLink[i] = NULL;
 
-            //remove from SerDe buffer
+            //remove from SerDes buffer
             serDesBufferRequest[i] = NULL;
         }
 
@@ -229,7 +229,7 @@ void BOB::Update(void)
         {
             if(serDesBufferResponse[i]!=NULL)
             {
-                ERROR("== Error - Response SerDe Buffer "<<i<<" collision");
+                ERROR("== Error - Response SerDes Buffer "<<i<<" collision");
                 exit(0);
             }
 
@@ -260,7 +260,7 @@ void BOB::Update(void)
 			//error checking
 			if(inFlightRequestLink[c]!=NULL)
 			{
-				ERROR("== Error - item in SerDe buffer without channel being free");
+                ERROR("== Error - item in SerDes buffer without channel being free");
                 ERROR("   == Channel : "<<c);
 				exit(0);
 			}
@@ -327,7 +327,7 @@ void BOB::Update(void)
 	for(unsigned p=0; p<NUM_PORTS; p++)
 	{
 		if(ports[p].outputBusyCountdown==0)
-		{
+        {
 			//check to see if something has been received from a channel
 			if(serDesBufferResponse[priorityLinkBus[p]]!=NULL &&
                serDesBufferResponse[priorityLinkBus[p]]->portID==p)

@@ -37,17 +37,19 @@ using namespace std;
 namespace BOBSim
 {
 BOBWrapper::BOBWrapper(void) :
+    returnedReads(0),
+    returnedReadSize(0),
+    totalReturnedReads(0),
+    issuedWrites(0),
+    issuedWritesSize(0),
+    totalIssuedWrites(0),
     bob(new BOB(this)), //Create BOB object and register callbacks
 	readDoneCallback(NULL),
 	writeDoneCallback(NULL),
     logicDoneCallback(NULL),
-	issuedWrites(0),
-	committedWrites(0),
-	issuedLogicOperations(0),
-	returnedReads(0),
-	totalLogicResponses(0),
-	totalReturnedReads(0),
-	totalIssuedWrites(0),
+    committedWrites(0),
+    issuedLogicOperations(0),
+    totalLogicResponses(0),
 	totalTransactionsServiced(0),
 #if 0
 	portRoundRobin(0),
@@ -252,13 +254,11 @@ inline int BOBWrapper::FindOpenPort(uint coreID)
 	};
 	return -1;
 }
-#endif
 
 //MARSS uses this function 
 //
 //Creates Transaction object and determines which port should receive request
 //
-#if 0
 bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *logicOperation)
 {
 	int openPort;
@@ -323,6 +323,7 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 			break;
 		case DATA_WRITE:
 			issuedWrites++;
+            issuedWritesSize += trans->transactionSize;
 			writesPerPort[port]++;
             inFlightRequest.Counter[port] = trans->transactionSize / PORT_WIDTH; // trans->transactionSize == TRANSACTION_SIZE
 			break;
@@ -353,7 +354,7 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 //
 void BOBWrapper::Update(void)
 {
-	bob->Update();
+    bob->Update();
 
 	//BOOK-KEEPING
 	for(unsigned i=0; i<NUM_PORTS; i++)
@@ -385,6 +386,12 @@ void BOBWrapper::Update(void)
             {
                 switch(inFlightResponse.Cache[i]->transactionType) {
                 case RETURN_DATA:
+#ifdef HMCSIM_SUPPORT
+                    if (callback)
+                    {
+                      (*callback)(vault, inFlightResponse.Cache[i]->payload);
+                    }
+#endif
                     if (readDoneCallback)
                     {
                         (*readDoneCallback)(i, inFlightResponse.Cache[i]->address);
@@ -396,6 +403,12 @@ void BOBWrapper::Update(void)
                     break;
 
                 case LOGIC_RESPONSE:
+#ifdef HMCSIM_SUPPORT
+                    if (callback)
+                    {
+                      (*callback)(vault, inFlightResponse.Cache[i]->payload);
+                    }
+#endif
                     if(logicDoneCallback)
                     {
                         (*logicDoneCallback)(inFlightResponse.Cache[i]->mappedChannel, inFlightResponse.Cache[i]->address);
@@ -492,6 +505,7 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 		//latencies[((returnedRead->fullTimeTotal/10)*10)*CPU_CLK_PERIOD]++;
 
 		returnedReads++;
+        returnedReadSize += returnedRead->transactionSize;
       }
         break;
     default:
@@ -555,7 +569,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 
     double clockperiod_ns = CPU_CLK_PERIOD * 1E-9 /* ns */;
 //    double frequency_GHz = 1/(clockperiod_ns / 1E-9) /* GHz */;
-    double transferamount_Bytes = (issuedWrites+returnedReads)*TRANSACTION_SIZE;
+    double transferamount_Bytes = issuedWritesSize + returnedReadSize; //(issuedWrites+returnedReads)*TRANSACTION_SIZE;
     double one_GB = (1<<30);
 
     double bandwidth = transferamount_Bytes/(double)(elapsedCycles*clockperiod_ns)/one_GB;
@@ -662,7 +676,9 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	}
 
 	issuedWrites = 0;
+    issuedWritesSize = 0;
     returnedReads = 0;
+    returnedReadSize = 0;
 
 	fullLatencies.clear();
 	dramLatencies.clear();

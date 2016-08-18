@@ -50,6 +50,13 @@ private:
     int FindOpenPort(uint coreID);
     bool isPortAvailable(unsigned port);
 #endif
+    unsigned returnedReads;
+    uint64_t returnedReadSize;
+    unsigned totalReturnedReads;
+
+    unsigned issuedWrites;
+    uint64_t issuedWritesSize;
+    unsigned totalIssuedWrites;
 
     void UpdateLatencyStats(Transaction *trans);
 
@@ -114,12 +121,8 @@ public:
     vector<unsigned> dramLatencies;
     vector<unsigned> chanLatencies;
 
-	unsigned issuedLogicOperations;
-	unsigned issuedWrites;
-	unsigned committedWrites;
-	unsigned returnedReads;
-	unsigned totalReturnedReads;
-	unsigned totalIssuedWrites;
+    unsigned issuedLogicOperations;
+    unsigned committedWrites;
 	unsigned totalTransactionsServiced;
 	unsigned totalLogicResponses;
 
@@ -131,6 +134,11 @@ public:
 	void WriteIssuedCallback(unsigned port, uint64_t address);
 
     uint64_t currentClockCycle;
+
+#ifdef HMCSIM_SUPPORT
+    bool (*callback)(void *vault, void *packet);
+    void *vault;
+#endif
 };
 }
 

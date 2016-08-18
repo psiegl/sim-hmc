@@ -33,6 +33,9 @@
 #include "bob.h"
 #include "bob_dramchannel.h"
 #include "bob_logiclayerinterface.h"
+#ifdef HMCSIM_SUPPORT
+#include "bob_wrapper.h"
+#endif
 
 using namespace std;
 using namespace BOBSim;
@@ -104,7 +107,11 @@ void DRAMChannel::Update(void)
             }
             break;
         case WRITE_DATA:
-            //bob->ReportCallback(inFlightDataPacket);
+#ifdef HMCSIM_SUPPORT
+            if(bob->bobwrapper->callback)
+                bob->bobwrapper->callback(bob->bobwrapper->vault, inFlightDataPacket->payload);
+#endif
+            //bob->ReportCallback(inFlightDataPacket); // potentially uncomment
             ranks[inFlightDataPacket->rank]->ReceiveFromBus(inFlightDataPacket);
             break;
         default:

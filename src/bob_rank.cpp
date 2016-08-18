@@ -37,7 +37,7 @@
 using namespace std;
 using namespace BOBSim;
 
-Rank::Rank(unsigned rankid,DRAMChannel *_channel):
+Rank::Rank(unsigned rankid, DRAMChannel *_channel):
     id(rankid),
     dramchannel(_channel),
     banksNeedUpdate(0),
@@ -99,7 +99,34 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		}
 		delete busPacket;
 		break;
-	case READ_P:
+    case ACTIVATE:
+        if(bankStates[busPacket->bank].currentBankState != IDLE ||
+                currentClockCycle < bankStates[busPacket->bank].nextActivate)
+        {
+            ERROR("== Error - Rank receiving ACT when not allowed");
+            exit(0);
+        }
+
+        //
+        //update bank states
+        //
+        bankStates[busPacket->bank].currentBankState = ROW_ACTIVE;
+        bankStates[busPacket->bank].openRowAddress = busPacket->row;
+        bankStates[busPacket->bank].nextRead = currentClockCycle + tRCD;
+        bankStates[busPacket->bank].nextWrite = currentClockCycle + tRCD;
+        bankStates[busPacket->bank].nextActivate = currentClockCycle + tRC;
+
+        for(unsigned i=0; i<NUM_BANKS; i++)
+        {
+            if(i!=busPacket->bank)
+            {
+                bankStates[i].nextActivate = max(bankStates[i].nextActivate, currentClockCycle + tRRD);
+            }
+        }
+
+        delete busPacket;
+        break;
+    case READ_P:
 		if(bankStates[busPacket->bank].currentBankState != ROW_ACTIVE ||
            bankStates[busPacket->bank].openRowAddress != busPacket->row ||
            currentClockCycle < bankStates[busPacket->bank].nextRead)
@@ -135,7 +162,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			ERROR("== Error - Rank "<<id<<" receiving WRITE_P when not allowed");
 			ERROR("           currentClockCycle : "<<currentClockCycle);
 			exit(0);
-		}
+        }
 
 		//
 		//update bank states
@@ -152,34 +179,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		bankStates[busPacket->bank].nextWrite = bankStates[busPacket->bank].nextActivate;
 
 		delete busPacket;
-		break;
-	case ACTIVATE:
-		if(bankStates[busPacket->bank].currentBankState != IDLE ||
-		        currentClockCycle < bankStates[busPacket->bank].nextActivate)
-		{
-			ERROR("== Error - Rank receiving ACT when not allowed");
-			exit(0);
-		}
-
-		//
-		//update bank states
-		//
-		bankStates[busPacket->bank].currentBankState = ROW_ACTIVE;
-		bankStates[busPacket->bank].openRowAddress = busPacket->row;
-        bankStates[busPacket->bank].nextRead = currentClockCycle + tRCD;
-		bankStates[busPacket->bank].nextWrite = currentClockCycle + tRCD;
-		bankStates[busPacket->bank].nextActivate = currentClockCycle + tRC;
-
-		for(unsigned i=0; i<NUM_BANKS; i++)
-		{
-			if(i!=busPacket->bank)
-			{
-				bankStates[i].nextActivate = max(bankStates[i].nextActivate, currentClockCycle + tRRD);
-			}
-		}
-
-		delete busPacket;
-		break;
+        break;
 	case WRITE_DATA:
 		if(bankStates[busPacket->bank].currentBankState != ROW_ACTIVE ||
            bankStates[busPacket->bank].openRowAddress != busPacket->row)
@@ -187,7 +187,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			ERROR("== Error - Clock Cycle : "<<currentClockCycle);
             ERROR("== Error - Rank receiving WRITE_DATA when not allowed");
 			exit(0);
-		}
+        }
 
         bankStates[busPacket->bank].stateChangeCountdown = tWR;
 		bankStates[busPacket->bank].nextActivate = currentClockCycle + tWR + tRP;

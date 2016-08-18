@@ -475,11 +475,19 @@ void SimpleController::AddTransaction(Transaction *trans)
     case DATA_READ:
         readCounter++;
         action = new BusPacket(READ_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
+
+#ifdef HMCSIM_SUPPORT
+        action->payload = trans->payload;
+#endif
         break;
     case DATA_WRITE:
         writeCounter++;
         action = new BusPacket(WRITE_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
-        delete trans; // ToDo!
+
+#ifdef HMCSIM_SUPPORT
+        action->payload = trans->payload;
+#endif
+        delete trans;
         break;
     default:
         ERROR("== ERROR - Adding wrong transaction to simple controller");

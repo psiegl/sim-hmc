@@ -84,6 +84,10 @@ public:
     unsigned queueWaitTime;
 	uint64_t address;
     bool fromLogicOp;
+
+#ifdef HMCSIM_SUPPORT
+    void *payload;
+#endif
 };
 }
 
