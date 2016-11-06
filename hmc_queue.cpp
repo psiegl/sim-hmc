@@ -38,7 +38,7 @@ int hmc_queue::push_back(void *packet, unsigned packetleninbit)
     unsigned cycles = packetleninbit / this->bitwidth;
     if( ! cycles )
       cycles = 1;
-    this->queue.push(std::make_tuple(packet, cycles, packetleninbit));
+    this->list.push_back(std::make_tuple(packet, cycles, packetleninbit));
     if( this->notify != NULL )
       this->notify->notify_add(this->id);
     return 0;
@@ -48,18 +48,25 @@ int hmc_queue::push_back(void *packet, unsigned packetleninbit)
 
 void* hmc_queue::front(void)
 {
-  assert( ! this->queue.empty());
-  std::queue< std::tuple<void*, unsigned, unsigned> > * q = &this->queue;
+  assert( ! this->list.empty());
+  std::list< std::tuple<void*, unsigned, unsigned> > * q = &this->list;
+  // ToDo: shall be all decreased or just the first ones?
+  for(auto it=q->begin(); it != q->end(); ++it)
+  {
+    unsigned cyclestowait = std::get<1>(*it);
+    if(cyclestowait > 0)
+      cyclestowait = --std::get<1>(q->front());
+  }
   unsigned cyclestowait = std::get<1>(q->front());
-  if(cyclestowait > 0)
-    cyclestowait = --std::get<1>(q->front());
   return ( ! cyclestowait) ? std::get<0>(q->front()) : nullptr;
 }
 
 void* hmc_queue::pop_front(void)
 {
-  void* front = std::get<0>(this->queue.front());
-  this->queue.pop();
+  std::list< std::tuple<void*, unsigned, unsigned> > * q = &this->list;
+  void* front = std::get<0>(q->front());
+  this->bitoccupation -= std::get<2>(q->front());
+  q->pop_front();
   if( this->notify != NULL )
     this->notify->notify_del(this->id);
   return front;

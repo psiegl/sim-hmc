@@ -1,7 +1,7 @@
 #ifndef _HMC_QUEUE_H_
 #define _HMC_QUEUE_H_
 
-#include <queue>
+#include <list>
 #include <cstdint>
 #include <tuple>
 #include "hmc_notify.h"
@@ -16,7 +16,7 @@ private:
   unsigned bitoccupationmax;
   unsigned bitwidth;
 
-  std::queue< std::tuple<void*, unsigned, unsigned> > queue;
+  std::list< std::tuple<void*, unsigned, unsigned> > list;
 
 public:
   hmc_queue(void);
