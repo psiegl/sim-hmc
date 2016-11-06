@@ -4,15 +4,13 @@
 #include <queue>
 #include <cstdint>
 #include <tuple>
+#include "hmc_notify.h"
 
 // tuple( packetptr, amount of cycles, totalsizeinbits );
-template <typename T>
 class hmc_queue {
 private:
   unsigned id;
-  T* cl;
-  void (T::*add)(unsigned id);
-  void (T::*del)(unsigned id);
+  hmc_notify *notify;
 
   unsigned bitoccupation;
   unsigned bitoccupationmax;
@@ -24,7 +22,7 @@ public:
   hmc_queue(void);
   ~hmc_queue(void);
 
-  void set_notify(unsigned id, T* cl, void (T::*add)(unsigned id), void (T::*del)(unsigned id) );
+  void set_notify(unsigned id, hmc_notify *notify);
   void re_adjust(unsigned bitwidth, unsigned queuedepth);
 
   int has_space(unsigned packetleninbit);
@@ -32,7 +30,5 @@ public:
   void* front(void);
   void* pop_front(void);
 };
-
-#include "hmc_queue.tcc"
 
 #endif /* #ifndef _HMC_QUEUE_H_ */

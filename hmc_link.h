@@ -2,24 +2,29 @@
 #define _HMC_LINK_H_
 
 #include "hmc_queue.h"
+#include "hmc_notify.h"
 
-template <typename Ti, typename To>
+
 class hmc_link {
-  hmc_queue<Ti> i;
-  hmc_queue<To>* o;
+  hmc_queue i;
+  hmc_queue *o;
+
+  hmc_link *binding;
 
 public:
   hmc_link(void);
   ~hmc_link(void);
 
-  void re_adjust(unsigned bitwidth, unsigned queuedepth);
-  void set_ilink_notify(unsigned id, Ti* cl, void (Ti::*add)(unsigned id), void (Ti::*del)(unsigned id));
-  void set_olink(hmc_queue<To>* olink);
-  hmc_queue<Ti>* get_ilink(void);
+  hmc_queue* get_ilink(void);
+  hmc_queue* get_olink(void);
 
-  hmc_queue<To>* get_olink(void);
+  void set_ilink_notify(unsigned id, hmc_notify *notify);
+
+  void re_adjust_links(unsigned bitwidth, unsigned queuedepth);
+
+  // setup of two parts of hmc_link to form ONE link
+  void connect_linkports(hmc_link *part);
+  void set_binding(hmc_link* part);
 };
-
-#include "hmc_link.tcc"
 
 #endif /* #ifndef _HMC_LINK_H_ */
