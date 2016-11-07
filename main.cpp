@@ -2,36 +2,43 @@
 #include "hmc_notify.h"
 #include "hmc_ring.h"
 #include "hmc_link.h"
+#include "hmc_cube.h"
+#include "hmc_sim.h"
 
 
 int main(int argc, char* argv[])
 {
-  unsigned linkdepth = 5;
-  unsigned linkwidth = 64;
+  unsigned linkdepth = 1;
+  unsigned linkwidth = 16;
 
-  hmc_notify notifier(0, nullptr);
-  hmc_ring ring(0, &notifier);
-  hmc_link link[2];
-  link[0].connect_linkports(&link[1]);
-  link[0].re_adjust_links( linkwidth, linkdepth );
-
+  hmc_sim sim(1,2,4,8);
+  hmc_link* slid;
+  sim.hmc_link_to_slid(0, 0, 0, &slid);
+  slid->re_adjust_links( linkwidth, linkdepth );
 
 
-  ring.set_ring_link( 1, &link[0] );
-
-
-  unsigned packetlen= 128;
+  unsigned packetlen= 256;
   void *packet = (void*) malloc (packetlen);
-  link[1].get_olink()->push_back( packet, packetlen );
+  unsigned issue = 12;
+  unsigned ctr = 0;
 
-  for( unsigned i; i < 10; i++ ) {
-    // set clk anyway
-    if(notifier.get_notification())
+  unsigned clks = 0;
+  while(issue > ctr)
+  {
+    if(slid->get_olink()->has_space(packetlen))
     {
-      ring.clock();
+      slid->get_olink()->push_back( packet, packetlen );
+      ctr++;
     }
+    // set clk anyway
+    clks++;
+    sim.clock();
+    std::cout << ctr << " " << clks <<  std::endl;
+  }
+  while(sim.clock()) {
+    clks++;
+    std::cout << ctr << " " << clks <<  std::endl;
   }
 
-  std::cout << "done " << notifier.get_notification() << std::endl;
   return 0;
 }

@@ -25,9 +25,9 @@ public:
   void set_notify(unsigned id, hmc_notify *notify);
   void re_adjust(unsigned bitwidth, unsigned queuedepth);
 
-  int has_space(unsigned packetleninbit);
+  bool has_space(unsigned packetleninbit);
   int push_back(void *packet, unsigned packetleninbit);
-  void* front(void);
+  void* front(unsigned *packetleninbit);
   void* pop_front(void);
 };
 

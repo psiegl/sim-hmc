@@ -2,13 +2,17 @@
 #define _HMC_RING_H_
 
 #include <map>
-#include "hmc_link.h"
 #include "hmc_notify.h"
 #include "config.h"
+
+class hmc_cube;
+class hmc_link;
+class hmc_queue;
 
 class hmc_ring {
 private:
   unsigned id;
+  hmc_cube* cub;
 
   hmc_notify ring_notify;
   std::map<unsigned, hmc_link*> ring_link;
@@ -17,15 +21,17 @@ private:
   std::map<unsigned, hmc_link*> vault_link;
 
   hmc_notify ext_notify;
-  hmc_link* ext_link; // ToDo
+  hmc_link* ext_link;
 
 public:
-  hmc_ring(unsigned id, hmc_notify *notify);
+  hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub);
   ~hmc_ring(void);
+
+  hmc_queue* decode_queue_of_packet(void* packet);
 
   int set_ring_link(unsigned id, hmc_link* link);
   int set_vault_link(unsigned id, hmc_link* link);
-  int set_ext_link(unsigned id, hmc_link* link);
+  bool set_ext_link(hmc_link* link);
 
   void clock(void);
 };

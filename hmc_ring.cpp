@@ -1,11 +1,17 @@
 #include <cassert>
+#include <cstdint>
+#include "hmc_cube.h"
+#include "hmc_link.h"
 #include "hmc_ring.h"
 #include "hmc_queue.h"
 #include "hmc_packet.h"
 #include "hmc_notify.h"
+#include "hmc_macros.h"
+#include "hmc_decode.h"
 
-hmc_ring::hmc_ring(unsigned id, hmc_notify *notify) :
+hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub) :
   id( id ),
+  cub(cub),
   ring_notify( id, notify ),
   vault_notify( id, notify ),
   ext_notify( id, notify ),
@@ -16,7 +22,6 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify) :
 hmc_ring::~hmc_ring(void)
 {
 }
-
 
 int hmc_ring::set_ring_link(unsigned id, hmc_link* link)
 {
@@ -40,56 +45,124 @@ int hmc_ring::set_vault_link(unsigned id, hmc_link* link)
   return -1;
 }
 
-int hmc_ring::set_ext_link(unsigned id, hmc_link* link)
+bool hmc_ring::set_ext_link(hmc_link* link)
 {
   if(this->ext_link == nullptr)
   {
     this->ext_link = link;
-    link->set_ilink_notify(id, &ext_notify);
-    return 0;
+    link->set_ilink_notify(0, &ext_notify);
+    return true;
   }
-  return -1;
+  return false;
 }
 
+hmc_queue* hmc_ring::decode_queue_of_packet(void* packet)
+{
+  uint64_t header = HMC_PACKET_HEADER(packet);
+  unsigned p_cubId;
+  if(HMCSIM_PACKET_IS_RESPONSE(header))
+  {
+    unsigned slid = (unsigned)HMCSIM_PACKET_RESPONSE_SET_SLID(header);
+    p_cubId = this->cub->slid_to_cubid(slid);
+    unsigned p_quadId = this->cub->slid_to_quadid(slid);
+    if(p_cubId == this->cub->get_id())
+    {
+      if(p_quadId == this->id) // this->id == quadId
+      {
+        return this->ext_link->get_olink();
+      }
+      else
+      {
+        return this->ring_link[p_quadId]->get_olink();
+      }
+    }
+  }
+  else
+  {
+    assert(HMCSIM_PACKET_IS_REQUEST(header));
+    p_cubId = (unsigned)HMCSIM_PACKET_REQUEST_GET_CUB(header);
+    if(p_cubId == this->cub->get_id())
+    {
+      uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+      unsigned p_quadId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_QUAD(addr);
+      if(p_quadId == this->id)
+      {
+        unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
+        return this->vault_link[p_vaultId]->get_olink();
+      }
+      else
+      {
+        return this->ring_link[p_quadId]->get_olink();
+      }
+    }
+  }
+  return this->cub->ext_routing(p_cubId, this->id);
+}
+
+#include <iostream>
 void hmc_ring::clock(void)
 {
-  printf("called!!\n");
   // ToDo: just one packet or multiple?
   uint32_t notifymap = this->ring_notify.get_notification();
-  unsigned lid = __builtin_ctzl(notifymap); // round robin?
+  unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
   for(unsigned i = lid; i < HMC_NUM_QUADS; i++ )
   {
     if((0x1 << i) & notifymap) {
       hmc_queue* queue = this->ring_link[i]->get_ilink();
-      void *packet = queue->front();
-      if(packet != nullptr) {
-        printf("packet!\n");
+      unsigned packetleninbit;
+      void *packet = queue->front(&packetleninbit);
+      if(packet == nullptr)
+        continue;
 
-        queue->pop_front();
-      }
-      else
-        printf("nll\n");
-      // decode .. and route further! if space available!
+      hmc_queue* next_queue = decode_queue_of_packet(packet);
+      if( ! next_queue->has_space(packetleninbit))
+        continue;
 
+      next_queue->push_back(packet, packetleninbit);
+      queue->pop_front();
     }
   }
+
   notifymap = this->ext_notify.get_notification();
-  if(notifymap)
-  {
-    hmc_queue* queue = this->ext_link->get_ilink();
-    void *packet = queue->front();
-    assert( packet );
-    // decode .. and route further! if space available!
-  }
+  do {
+    if(notifymap)
+    {
+      hmc_queue* queue = this->ext_link->get_ilink();
+      unsigned packetleninbit;
+      void *packet = queue->front(&packetleninbit);
+      if(packet == nullptr)
+        continue;
+
+      queue->pop_front(); // Remove Me
+      continue; // Remove Me
+
+
+      hmc_queue* next_queue = decode_queue_of_packet(packet);
+      if( ! next_queue->has_space(packetleninbit))
+        continue;
+
+      next_queue->push_back(packet, packetleninbit);
+      queue->pop_front();
+    }
+  } while (0);
+
   notifymap = this->vault_notify.get_notification();
   lid = __builtin_ctzl(notifymap); // round robin?
   for(unsigned i = lid; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++ )
   {
     if((0x1 << i) & notifymap) {
       hmc_queue* queue = this->vault_link[i]->get_ilink();
-      void *packet = queue->front();
-      assert( packet );
-      // decode .. and route further! if space available!
+      unsigned packetleninbit;
+      void *packet = queue->front(&packetleninbit);
+      if(packet == nullptr)
+        continue;
+
+      hmc_queue* next_queue = decode_queue_of_packet(packet);
+      if( ! next_queue->has_space(packetleninbit))
+        continue;
+
+      next_queue->push_back(packet, packetleninbit);
+      queue->pop_front();
     }
   }
 }

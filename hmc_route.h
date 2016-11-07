@@ -1,25 +1,35 @@
 #ifndef _HMC_ROUTE_H_
 #define _HMC_ROUTE_H_
 
+#include <map>
 #include "hmc_queue.h"
+#include "hmc_macros.h"
 
-template <typename T>
 class hmc_route {
+  unsigned id;
+
+  std::map<unsigned, std::pair<unsigned,unsigned>> slidToCube;
 
 public:
-  hmc_route(void);
+  hmc_route(unsigned id);
   ~hmc_route(void);
 
-  virtual hmc_queue<T>* decode_queue(void *packet) = 0;
+  void set_slid(unsigned slid, unsigned cubId, unsigned quadId);
 
-  int ship_packet(void *packet, unsigned packetleninbit);
+  ALWAYS_INLINE unsigned slid_to_cubid(unsigned slid)
+  {
+    return this->slidToCube[slid].first;
+  }
 
+  ALWAYS_INLINE unsigned slid_to_quadid(unsigned slid)
+  {
+    return this->slidToCube[slid].second;
+  }
+
+  ALWAYS_INLINE hmc_queue* ext_routing(unsigned cubId, unsigned curQuadId)
+  {
+    return nullptr;
+  }
 };
-
-#include "hmc_route.tcc"
-
-
-
-
 
 #endif /* #ifndef _HMC_ROUTE_H_ */

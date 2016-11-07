@@ -27,8 +27,8 @@ void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
 
 void hmc_link::re_adjust_links(unsigned bitwidth, unsigned queuedepth)
 {
-  this->i.re_adjust(bitwidth, queuedepth);
   this->get_ilink()->re_adjust(bitwidth, queuedepth);
+  this->binding->get_ilink()->re_adjust(bitwidth, queuedepth);
 }
 
 void hmc_link::connect_linkports(hmc_link *part)

@@ -26,9 +26,9 @@ void hmc_queue::re_adjust(unsigned bitwidth, unsigned queuedepth)
   this->bitoccupationmax = bitwidth * queuedepth;
 }
 
-int hmc_queue::has_space(unsigned packetleninbit)
+bool hmc_queue::has_space(unsigned packetleninbit)
 {
-  return ! (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax);
+  return (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax);
 }
 
 int hmc_queue::push_back(void *packet, unsigned packetleninbit)
@@ -46,7 +46,7 @@ int hmc_queue::push_back(void *packet, unsigned packetleninbit)
   return -1;
 }
 
-void* hmc_queue::front(void)
+void* hmc_queue::front(unsigned *packetleninbit)
 {
   assert( ! this->list.empty());
   std::list< std::tuple<void*, unsigned, unsigned> > * q = &this->list;
@@ -58,6 +58,7 @@ void* hmc_queue::front(void)
       cyclestowait = --std::get<1>(q->front());
   }
   unsigned cyclestowait = std::get<1>(q->front());
+  *packetleninbit = std::get<2>(q->front());
   return ( ! cyclestowait) ? std::get<0>(q->front()) : nullptr;
 }
 
