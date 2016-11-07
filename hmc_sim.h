@@ -15,7 +15,7 @@ struct hmc_graph_t {
     unsigned visited;
 };
 
-class hmc_sim {
+class hmc_sim : private hmc_notify_cl {
 
   uint64_t clk;
   hmc_notify cubes_notify;
@@ -44,6 +44,8 @@ public:
 
   // intern needed
   struct hmc_graph_t** get_link_graph(void);
+
+  bool notify_up(void);
 };
 
 #endif /* #ifndef _HMC_SIM_H_ */

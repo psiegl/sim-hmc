@@ -2,7 +2,7 @@
 #define _HMC_ROUTE_H_
 
 #include <map>
-#include "hmc_queue.h"
+#include "hmc_link.h"
 #include "hmc_macros.h"
 
 class hmc_route {
@@ -26,7 +26,7 @@ public:
     return this->slidToCube[slid].second;
   }
 
-  ALWAYS_INLINE hmc_queue* ext_routing(unsigned cubId, unsigned curQuadId)
+  ALWAYS_INLINE hmc_link* ext_routing(unsigned cubId, unsigned curQuadId)
   {
     return nullptr;
   }

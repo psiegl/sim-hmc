@@ -6,7 +6,7 @@
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity) :
   clk(0),
-  cubes_notify(0, nullptr)
+  cubes_notify(0, nullptr, this, (bool (hmc_notify_cl::*)(void))&hmc_sim::notify_up)
 {
   this->config.num_hmcs = num_hmcs;
   this->config.num_slids = num_slids;
@@ -43,11 +43,20 @@ hmc_sim::~hmc_sim(void)
 
   for(unsigned i=0; i<this->config.num_hmcs;i++)
     delete this->cubes[i];
+
+  std::list<hmc_link*>::iterator it;
+  for(it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
+    delete[] *it;
 }
 
 struct hmc_graph_t** hmc_sim::get_link_graph(void)
 {
   return this->link_graph;
+}
+
+bool hmc_sim::notify_up(void)
+{
+  return true;
 }
 
 
@@ -62,9 +71,9 @@ bool hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId,
   hmc_quad* quad = this->cubes[hmcId]->get_quad(linkId);
 
   hmc_link *link = new hmc_link[2];
-  std::cout << "link 0 " << &link[0] << " and link 1 " << &link[1] << std::endl;
   link[0].connect_linkports(&link[1]);
   this->link_garbage.push_back(link);
+  // ToDo: maybe readjust here already!
 
   // notify all!
   for(unsigned i=0; i<this->config.num_hmcs; i++)

@@ -7,8 +7,9 @@
 #include "hmc_notify.h"
 
 class hmc_quad;
+class hmc_sim;
 
-class hmc_cube : public hmc_decode, public hmc_route {
+class hmc_cube : public hmc_decode, public hmc_route, private hmc_notify_cl {
 private:
   unsigned id;
 
@@ -26,6 +27,8 @@ public:
   }
 
   void clock(void);
+
+  bool notify_up(void);
 };
 
 

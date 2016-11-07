@@ -5,21 +5,19 @@
 #include "hmc_cube.h"
 #include "hmc_sim.h"
 
-
 int main(int argc, char* argv[])
 {
   unsigned linkdepth = 1;
-  unsigned linkwidth = 16;
+  unsigned linkwidth = 64;
 
   hmc_sim sim(1,2,4,8);
   hmc_link* slid;
   sim.hmc_link_to_slid(0, 0, 0, &slid);
   slid->re_adjust_links( linkwidth, linkdepth );
 
-
   unsigned packetlen= 256;
   void *packet = (void*) malloc (packetlen);
-  unsigned issue = 12;
+  unsigned issue = 2;
   unsigned ctr = 0;
 
   unsigned clks = 0;
@@ -33,12 +31,14 @@ int main(int argc, char* argv[])
     // set clk anyway
     clks++;
     sim.clock();
-    std::cout << ctr << " " << clks <<  std::endl;
+    if(clks > 200)
+      return 0;
   }
   while(sim.clock()) {
     clks++;
-    std::cout << ctr << " " << clks <<  std::endl;
   }
+
+  std::cout << "clks: " << clks << std::endl;
 
   return 0;
 }

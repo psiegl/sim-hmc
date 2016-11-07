@@ -34,22 +34,24 @@ bool hmc_queue::has_space(unsigned packetleninbit)
 int hmc_queue::push_back(void *packet, unsigned packetleninbit)
 {
   if( this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax ) {
+    if( this->notify != NULL && ! this->bitoccupation )
+      this->notify->notify_add(this->id);
+
     this->bitoccupation += packetleninbit;
     unsigned cycles = packetleninbit / this->bitwidth;
     if( ! cycles )
       cycles = 1;
     this->list.push_back(std::make_tuple(packet, cycles, packetleninbit));
-    if( this->notify != NULL )
-      this->notify->notify_add(this->id);
     return 0;
   }
   return -1;
 }
 
+#include <iostream>
 void* hmc_queue::front(unsigned *packetleninbit)
 {
   assert( ! this->list.empty());
-  std::list< std::tuple<void*, unsigned, unsigned> > * q = &this->list;
+  auto * q = &this->list;
   // ToDo: shall be all decreased or just the first ones?
   for(auto it=q->begin(); it != q->end(); ++it)
   {
@@ -59,6 +61,7 @@ void* hmc_queue::front(unsigned *packetleninbit)
   }
   unsigned cyclestowait = std::get<1>(q->front());
   *packetleninbit = std::get<2>(q->front());
+  std::cout << "cyclestowait " << cyclestowait << std::endl;
   return ( ! cyclestowait) ? std::get<0>(q->front()) : nullptr;
 }
 
@@ -68,7 +71,9 @@ void* hmc_queue::pop_front(void)
   void* front = std::get<0>(q->front());
   this->bitoccupation -= std::get<2>(q->front());
   q->pop_front();
-  if( this->notify != NULL )
+  if( this->notify != NULL && ! this->bitoccupation ) {
+    std::cout << "notify!" << std::endl;
     this->notify->notify_del(this->id);
+  }
   return front;
 }

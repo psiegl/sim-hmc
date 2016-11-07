@@ -8,13 +8,15 @@
 #include "hmc_notify.h"
 #include "hmc_macros.h"
 #include "hmc_decode.h"
+#include "hmc_quad.h"
 
 hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub) :
+  hmc_notify_cl(),
   id( id ),
   cub(cub),
-  ring_notify( id, notify ),
-  vault_notify( id, notify ),
-  ext_notify( id, notify ),
+  ring_notify( id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_ring::notify_up ),
+  vault_notify( id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_ring::notify_up ),
+  ext_notify( id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_ring::notify_up ),
   ext_link(nullptr)
 {
 }
@@ -56,7 +58,7 @@ bool hmc_ring::set_ext_link(hmc_link* link)
   return false;
 }
 
-hmc_queue* hmc_ring::decode_queue_of_packet(void* packet)
+hmc_link* hmc_ring::decode_link_of_packet(void* packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
   unsigned p_cubId;
@@ -69,11 +71,11 @@ hmc_queue* hmc_ring::decode_queue_of_packet(void* packet)
     {
       if(p_quadId == this->id) // this->id == quadId
       {
-        return this->ext_link->get_olink();
+        return this->ext_link;
       }
       else
       {
-        return this->ring_link[p_quadId]->get_olink();
+        return this->ring_link[p_quadId];
       }
     }
   }
@@ -88,11 +90,11 @@ hmc_queue* hmc_ring::decode_queue_of_packet(void* packet)
       if(p_quadId == this->id)
       {
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
-        return this->vault_link[p_vaultId]->get_olink();
+        return this->vault_link[p_vaultId];
       }
       else
       {
-        return this->ring_link[p_quadId]->get_olink();
+        return this->ring_link[p_quadId];
       }
     }
   }
@@ -114,9 +116,13 @@ void hmc_ring::clock(void)
       if(packet == nullptr)
         continue;
 
-      hmc_queue* next_queue = decode_queue_of_packet(packet);
-      if( ! next_queue->has_space(packetleninbit))
+      hmc_link* next_link = decode_link_of_packet(packet);
+      assert(next_link != nullptr);
+      hmc_queue* next_queue = next_link->get_olink();
+      if( ! next_queue->has_space(packetleninbit)) {
+        std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
+      }
 
       next_queue->push_back(packet, packetleninbit);
       queue->pop_front();
@@ -133,13 +139,13 @@ void hmc_ring::clock(void)
       if(packet == nullptr)
         continue;
 
-      queue->pop_front(); // Remove Me
-      continue; // Remove Me
-
-
-      hmc_queue* next_queue = decode_queue_of_packet(packet);
-      if( ! next_queue->has_space(packetleninbit))
+      hmc_link* next_link = decode_link_of_packet(packet);
+      assert(next_link != nullptr);
+      hmc_queue* next_queue = next_link->get_olink();
+      if( ! next_queue->has_space(packetleninbit)) {
+        std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
+      }
 
       next_queue->push_back(packet, packetleninbit);
       queue->pop_front();
@@ -157,7 +163,9 @@ void hmc_ring::clock(void)
       if(packet == nullptr)
         continue;
 
-      hmc_queue* next_queue = decode_queue_of_packet(packet);
+      hmc_link* next_link = decode_link_of_packet(packet);
+      assert(next_link != nullptr);
+      hmc_queue* next_queue = next_link->get_olink();
       if( ! next_queue->has_space(packetleninbit))
         continue;
 
@@ -165,4 +173,11 @@ void hmc_ring::clock(void)
       queue->pop_front();
     }
   }
+}
+
+bool hmc_ring::notify_up(void)
+{
+  return (!this->ext_notify.get_notification() &&
+          !this->ring_notify.get_notification() &&
+          !this->vault_notify.get_notification());
 }
