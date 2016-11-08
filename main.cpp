@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "hmc_notify.h"
 #include "hmc_ring.h"
 #include "hmc_link.h"
@@ -15,9 +16,9 @@ int main(int argc, char* argv[])
   sim.hmc_link_to_slid(0, 0, 0, &slid);
   slid->re_adjust_links( linkwidth, linkdepth );
 
-  unsigned packetlen= 256;
-  void *packet = (void*) malloc (packetlen);
-  unsigned issue = 2;
+  unsigned packetlen= 256; // 1 flit = 128bit
+
+  unsigned issue = 3;
   unsigned ctr = 0;
 
   unsigned clks = 0;
@@ -25,6 +26,12 @@ int main(int argc, char* argv[])
   {
     if(slid->get_olink()->has_space(packetlen))
     {
+      uint64_t *packet = new uint64_t[packetlen/sizeof(uint64_t)];
+      memset(packet, 0, packetlen);
+      packet[0] = 0;
+      packet[0] |= (((packetlen/128) & 0x1F) << 7);
+      std::cout << "header in main: " << packet[0] << std::endl;
+
       slid->get_olink()->push_back( packet, packetlen );
       ctr++;
     }

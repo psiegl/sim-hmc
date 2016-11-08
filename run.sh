@@ -1,1 +1,1 @@
-g++ *.cpp && rm *.o -rf && ./a.out
+g++ *.cpp -g && rm *.o -rf && ./a.out

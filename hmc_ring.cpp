@@ -61,6 +61,7 @@ bool hmc_ring::set_ext_link(hmc_link* link)
 hmc_link* hmc_ring::decode_link_of_packet(void* packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
+  std::cout << "header: " << header << std::endl;
   unsigned p_cubId;
   if(HMCSIM_PACKET_IS_RESPONSE(header))
   {
@@ -71,10 +72,12 @@ hmc_link* hmc_ring::decode_link_of_packet(void* packet)
     {
       if(p_quadId == this->id) // this->id == quadId
       {
+        std::cout << "ext link" << std::endl;
         return this->ext_link;
       }
       else
       {
+        std::cout << "ring link " << p_quadId << std::endl;
         return this->ring_link[p_quadId];
       }
     }
@@ -90,14 +93,17 @@ hmc_link* hmc_ring::decode_link_of_packet(void* packet)
       if(p_quadId == this->id)
       {
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
+        std::cout << "vault link " << p_vaultId << std::endl;
         return this->vault_link[p_vaultId];
       }
       else
       {
+        std::cout << "ring link " << p_quadId << std::endl;
         return this->ring_link[p_quadId];
       }
     }
   }
+  std::cerr << "Not implemented yet" << std::endl;
   return this->cub->ext_routing(p_cubId, this->id);
 }
 
@@ -166,8 +172,10 @@ void hmc_ring::clock(void)
       hmc_link* next_link = decode_link_of_packet(packet);
       assert(next_link != nullptr);
       hmc_queue* next_queue = next_link->get_olink();
-      if( ! next_queue->has_space(packetleninbit))
+      if( ! next_queue->has_space(packetleninbit)) {
+        std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
+      }
 
       next_queue->push_back(packet, packetleninbit);
       queue->pop_front();

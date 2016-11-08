@@ -305,6 +305,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   unsigned packetleninbit = (rsp_len*2) * sizeof(uint64_t);
   if (!no_response && !this->link->get_olink()->has_space(packetleninbit)) {
 //    HMCSIM_TRACE_STALL(dev->hmc, dev->id, 1);
+    std::cout << "vault issued response!" << std::endl;
     return false;
   }
 
@@ -981,6 +982,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    *
    */
   if (!no_response) {
+    std::cout << "vault issued response!" << std::endl;
     /* -- build the response */
     uint64_t rsp_slid;
 //#ifdef HMC_HAS_LOGIC
