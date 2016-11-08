@@ -3,7 +3,6 @@
 hmc_notify::hmc_notify(unsigned id, hmc_notify *up, hmc_notify_cl* notify) :
   id(id),
   notifier(0),
-  name(name),
   up(up),
   notify(notify)
 {

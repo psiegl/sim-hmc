@@ -18,7 +18,6 @@ class hmc_notify {
   // current
   unsigned id;
   uint32_t notifier;
-  const char *name;
 
   // upwards
   hmc_notify* up;
