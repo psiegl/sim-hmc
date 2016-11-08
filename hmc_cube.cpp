@@ -5,6 +5,7 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify) :
   hmc_decode(),
   hmc_route(id),
   hmc_notify_cl(),
+  hmc_register(this),
   id(id),
   quad_notify( id, notify, this )
 {
@@ -16,11 +17,6 @@ hmc_cube::~hmc_cube(void)
 {
   for(unsigned i=0; i<HMC_NUM_QUADS; i++)
     delete this->quads[i];
-}
-
-unsigned hmc_cube::get_id(void)
-{
-  return this->id;
 }
 
 void hmc_cube::clock(void)

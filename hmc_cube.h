@@ -2,14 +2,17 @@
 #define _HMC_CUBE_H_
 
 #include <map>
+#include <cmath>
+#include "hmc_macros.h"
 #include "hmc_decode.h"
 #include "hmc_route.h"
 #include "hmc_notify.h"
+#include "hmc_register.h"
 
 class hmc_quad;
 class hmc_sim;
 
-class hmc_cube : public hmc_decode, public hmc_route, private hmc_notify_cl {
+class hmc_cube : public hmc_decode, public hmc_route, private hmc_notify_cl, public hmc_register {
 private:
   unsigned id;
 
@@ -20,8 +23,12 @@ public:
   hmc_cube(unsigned id, hmc_notify *notify);
   ~hmc_cube(void);
 
-  unsigned get_id(void);
-  hmc_quad* get_quad(unsigned id)
+  ALWAYS_INLINE unsigned get_id(void)
+  {
+    return this->id;
+  }
+
+  ALWAYS_INLINE hmc_quad* get_quad(unsigned id)
   {
     return this->quads[id];
   }

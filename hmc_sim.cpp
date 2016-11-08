@@ -99,5 +99,5 @@ bool hmc_sim::clock(void)
     }
     return true;
   }
-  return false;
+  return false; // ToDo: this->clk
 }
