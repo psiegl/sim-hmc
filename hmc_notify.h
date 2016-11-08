@@ -23,12 +23,10 @@ class hmc_notify {
   // upwards
   hmc_notify* up;
 
-  hmc_notify_cl* cl;
-  bool (hmc_notify_cl::*notify_up)(void);
+  hmc_notify_cl* notify;
 
 public:
-  hmc_notify(unsigned id, hmc_notify *up, hmc_notify_cl* cl,
-             bool (hmc_notify_cl::*notify_up)(void));
+  hmc_notify(unsigned id, hmc_notify *up, hmc_notify_cl* notify);
   ~hmc_notify(void);
 
   void notify_add(unsigned id);

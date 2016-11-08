@@ -6,7 +6,7 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify) :
   hmc_route(id),
   hmc_notify_cl(),
   id(id),
-  quad_notify( id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_cube::notify_up)
+  quad_notify( id, notify, this )
 {
   for(unsigned i=0; i<HMC_NUM_QUADS; i++)
     this->quads[i] = new hmc_quad(i, &this->quad_notify, this);

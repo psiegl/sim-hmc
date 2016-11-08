@@ -1,13 +1,11 @@
 #include "hmc_notify.h"
 
-hmc_notify::hmc_notify(unsigned id, hmc_notify *up, hmc_notify_cl* cl,
-                       bool (hmc_notify_cl::*notify_up)(void)) :
+hmc_notify::hmc_notify(unsigned id, hmc_notify *up, hmc_notify_cl* notify) :
   id(id),
   notifier(0),
   name(name),
   up(up),
-  cl(cl),
-  notify_up(notify_up)
+  notify(notify)
 {
 
 }
@@ -29,11 +27,10 @@ void hmc_notify::notify_add(unsigned down_id)
   }
 }
 
-#include <iostream>
 void hmc_notify::notify_del(unsigned down_id)
 {
   this->notifier &= ~(0x1ull << down_id);
-  if( up != nullptr && (this->cl->*notify_up)() )
+  if( up != nullptr && this->notify->notify_up() )
   {
     up->notify_del(this->id);
   }

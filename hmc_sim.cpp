@@ -6,7 +6,7 @@
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity) :
   clk(0),
-  cubes_notify(0, nullptr, this, (bool (hmc_notify_cl::*)(void))&hmc_sim::notify_up)
+  cubes_notify(0, nullptr, this)
 {
   this->config.num_hmcs = num_hmcs;
   this->config.num_slids = num_slids;

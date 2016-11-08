@@ -14,9 +14,9 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub) :
   hmc_notify_cl(),
   id( id ),
   cub(cub),
-  ring_notify( id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_ring::notify_up ),
-  vault_notify( id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_ring::notify_up ),
-  ext_notify( id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_ring::notify_up ),
+  ring_notify( id, notify, this ),
+  vault_notify( id, notify, this ),
+  ext_notify( id, notify, this ),
   ext_link(nullptr)
 {
 }

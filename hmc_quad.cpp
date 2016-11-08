@@ -7,9 +7,9 @@
 
 hmc_quad::hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   hmc_notify_cl(),
-  ring_notify(id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_quad::notify_up),
+  ring_notify(id, notify, this),
   ring(id, &this->ring_notify, cub),
-  vault_notify(id, notify, this, (bool (hmc_notify_cl::*)(void))&hmc_quad::notify_up)
+  vault_notify(id, notify, this)
 {
   for(unsigned i=0; i< HMC_NUM_VAULTS / HMC_NUM_QUADS; i++)
   {
