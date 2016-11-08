@@ -11,7 +11,7 @@ class hmc_vault {
   hmc_link *link;
 
 public:
-  hmc_vault(unsigned id, hmc_notify* notify, hmc_link *link);
+  hmc_vault(unsigned id, const hmc_notify* notify, const hmc_link *link);
   ~hmc_vault(void);
 
   void clock(void);

@@ -192,7 +192,6 @@ int hmc_register::hmcsim_reg_value_set_full(unsigned reg_addr, uint64_t value)
   return 0;
 }
 
-
 int hmc_register::hmcsim_reg_value_get(unsigned reg_addr, hmc_regslots_e slot, uint64_t *ret)
 {
   hmcsim_reg_decode_fields_t *field;
@@ -219,4 +218,43 @@ int hmc_register::hmcsim_reg_value_get_full(unsigned reg_addr, uint64_t *value)
   *value = this->regs[ idx ];
 
   return 0;
+}
+
+int hmc_register::hmcsim_util_decode_bsize(unsigned value)
+{
+  switch (value) {
+  case 0x0:
+  case 0x8:
+    /* 32 bytes */
+    return 32;
+  case 0x1:
+  case 0x9:
+    /* 64 bytes */
+    return 64;
+  case 0x2:
+  case 0xA:
+    /* 128 bytes */
+    return 128;
+  case 0x3:   // HMC spec v2.1 doesn't provide details about registers anymore,
+    // while 1.0, 1.1 don't contain bsize 256
+  case 0xB:
+    /* 256 bytes */
+    return 256;
+  case 0x4:
+  case 0x5:
+  case 0x6:
+  case 0x7:
+  case 0xC:
+  case 0xD:
+  case 0xE:
+  case 0xF:
+    /*
+       * vendor specific
+       *
+       */
+    return 0;
+  default:
+    std::cerr << "ERROR: No supported BSIZE in register" << std::endl;
+    return -1;
+  }
 }

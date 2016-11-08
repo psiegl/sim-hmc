@@ -363,44 +363,7 @@ public:
     return (int)(1 << (n + 3));
   }
 
-  int hmcsim_util_decode_bsize(unsigned value)
-  {
-    switch (value) {
-    case 0x0:
-    case 0x8:
-      /* 32 bytes */
-      return 32;
-    case 0x1:
-    case 0x9:
-      /* 64 bytes */
-      return 64;
-    case 0x2:
-    case 0xA:
-      /* 128 bytes */
-      return 128;
-    case 0x3:   // HMC spec v2.1 doesn't provide details about registers anymore,
-                // while 1.0, 1.1 don't contain bsize 256
-    case 0xB:
-      /* 256 bytes */
-      return 256;
-    case 0x4:
-    case 0x5:
-    case 0x6:
-    case 0x7:
-    case 0xC:
-    case 0xD:
-    case 0xE:
-    case 0xF:
-      /*
-       * vendor specific
-       *
-       */
-      return 0;
-    default:
-      std::cerr << "ERROR: No supported BSIZE in register" << std::endl;
-      return -1;
-    }
-  }
+  int hmcsim_util_decode_bsize(unsigned value);
 };
 
 #endif /* #ifndef _HMC_REGISTER_H_ */

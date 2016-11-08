@@ -3,7 +3,7 @@
 #include "hmc_vault.h"
 #include "hmc_link.h"
 
-hmc_vault::hmc_vault(unsigned id, hmc_notify *notify, hmc_link *link) :
+hmc_vault::hmc_vault(unsigned id, const hmc_notify *notify, const hmc_link *link) :
   id(id),
   link(link)
 {
