@@ -5,10 +5,10 @@
 #include "hmc_link.h"
 #include "hmc_ring.h"
 
-hmc_quad::hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cub) :
+hmc_quad::hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cube) :
   hmc_notify_cl(),
   ring_notify(id, notify, this),
-  ring(id, &this->ring_notify, cub),
+  ring(id, &this->ring_notify, cube),
   vault_notify(id, notify, this)
 {
   for(unsigned i=0; i< HMC_NUM_VAULTS / HMC_NUM_QUADS; i++)
@@ -18,7 +18,7 @@ hmc_quad::hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cub) :
     link[0].re_adjust_links(64, 1); // ToDo
     this->link_garbage.push_back(link);
 
-    this->vaults[i] = new hmc_vault(i, &this->vault_notify, &link[1]);
+    this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify, &link[1]);
     this->ring.set_vault_link(i, &link[0]);
   }
 }

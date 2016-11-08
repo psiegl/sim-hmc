@@ -354,13 +354,22 @@ public:
   int hmcsim_reg_value_get(unsigned reg, hmc_regslots_e slot, uint64_t *value);
   int hmcsim_reg_value_get_full(unsigned reg, uint64_t *value);
 
-  int hmcsim_util_get_num_banks_per_vault(void)
+  ALWAYS_INLINE int hmcsim_util_get_num_banks_per_vault(void)
   {
     uint64_t n;
     if (this->hmcsim_reg_value_get(HMC_REG_FEAT, HMC_REG_FEAT__NUMBER_OF_BANKS_PER_VAULT, &n))
       return -1;
 
     return (int)(1 << (n + 3));
+  }
+
+  ALWAYS_INLINE int hmcsim_util_get_bsize(void)
+  {
+    uint64_t ret;
+    if (this->hmcsim_reg_value_get(HMC_REG_AC, HMC_REG_AC__ADDRESS_MAPPING_MODE, &ret))
+      return -1;
+
+    return this->hmcsim_util_decode_bsize((unsigned)ret);
   }
 
   int hmcsim_util_decode_bsize(unsigned value);

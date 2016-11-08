@@ -21,7 +21,7 @@ class hmc_quad : private hmc_notify_cl {
   std::list<hmc_link*> link_garbage;
 
 public:
-  hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cub);
+  hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cube);
   ~hmc_quad(void);
 
   void clock(void);

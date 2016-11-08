@@ -10,6 +10,16 @@
 
 class hmc_link;
 
+typedef enum{
+  RD_RS     = 0x38,	/*! HMC-SIM: HMC_RESPONSE_T: READ RESPONSE */
+  WR_RS     = 0x39,	/*! HMC-SIM: HMC_RESPONSE_T: WRITE RESPONSE */
+  MD_RD_RS  = 0x3A,	/*! HMC-SIM: HMC_RESPONSE_T: MODE READ RESPONSE */
+  MD_WR_RS  = 0x3B,	/*! HMC-SIM: HMC_RESPONSE_T: MODE WRITE RESPONSE */
+  RSP_ERROR = 0x3E,	/*! HMC-SIM: HMC_RESPONSE_T: ERROR RESPONSE */
+  RSP_NONE  = 0x00,	/*! HMC-SIM: HMC_RESPONSE_T: NO RESPONSE COMMAND */ // not really defined, but let's take it
+  RSP_CMC				/*! HMC-SIM: HMC_RESPONSE_T: CUSTOM CMC RESPONSE */
+} hmc_response_t;
+
 struct hmc_graph_t {
     unsigned links;
     unsigned visited;
