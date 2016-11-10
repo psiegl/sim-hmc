@@ -12,11 +12,15 @@ int main(int argc, char* argv[])
   unsigned linkdepth = 1;
   unsigned linkwidth = 64;
 
-  hmc_sim sim(1,2,4,8);
+  unsigned cubes = 2;
+  hmc_sim sim(cubes,2,4,8);
   hmc_link* slid = sim.hmc_link_to_slid(0, 0, 0);
   slid->re_adjust_links( linkwidth, linkdepth );
   hmc_notify slidnotify;
   slid->set_ilink_notify(0, &slidnotify);
+
+  sim.hmc_link_config(0, 1, 1, 0);
+  sim.hmc_link_config(0, 3, 1, 2);
 
   unsigned packetlen= 256; // 1 flit = 128bit
 

@@ -48,9 +48,31 @@ bool hmc_sim::notify_up(void)
 
 
 bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
-                              unsigned dest_hmcId, unsigned dest_linkId)
+                              unsigned dst_hmcId, unsigned dst_linkId)
 {
+  hmc_link *link = new hmc_link[2];
+  link[0].connect_linkports(&link[1]);
 
+  hmc_quad* src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
+  hmc_quad* dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
+
+  bool ret = src_quad->set_ext_link(&link[0]);
+  ret &= dst_quad->set_ext_link(&link[1]);
+  if(ret)
+  {
+    this->cubes[src_hmcId]->get_partial_link_graph(dst_hmcId)->links |= (0x1 << src_linkId);
+    this->cubes[dst_hmcId]->get_partial_link_graph(src_hmcId)->links |= (0x1 << dst_linkId);
+    this->cubes[src_hmcId]->hmc_routing_tables_update(); // just one needed ...
+    this->cubes[src_hmcId]->hmc_routing_tables_visualize();
+
+    this->link_garbage.push_back(link);
+    return true;
+  }
+  else
+  {
+    delete[] link;
+    return false;
+  }
 }
 
 hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId)

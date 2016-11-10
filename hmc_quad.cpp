@@ -21,6 +21,8 @@ hmc_quad::hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cube) :
     this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify, &link[1]);
     this->ring.set_vault_link(i, &link[0]);
   }
+
+  // ToDo: connect ring to ring ...
 }
 
 hmc_quad::~hmc_quad(void)
@@ -29,8 +31,7 @@ hmc_quad::~hmc_quad(void)
   {
     delete this->vaults[i];
   }
-  std::list<hmc_link*>::iterator it;
-  for(it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
+  for(auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
     delete[] *it;
 }
 
