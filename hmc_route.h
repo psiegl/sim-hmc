@@ -24,7 +24,6 @@ struct _hmc_route_t {
 
 struct cube_route {
   hmc_route_t ** tbl;
-  unsigned * slid_to_dev;
 };
 
 class hmc_route {
@@ -35,13 +34,13 @@ class hmc_route {
   struct cube_route routing;
   struct hmc_graph_t* link_graph;
 
+  void hmc_insert_route(hmc_cube *cube, unsigned cube_endId, hmc_route_t *route);
   int hmc_graph_search(unsigned start_id, unsigned i, unsigned first_hop, unsigned end_id, unsigned hop);
 
 public:
   hmc_route(hmc_sim *sim);
   ~hmc_route(void);
 
-  void hmc_insert_route(hmc_cube *cube, unsigned cube_endId, hmc_route_t *route);
   void hmc_routing_tables_visualize(void);
   void hmc_routing_tables_update(void);
   void hmc_routing_cleanup(unsigned cubeId);

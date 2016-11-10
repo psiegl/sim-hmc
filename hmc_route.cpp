@@ -5,8 +5,11 @@
 hmc_route::hmc_route(hmc_sim *sim) :
   sim(sim)
 {
-  this->link_graph = new hmc_graph_t[this->sim->get_config()->num_cubes];
-  memset(this->link_graph, 0, sizeof(hmc_graph_t) * this->sim->get_config()->num_cubes);
+  unsigned cubes = this->sim->get_config()->num_cubes;
+  this->link_graph = new hmc_graph_t[cubes];
+  memset(this->link_graph, 0, sizeof(hmc_graph_t) * cubes);
+
+  this->routing.tbl = new hmc_route_t*[cubes];
 }
 
 hmc_route::~hmc_route(void)
@@ -24,9 +27,10 @@ void hmc_route::hmc_routing_tables_visualize(void)
 {
   std::cout << "Routing table\n" << std::endl;
   std::cout << "Src.  Dest.  Gateway  Hops\n" << std::endl;
-  for (unsigned d = 0; d < this->sim->get_config()->num_cubes; d++) {
+  unsigned cubes = this->sim->get_config()->num_cubes;
+  for (unsigned d = 0; d < cubes; d++) {
     hmc_cube *cube = this->sim->get_cube(d);
-    for (unsigned t = 0; t < this->sim->get_config()->num_cubes; t++) {
+    for (unsigned t = 0; t < cubes; t++) {
       hmc_route_t *cur = cube->get_routingtbl()->tbl[ t ];
       while (cur != NULL) {
         std::cout << "  " << d << "     "<<t<<"       "<<cur->next_dev<<"   "<<cur->hops << std::endl;
@@ -81,8 +85,7 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
   if (start_id == i && hop > 0)
     return 0;
 
-  unsigned j;
-  for (j = 0; j < this->sim->get_config()->num_cubes; j++) {
+  for (unsigned j = 0; j < this->sim->get_config()->num_cubes; j++) {
     if (i != j && this->sim->get_cube(i)->get_partial_link_graph(j)->links &&
         !this->sim->get_cube(i)->get_partial_link_graph(j)->visited) {
       first_hop = (!hop) ? j : first_hop;
@@ -133,10 +136,9 @@ void hmc_route::hmc_routing_tables_update(void)
 
 void hmc_route::hmc_routing_cleanup(unsigned cubeId)
 {
-  hmc_cube *cube = this->sim->get_cube(cubeId);
-  unsigned i;
-  for (i = 0; i < this->sim->get_config()->num_cubes; i++) {
-    hmc_route_t *cur = cube->get_routingtbl()->tbl[ i ];
+  cube_route *route = this->sim->get_cube(cubeId)->get_routingtbl();
+  for (unsigned i = 0; i < this->sim->get_config()->num_cubes; i++) {
+    hmc_route_t *cur = route->tbl[ i ];
     while (cur != NULL) {
       hmc_route_t *pre = cur;
       cur = cur->next;
