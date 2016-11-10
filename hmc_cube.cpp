@@ -2,10 +2,10 @@
 #include "hmc_quad.h"
 
 hmc_cube::hmc_cube(unsigned id, hmc_notify *notify) :
-  hmc_decode(),
   hmc_route(id),
   hmc_notify_cl(),
   hmc_register(this),
+  hmc_decode(this->hmcsim_util_get_bsize(), this->hmcsim_util_get_num_banks_per_vault()),
   id(id),
   quad_notify( id, notify, this )
 {

@@ -1,5 +1,14 @@
 #include "hmc_notify.h"
 
+hmc_notify::hmc_notify(void) :
+  id(0),
+  notifier(0),
+  up(nullptr),
+  notify(nullptr)
+{
+
+}
+
 hmc_notify::hmc_notify(unsigned id, hmc_notify *up, hmc_notify_cl* notify) :
   id(id),
   notifier(0),

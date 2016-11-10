@@ -66,22 +66,28 @@ bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
 
 }
 
-bool hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, hmc_link** slid)
+hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId)
 {
   hmc_quad* quad = this->cubes[hmcId]->get_quad(linkId);
 
   hmc_link *link = new hmc_link[2];
   link[0].connect_linkports(&link[1]);
-  this->link_garbage.push_back(link);
   // ToDo: maybe readjust here already!
 
   // notify all!
   for(unsigned i=0; i<this->config.num_hmcs; i++)
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
 
-  *slid = &link[1];
-
-  return quad->set_ext_link(&link[0]);
+  if(quad->set_ext_link(&link[0]))
+  {
+    this->link_garbage.push_back(link);
+    return &link[1];
+  }
+  else
+  {
+    delete[] link;
+    return nullptr;
+  }
 }
 
 bool hmc_sim::clock(void)

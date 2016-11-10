@@ -4,9 +4,9 @@
 #include "config.h"
 
 
-hmc_decode::hmc_decode(void)
+hmc_decode::hmc_decode(unsigned bsize, unsigned num_banks_per_vault)
 {
-  // ToDo: issue default decoding
+  this->set_decoding(bsize, num_banks_per_vault);
 }
 
 hmc_decode::~hmc_decode(void)

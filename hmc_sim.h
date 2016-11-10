@@ -48,7 +48,7 @@ public:
 
   bool hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
                        unsigned dest_hmcId, unsigned dest_linkId);
-  bool hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, hmc_link** slid);
+  hmc_link* hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId);
 
   bool clock(void);
 

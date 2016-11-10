@@ -25,6 +25,7 @@ class hmc_notify {
   hmc_notify_cl* notify;
 
 public:
+  hmc_notify(void);
   hmc_notify(unsigned id, hmc_notify *up, hmc_notify_cl* notify);
   ~hmc_notify(void);
 

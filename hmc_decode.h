@@ -143,7 +143,7 @@ class hmc_decode {
   uint32_t dram_mask;
 
 public:
-  hmc_decode(void);
+  hmc_decode(unsigned bsize, unsigned num_banks_per_vault);
   ~hmc_decode(void);
   void set_decoding(unsigned bsize, unsigned num_banks_per_vault);
 
