@@ -1,16 +1,18 @@
 #include "hmc_cube.h"
 #include "hmc_quad.h"
 
-hmc_cube::hmc_cube(unsigned id, hmc_notify *notify) :
-  hmc_route(id),
+hmc_cube::hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify) :
+  hmc_route(sim),
   hmc_notify_cl(),
-  hmc_register(this),
+  hmc_register(this), // register needs to be before decode!
   hmc_decode(this->hmcsim_util_get_bsize(), this->hmcsim_util_get_num_banks_per_vault()),
   id(id),
   quad_notify( id, notify, this )
 {
   for(unsigned i=0; i<HMC_NUM_QUADS; i++)
+  {
     this->quads[i] = new hmc_quad(i, &this->quad_notify, this);
+  }
 }
 
 hmc_cube::~hmc_cube(void)

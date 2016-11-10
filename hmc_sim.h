@@ -9,6 +9,7 @@
 #include "hmc_notify.h"
 
 class hmc_link;
+class hmc_cube;
 
 typedef enum{
   RD_RS     = 0x38,	/*! HMC-SIM: HMC_RESPONSE_T: READ RESPONSE */
@@ -20,9 +21,11 @@ typedef enum{
   RSP_CMC				/*! HMC-SIM: HMC_RESPONSE_T: CUSTOM CMC RESPONSE */
 } hmc_response_t;
 
-struct hmc_graph_t {
-    unsigned links;
-    unsigned visited;
+
+struct hmc_config_t {
+  unsigned num_cubes;
+  unsigned num_slids;
+  unsigned num_links;
 };
 
 class hmc_sim : private hmc_notify_cl {
@@ -31,13 +34,7 @@ class hmc_sim : private hmc_notify_cl {
   hmc_notify cubes_notify;
   std::map<unsigned, hmc_cube*> cubes;
 
-  struct hmc_graph_t **link_graph;
-
-  struct {
-    unsigned num_hmcs;
-    unsigned num_slids;
-    unsigned num_links;
-  } config;
+  struct hmc_config_t config;
 
   std::list<hmc_link*> link_garbage;
 
@@ -52,10 +49,15 @@ public:
 
   bool clock(void);
 
-  // intern needed
-  struct hmc_graph_t** get_link_graph(void);
-
   bool notify_up(void);
+  ALWAYS_INLINE struct hmc_config_t* get_config(void)
+  {
+    return &this->config;
+  }
+  ALWAYS_INLINE hmc_cube* get_cube(unsigned id)
+  {
+    return this->cubes[id];
+  }
 };
 
 #endif /* #ifndef _HMC_SIM_H_ */

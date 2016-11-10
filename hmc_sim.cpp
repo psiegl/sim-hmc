@@ -8,7 +8,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   clk(0),
   cubes_notify(0, nullptr, this)
 {
-  this->config.num_hmcs = num_hmcs;
+  this->config.num_cubes = num_hmcs;
   this->config.num_slids = num_slids;
   this->config.num_links = num_links;
 
@@ -27,31 +27,18 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 //    return HMC_ERROR_PARAMS;
   }
 
-  this->link_graph = new struct hmc_graph_t*[num_hmcs];
-  for(unsigned i=0; i<num_hmcs; i++)
-    this->link_graph[i] = new struct hmc_graph_t[num_hmcs];
-
   for(unsigned i=0; i<num_hmcs;i++)
-    this->cubes[i] = new hmc_cube(i, &this->cubes_notify);
+    this->cubes[i] = new hmc_cube(this, i, &this->cubes_notify);
 }
 
 hmc_sim::~hmc_sim(void)
 {
-  for(unsigned i=0; i<this->config.num_hmcs; i++)
-    delete[] this->link_graph[i];
-  delete[] this->link_graph;
-
-  for(unsigned i=0; i<this->config.num_hmcs;i++)
+  for(unsigned i=0; i<this->config.num_cubes;i++)
     delete this->cubes[i];
 
   std::list<hmc_link*>::iterator it;
   for(it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
     delete[] *it;
-}
-
-struct hmc_graph_t** hmc_sim::get_link_graph(void)
-{
-  return this->link_graph;
 }
 
 bool hmc_sim::notify_up(void)
@@ -75,7 +62,7 @@ hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned li
   // ToDo: maybe readjust here already!
 
   // notify all!
-  for(unsigned i=0; i<this->config.num_hmcs; i++)
+  for(unsigned i=0; i<this->config.num_cubes; i++)
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
 
   if(quad->set_ext_link(&link[0]))
@@ -97,7 +84,7 @@ bool hmc_sim::clock(void)
   if(notifymap)
   {
     unsigned lid = __builtin_ctzl(notifymap);
-    for(unsigned h = lid; h < this->config.num_hmcs; h++ )
+    for(unsigned h = lid; h < this->config.num_cubes; h++ )
     {
       if((0x1 << h) & notifymap) {
         this->cubes[h]->clock();

@@ -20,7 +20,7 @@ private:
   std::map<unsigned, hmc_quad*> quads;
 
 public:
-  hmc_cube(unsigned id, hmc_notify *notify);
+  hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify);
   ~hmc_cube(void);
 
   ALWAYS_INLINE unsigned get_id(void)
