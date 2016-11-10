@@ -14,16 +14,11 @@ struct hmc_graph_t {
     unsigned visited;
 };
 
-typedef struct _hmc_route_t hmc_route_t;
-struct _hmc_route_t {
+struct hmc_route_t {
   unsigned next_dev;
   unsigned hops;
   unsigned *links;
   hmc_route_t *next;
-};
-
-struct cube_route {
-  hmc_route_t ** tbl;
 };
 
 class hmc_route {
@@ -31,10 +26,10 @@ class hmc_route {
 
   std::map<unsigned, std::pair<unsigned,unsigned>> slidToCube;
 
-  struct cube_route routing;
+  hmc_route_t ** tbl;
   struct hmc_graph_t* link_graph;
 
-  void hmc_insert_route(hmc_cube *cube, unsigned cube_endId, hmc_route_t *route);
+  void hmc_insert_route(hmc_cube *cube, unsigned cube_endId, struct hmc_route_t *route);
   int hmc_graph_search(unsigned start_id, unsigned i, unsigned first_hop, unsigned end_id, unsigned hop);
 
 public:
@@ -47,9 +42,9 @@ public:
 
   void set_slid(unsigned slid, unsigned cubId, unsigned quadId);
 
-  ALWAYS_INLINE struct cube_route* get_routingtbl(void)
+  ALWAYS_INLINE struct hmc_route_t** get_routingtbl(void)
   {
-    return &this->routing;
+    return this->tbl;
   }
   ALWAYS_INLINE struct hmc_graph_t* get_partial_link_graph(unsigned id)
   {

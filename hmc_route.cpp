@@ -9,7 +9,9 @@ hmc_route::hmc_route(hmc_sim *sim) :
   this->link_graph = new hmc_graph_t[cubes];
   memset(this->link_graph, 0, sizeof(hmc_graph_t) * cubes);
 
-  this->routing.tbl = new hmc_route_t*[cubes];
+  this->tbl = new hmc_route_t*[cubes];
+  for (unsigned i = 0; i < cubes; i++)
+    this->tbl[i] = NULL;
 }
 
 hmc_route::~hmc_route(void)
@@ -31,7 +33,7 @@ void hmc_route::hmc_routing_tables_visualize(void)
   for (unsigned d = 0; d < cubes; d++) {
     hmc_cube *cube = this->sim->get_cube(d);
     for (unsigned t = 0; t < cubes; t++) {
-      hmc_route_t *cur = cube->get_routingtbl()->tbl[ t ];
+      struct hmc_route_t *cur = cube->get_routingtbl()[ t ];
       while (cur != NULL) {
         std::cout << "  " << d << "     "<<t<<"       "<<cur->next_dev<<"   "<<cur->hops << std::endl;
         cur = cur->next;
@@ -40,10 +42,10 @@ void hmc_route::hmc_routing_tables_visualize(void)
   }
 }
 
-void hmc_route::hmc_insert_route(hmc_cube *cube, unsigned cube_endId, hmc_route_t *route)
+void hmc_route::hmc_insert_route(hmc_cube *cube, unsigned cube_endId, struct hmc_route_t *route)
 {
-  hmc_route_t **cur = &cube->get_routingtbl()->tbl[ cube_endId ];
-  hmc_route_t **pre = cur;
+  struct hmc_route_t **cur = &cube->get_routingtbl()[ cube_endId ];
+  struct hmc_route_t **pre = cur;
   while ((*cur) != NULL) {
     if ((*cur)->next_dev == route->next_dev) {
       if (route->hops >= (*cur)->hops) {
@@ -73,7 +75,7 @@ void hmc_route::hmc_insert_route(hmc_cube *cube, unsigned cube_endId, hmc_route_
 int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_hop, unsigned end_id, unsigned hop)
 {
   if (i == end_id) {
-    hmc_route_t *route = new hmc_route_t;
+    struct hmc_route_t *route = new struct hmc_route_t;
     route->hops = hop - 1;
     route->next_dev = first_hop;
     route->links = &this->sim->get_cube(start_id)->get_partial_link_graph(first_hop)->links;             // fixME
@@ -112,21 +114,21 @@ void hmc_route::hmc_routing_tables_update(void)
         this->hmc_graph_search(i, i, i, j, 0);                           // ToDo: check in which direction routing is possible! NON SRC MODE <-> PASSTHROUGH
 
       // remove routing entries, if directly attached
-      hmc_route_t *cur = this->sim->get_cube(i)->get_routingtbl()->tbl[j];
+      struct hmc_route_t *cur = this->sim->get_cube(i)->get_routingtbl()[j];
       while (cur != NULL) {
         if (cur->next_dev == j)
           break;
         cur = cur->next;
       }
       if (cur != NULL) {
-        hmc_route_t *tmp = this->sim->get_cube(i)->get_routingtbl()->tbl[j];
+        struct hmc_route_t *tmp = this->sim->get_cube(i)->get_routingtbl()[j];
         while (tmp != NULL) {
-          hmc_route_t *next = tmp->next;
+          struct hmc_route_t *next = tmp->next;
           if (tmp != cur)
             delete tmp;
           tmp = next;
         }
-        this->sim->get_cube(i)->get_routingtbl()->tbl[j] = cur;
+        this->sim->get_cube(i)->get_routingtbl()[j] = cur;
         cur->next = NULL;
       }
     }
@@ -136,11 +138,11 @@ void hmc_route::hmc_routing_tables_update(void)
 
 void hmc_route::hmc_routing_cleanup(unsigned cubeId)
 {
-  cube_route *route = this->sim->get_cube(cubeId)->get_routingtbl();
+  struct hmc_route_t **route = this->sim->get_cube(cubeId)->get_routingtbl();
   for (unsigned i = 0; i < this->sim->get_config()->num_cubes; i++) {
-    hmc_route_t *cur = route->tbl[ i ];
+    struct hmc_route_t *cur = route[ i ];
     while (cur != NULL) {
-      hmc_route_t *pre = cur;
+      struct hmc_route_t *pre = cur;
       cur = cur->next;
       delete pre;
     }
