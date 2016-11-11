@@ -303,7 +303,9 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    *
    */
   unsigned packetleninbit = (rsp_len*2) * sizeof(uint64_t);
-  if (!no_response && !this->link->get_olink()->has_space(packetleninbit)) {
+  hmc_queue *o_queue = this->link->get_olink();
+  assert(o_queue);
+  if (!no_response && !o_queue->has_space(packetleninbit)) {
 //    HMCSIM_TRACE_STALL(dev->hmc, dev->id, 1);
     std::cout << "vault issued response!" << std::endl;
     return false;
@@ -1042,7 +1044,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     *r_tail |= HMCSIM_PACKET_RESPONSE_SET_CRC(0x0);    // ToDo: create CRC!
 
     /* -- register the response */
-    this->link->get_olink()->push_back(response_packet, packetleninbit);
+    o_queue->push_back(response_packet, packetleninbit);
   }/* else, no response required, probably flow control */
 
   return true;

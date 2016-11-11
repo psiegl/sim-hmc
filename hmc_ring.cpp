@@ -61,30 +61,40 @@ bool hmc_ring::set_ext_link(hmc_link* link)
 hmc_link* hmc_ring::decode_link_of_packet(void* packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
-  std::cout << "header: " << header << std::endl;
   unsigned p_cubId;
   if(HMCSIM_PACKET_IS_RESPONSE(header))
   {
     unsigned slid = (unsigned)HMCSIM_PACKET_RESPONSE_SET_SLID(header);
     p_cubId = this->cub->slid_to_cubid(slid);
-    unsigned p_quadId = this->cub->slid_to_quadid(slid);
     if(p_cubId == this->cub->get_id())
     {
+      unsigned p_quadId = this->cub->slid_to_quadid(slid);
       if(p_quadId == this->id) // this->id == quadId
       {
-        std::cout << "ext link" << std::endl;
+        std::cout << "--> quad_id " << p_quadId << " ext link" << std::endl;
         return this->ext_link;
       }
       else
       {
-        std::cout << "ring link " << p_quadId << std::endl;
-        return this->ring_link[p_quadId];
+        std::cout << "--> quad_id " << p_quadId << " rsp ring link " << p_quadId << std::endl;
+        // since this is a ring, we can't cross from 0 to 3 or 1 to 2.
+        // we will route first up then right
+        /*
+          [00]  <- ^= 0b1 -> [01]
+
+           ^=0b10             ^=0b10
+
+          [10]  <- ^= 0b1 -> [11]
+
+          scheme routes first among x-axis, than y-axis
+        */
+        unsigned shift = ((p_quadId ^ this->id) & 0b01);
+        return this->ring_link[this->id ^ (0b10 >> shift)];
       }
     }
   }
   else
   {
-    assert(HMCSIM_PACKET_IS_REQUEST(header));
     p_cubId = (unsigned)HMCSIM_PACKET_REQUEST_GET_CUB(header);
     if(p_cubId == this->cub->get_id())
     {
@@ -93,17 +103,18 @@ hmc_link* hmc_ring::decode_link_of_packet(void* packet)
       if(p_quadId == this->id)
       {
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
-        std::cout << "vault link " << p_vaultId << std::endl;
+        std::cout << "--> quad_id " << p_quadId << " vault link " << p_vaultId << std::endl;
         return this->vault_link[p_vaultId];
       }
       else
       {
-        std::cout << "ring link " << p_quadId << std::endl;
-        return this->ring_link[p_quadId];
+        std::cout << "--> quad_id " << p_quadId << " rsq ring " << p_quadId << std::endl;
+        unsigned shift = ((p_quadId ^ this->id) & 0b01);
+        return this->ring_link[this->id ^ (0b10 >> shift)];
       }
     }
   }
-  std::cerr << "Not implemented yet" << std::endl;
+  std::cerr << "ToDo: Not implemented yet" << std::endl;
   return this->cub->ext_routing(p_cubId, this->id);
 }
 
@@ -125,6 +136,7 @@ void hmc_ring::clock(void)
       hmc_link* next_link = decode_link_of_packet(packet);
       assert(next_link != nullptr);
       hmc_queue* next_queue = next_link->get_olink();
+      assert(next_queue != nullptr);
       if( ! next_queue->has_space(packetleninbit)) {
         std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
@@ -148,6 +160,7 @@ void hmc_ring::clock(void)
       hmc_link* next_link = decode_link_of_packet(packet);
       assert(next_link != nullptr);
       hmc_queue* next_queue = next_link->get_olink();
+      assert(next_queue != nullptr);
       if( ! next_queue->has_space(packetleninbit)) {
         std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
@@ -172,6 +185,7 @@ void hmc_ring::clock(void)
       hmc_link* next_link = decode_link_of_packet(packet);
       assert(next_link != nullptr);
       hmc_queue* next_queue = next_link->get_olink();
+      assert(next_queue != nullptr);
       if( ! next_queue->has_space(packetleninbit)) {
         std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;

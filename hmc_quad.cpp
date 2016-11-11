@@ -62,3 +62,8 @@ bool hmc_quad::set_ext_link(hmc_link* link)
 {
   return this->ring.set_ext_link(link);
 }
+
+bool hmc_quad::set_ring_link(unsigned id, hmc_link* link)
+{
+  return this->ring.set_ring_link(id, link);
+}

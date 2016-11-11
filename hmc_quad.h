@@ -10,7 +10,6 @@ class hmc_vault;
 class hmc_cube;
 class hmc_link;
 
-#include <iostream>
 class hmc_quad : private hmc_notify_cl {
 
   hmc_notify ring_notify;
@@ -28,6 +27,7 @@ public:
   bool notify_up(void);
 
   bool set_ext_link(hmc_link* link);
+  bool set_ring_link(unsigned id, hmc_link* link);
 };
 
 #endif /* #ifndef _HMC_QUAD_H_ */

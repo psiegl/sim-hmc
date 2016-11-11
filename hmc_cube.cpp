@@ -13,6 +13,21 @@ hmc_cube::hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify) :
   {
     this->quads[i] = new hmc_quad(i, &this->quad_notify, this);
   }
+
+  for(unsigned i=0; i<HMC_NUM_QUADS; i++)
+  {
+    unsigned map[] = { 0x2, 0x0, 0x3, 0x1 };
+
+    std::cout << "connecting " << i << " and " << map[i] << std::endl;
+    unsigned neighbour =map[i];
+    hmc_quad * quad0 = this->quads[i];
+    hmc_quad * quad1 = this->quads[neighbour];
+    hmc_link *links = new hmc_link[2];
+    links[0].connect_linkports(&links[1]);
+    links[0].re_adjust_links(64,1);
+    quad0->set_ring_link(neighbour, &links[0]);
+    quad1->set_ring_link(i, &links[1]);
+  }
 }
 
 hmc_cube::~hmc_cube(void)

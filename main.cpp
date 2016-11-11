@@ -39,6 +39,10 @@ int main(int argc, char* argv[])
       packet[0] = 0;
       packet[0] |= ((0x33) & 0x7F); // RD64
       packet[0] |= (((packetlen/128) & 0x1F) << 7);
+
+      unsigned addr = 0b110000000000; // quad 3
+      packet[0] |= (((uint64_t)((addr) & 0x3FFFFFFFFull)) << 24);
+
       std::cout << "header in main: " << packet[0] << std::endl;
 
       slid->get_olink()->push_back( packet, packetlen );
