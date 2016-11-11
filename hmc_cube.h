@@ -12,7 +12,8 @@
 class hmc_quad;
 class hmc_sim;
 
-class hmc_cube : public hmc_route, private hmc_notify_cl, public hmc_register, public hmc_decode {
+class hmc_cube : public hmc_route, private hmc_notify_cl,
+                 public hmc_register, public hmc_decode {
 private:
   unsigned id;
 

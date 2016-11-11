@@ -14,9 +14,9 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub) :
   hmc_notify_cl(),
   id( id ),
   cub(cub),
-  ring_notify( id, notify, this ),
-  vault_notify( id, notify, this ),
-  ext_notify( id, notify, this ),
+  ringlinks_notify( id, notify, this ),
+  vaultlinks_notify( id, notify, this ),
+  extlinks_notify( id, notify, this ),
   ext_link(nullptr)
 {
 }
@@ -30,7 +30,7 @@ int hmc_ring::set_ring_link(unsigned id, hmc_link* link)
   if(this->ring_link.find(id) == this->ring_link.end())
   {
     this->ring_link[id] = link;
-    link->set_ilink_notify(id, &ring_notify);
+    link->set_ilink_notify(id, &ringlinks_notify);
     return 0;
   }
   return -1;
@@ -41,7 +41,7 @@ int hmc_ring::set_vault_link(unsigned id, hmc_link* link)
   if(this->vault_link.find(id) == this->vault_link.end())
   {
     this->vault_link[id] = link;
-    link->set_ilink_notify(id, &this->vault_notify);
+    link->set_ilink_notify(id, &this->vaultlinks_notify);
     return 0;
   }
   return -1;
@@ -52,7 +52,7 @@ bool hmc_ring::set_ext_link(hmc_link* link)
   if(this->ext_link == nullptr)
   {
     this->ext_link = link;
-    link->set_ilink_notify(0, &ext_notify);
+    link->set_ilink_notify(0, &extlinks_notify);
     return true;
   }
   return false;
@@ -118,7 +118,7 @@ hmc_link* hmc_ring::decode_link_of_packet(void* packet)
 void hmc_ring::clock(void)
 {
   // ToDo: just one packet or multiple?
-  uint32_t notifymap = this->ring_notify.get_notification();
+  uint32_t notifymap = this->ringlinks_notify.get_notification();
   unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
   for(unsigned i = lid; i < HMC_NUM_QUADS; i++ )
   {
@@ -143,7 +143,7 @@ void hmc_ring::clock(void)
     }
   }
 
-  notifymap = this->ext_notify.get_notification();
+  notifymap = this->extlinks_notify.get_notification();
   do {
     if(notifymap)
     {
@@ -167,7 +167,7 @@ void hmc_ring::clock(void)
     }
   } while (0);
 
-  notifymap = this->vault_notify.get_notification();
+  notifymap = this->vaultlinks_notify.get_notification();
   lid = __builtin_ctzl(notifymap); // round robin?
   for(unsigned i = lid; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++ )
   {
@@ -195,7 +195,7 @@ void hmc_ring::clock(void)
 
 bool hmc_ring::notify_up(void)
 {
-  return (!this->ext_notify.get_notification() &&
-          !this->ring_notify.get_notification() &&
-          !this->vault_notify.get_notification());
+  return (!this->extlinks_notify.get_notification() &&
+          !this->ringlinks_notify.get_notification() &&
+          !this->vaultlinks_notify.get_notification());
 }

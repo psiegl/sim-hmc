@@ -15,13 +15,13 @@ private:
   unsigned id;
   hmc_cube* cub;
 
-  hmc_notify ring_notify;
+  hmc_notify ringlinks_notify;
   std::map<unsigned, hmc_link*> ring_link;
 
-  hmc_notify vault_notify;
+  hmc_notify vaultlinks_notify;
   std::map<unsigned, hmc_link*> vault_link;
 
-  hmc_notify ext_notify;
+  hmc_notify extlinks_notify;
   hmc_link* ext_link;
 
   hmc_link* decode_link_of_packet(void* packet);
