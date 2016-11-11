@@ -69,14 +69,12 @@ hmc_link* hmc_ring::decode_link_of_packet(void* packet)
     if(p_cubId == this->cub->get_id())
     {
       unsigned p_quadId = this->cub->slid_to_quadid(slid);
-      if(p_quadId == this->id) // this->id == quadId
+      if(p_quadId == this->id)
       {
-        std::cout << "--> quad_id " << p_quadId << " ext link" << std::endl;
         return this->ext_link;
       }
       else
       {
-        std::cout << "--> quad_id " << p_quadId << " rsp ring link " << p_quadId << std::endl;
         // since this is a ring, we can't cross from 0 to 3 or 1 to 2.
         // we will route first up then right
         /*
@@ -103,12 +101,10 @@ hmc_link* hmc_ring::decode_link_of_packet(void* packet)
       if(p_quadId == this->id)
       {
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
-        std::cout << "--> quad_id " << p_quadId << " vault link " << p_vaultId << std::endl;
         return this->vault_link[p_vaultId];
       }
       else
       {
-        std::cout << "--> quad_id " << p_quadId << " rsq ring " << p_quadId << std::endl;
         unsigned shift = ((p_quadId ^ this->id) & 0b01);
         return this->ring_link[this->id ^ (0b10 >> shift)];
       }
