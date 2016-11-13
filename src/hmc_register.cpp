@@ -25,7 +25,6 @@ hmc_register::hmc_register(hmc_cube *cube) :
 
 hmc_register::~hmc_register(void)
 {
-
 }
 
 bool hmc_register::hmcsim_get_decode_field(hmc_regslots_e name, hmcsim_reg_decode_fields_t **field)
@@ -236,7 +235,7 @@ int hmc_register::hmcsim_util_decode_bsize(unsigned value)
     /* 128 bytes */
     return 128;
   case 0x3:   // HMC spec v2.1 doesn't provide details about registers anymore,
-    // while 1.0, 1.1 don't contain bsize 256
+  // while 1.0, 1.1 don't contain bsize 256
   case 0xB:
     /* 256 bytes */
     return 256;
@@ -249,9 +248,9 @@ int hmc_register::hmcsim_util_decode_bsize(unsigned value)
   case 0xE:
   case 0xF:
     /*
-       * vendor specific
-       *
-       */
+     * vendor specific
+     *
+     */
     return 0;
   default:
     std::cerr << "ERROR: No supported BSIZE in register" << std::endl;

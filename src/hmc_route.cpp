@@ -35,7 +35,7 @@ void hmc_route::hmc_routing_tables_visualize(void)
     for (unsigned t = 0; t < cubes; t++) {
       struct hmc_route_t *cur = cube->get_routingtbl()[ t ];
       while (cur != NULL) {
-        std::cout << "  " << d << "     "<<t<<"       "<<cur->next_dev<<"   "<<cur->hops << std::endl;
+        std::cout << "  " << d << "     " << t << "       " << cur->next_dev << "   " << cur->hops << std::endl;
         cur = cur->next;
       }
     }
@@ -79,7 +79,7 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
     route->hops = hop - 1;
     route->next_dev = first_hop;
     route->links = &this->sim->get_cube(start_id)->get_partial_link_graph(first_hop)->links;             // fixME
-    this->hmc_insert_route(this->sim->get_cube( start_id ), end_id, route);
+    this->hmc_insert_route(this->sim->get_cube(start_id), end_id, route);
 //		printf("  found -> %d via %d to %d hops: %d  first link: %d (links: %d)\n", start_id, first_hop, end_id, hop - 1,
 //						__builtin_ctz( hmc->link_graph[ start_id ][ first_hop ].links ), hmc_utils_popcount( sizeof(unsigned), hmc->link_graph[ start_id ][ first_hop ].links ) );
     return 1;

@@ -17,15 +17,14 @@ hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify, hmc_link *
 
 hmc_vault::~hmc_vault(void)
 {
-
 }
 
 #include <iostream>
 void hmc_vault::clock(void)
 {
   unsigned packetleninbit;
-  void* packet = link->get_ilink()->front(&packetleninbit);
-  if(packet == nullptr)
+  void *packet = link->get_ilink()->front(&packetleninbit);
+  if (packet == nullptr)
     return;
 
   uint64_t header = HMC_PACKET_HEADER(packet);
@@ -35,8 +34,7 @@ void hmc_vault::clock(void)
   std::cout << "got packet!!! to bank " << bank << std::endl;
   // ToDo: Bank Conflict!
 
-  if(this->hmcsim_process_rqst(packet))
-  {
+  if (this->hmcsim_process_rqst(packet)) {
     link->get_ilink()->pop_front();
     delete (uint64_t*)packet;
   }
@@ -302,7 +300,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    *         if no slots available, then this operation must stall
    *
    */
-  unsigned packetleninbit = (rsp_len*2) * sizeof(uint64_t);
+  unsigned packetleninbit = (rsp_len * 2) * sizeof(uint64_t);
   hmc_queue *o_queue = this->link->get_olink();
   assert(o_queue);
   if (!no_response && !o_queue->has_space(packetleninbit)) {
@@ -937,7 +935,6 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   case CMC126:
   case CMC127:
 #if 0
-
     hmc_response_t tmp8 = 0x0;
     HMCSIM_PRINT_TRACE("HMCSIM_PROCESS_PACKET: PROCESSING CMC PACKET REQUEST\n");
 

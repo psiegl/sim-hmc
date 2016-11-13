@@ -1,8 +1,8 @@
 #include "hmc_link.h"
 
 hmc_link::hmc_link(void) :
-  o( nullptr ),
-  binding( nullptr )
+  o(nullptr),
+  binding(nullptr)
 {
 }
 
@@ -10,12 +10,12 @@ hmc_link::~hmc_link(void)
 {
 }
 
-hmc_queue* hmc_link::get_ilink(void)
+hmc_queue*hmc_link::get_ilink(void)
 {
   return &this->i;
 }
 
-hmc_queue* hmc_link::get_olink(void)
+hmc_queue*hmc_link::get_olink(void)
 {
   return this->o;
 }

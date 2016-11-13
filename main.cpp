@@ -1,10 +1,10 @@
 #include <iostream>
 #include <cstring>
-#include "hmc_notify.h"
-#include "hmc_ring.h"
-#include "hmc_link.h"
-#include "hmc_cube.h"
-#include "hmc_sim.h"
+#include "src/hmc_notify.h"
+#include "src/hmc_ring.h"
+#include "src/hmc_link.h"
+#include "src/hmc_cube.h"
+#include "src/hmc_sim.h"
 
 
 int main(int argc, char* argv[])
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
   unsigned packetlen= 256; // 1 flit = 128bit
 
-  unsigned issue = 10;
+  unsigned issue = 100;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
       unsigned addr = 0b110000000000; // quad 3
       packet[0] |= (((uint64_t)((addr) & 0x3FFFFFFFFull)) << 24);
 
-      std::cout << "header in main: " << packet[0] << std::endl;
+      //std::cout << "header in main: " << packet[0] << std::endl;
 
       slid->get_olink()->push_back( packet, packetlen );
       track[send_ctr] = clks;
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
       if(packet != nullptr)
       {
         slid->get_ilink()->pop_front();
-        std::cout << "---->>> pop front! size: " << packetleninbit << std::endl;
+        //std::cout << "---->>> pop front! size: " << packetleninbit << std::endl;
         track[recv_ctr] = clks - track[recv_ctr];
         recv_ctr++;
         if(recv_ctr > issue)
@@ -64,8 +64,8 @@ int main(int argc, char* argv[])
     }
     // set clk anyway
     clks++;
-    if(clks > 200)
-      return 0;
+    //if(clks > 500)
+    //  return 0;
   } while(sim.clock());
 
   std::cout << "clks: " << clks << std::endl;
@@ -74,6 +74,7 @@ int main(int argc, char* argv[])
   }
 
   delete[] track;
+  std::cout << "done in " << clks << " clks " << std::endl;
 
   return 0;
 }
