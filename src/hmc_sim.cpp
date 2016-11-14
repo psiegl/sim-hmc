@@ -49,7 +49,7 @@ bool hmc_sim::notify_up(void)
 
 bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
                               unsigned dst_hmcId, unsigned dst_linkId,
-                              unsigned bitwidth)
+                              enum link_width_t bitwidth)
 {
   hmc_link *link = new hmc_link[2];
   link[0].connect_linkports(&link[1]);
@@ -75,7 +75,7 @@ bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
   }
 }
 
-hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, unsigned bitwidth)
+hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 

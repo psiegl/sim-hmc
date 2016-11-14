@@ -6,7 +6,7 @@ hmc_queue::hmc_queue(void) :
   notify(NULL),
   bitoccupation(0),
   bitoccupationmax(0),
-  bitwidth(0)
+  bitwidth(HMCSIM_QUARTER_LINK_WIDTH)
 {
 }
 
@@ -20,10 +20,10 @@ void hmc_queue::set_notify(unsigned id, hmc_notify *notify)
   this->notify = notify;
 }
 
-void hmc_queue::re_adjust(unsigned bitwidth, unsigned queuedepth)
+void hmc_queue::re_adjust(enum link_width_t linkwidth, unsigned queuedepth)
 {
-  this->bitwidth = bitwidth;
-  this->bitoccupationmax = bitwidth * queuedepth;
+  this->bitwidth = linkwidth;
+  this->bitoccupationmax = (this->bitwidth*16) * queuedepth;
 }
 
 bool hmc_queue::has_space(unsigned packetleninbit)
@@ -39,7 +39,7 @@ int hmc_queue::push_back(void *packet, unsigned packetleninbit)
       this->notify->notify_add(this->id);
 
     this->bitoccupation += packetleninbit;
-    unsigned cycles = packetleninbit / this->bitwidth;
+    unsigned cycles = packetleninbit / (this->bitwidth*16);
     if (!cycles)
       cycles = 1;
     this->list.push_back(std::make_tuple(packet, cycles, packetleninbit));

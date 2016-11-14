@@ -289,7 +289,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
 
   /* -- decide where the tail is */
-  uint64_t tail = ((uint64_t*)packet)[ (length * 2) - 1 ];
+  uint64_t tail = ((uint64_t*)packet)[ (length << 1) - 1 ];
 
   /*
    * Step 2: decode it
@@ -300,20 +300,19 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
 
 
   bool no_response;
-  unsigned rsp_len;
-  this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_len);
+  unsigned rsp_flits;
+  this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_flits);
 
   /*
    * Step 3: find a response slot
    *         if no slots available, then this operation must stall
    *
    */
-  unsigned packetleninbit = (rsp_len * 2) * sizeof(uint64_t);
+  unsigned packetleninbit = rsp_flits * FLIT_WIDTH;
   hmc_queue *o_queue = this->link->get_olink();
   assert(o_queue);
   if (!no_response && !o_queue->has_space(packetleninbit)) {
 //    HMCSIM_TRACE_STALL(dev->hmc, dev->id, 1);
-    std::cout << "vault issued response!" << std::endl;
     return false;
   }
 
@@ -959,7 +958,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
                                tail,
                                &packet[1],
                                rsp_payload,
-                               &rsp_len,
+                               &rsp_flits,
                                &rsp_cmd,
                                &tmp8);
     /*
@@ -989,7 +988,6 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    *
    */
   if (!no_response) {
-    std::cout << "vault issued response!" << std::endl;
     /* -- build the response */
     uint64_t rsp_slid;
 //#ifdef HMC_HAS_LOGIC
@@ -1009,16 +1007,16 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     uint64_t rsp_frp = HMCSIM_PACKET_REQUEST_GET_FRP(tail);
     uint64_t rsp_rrp = HMCSIM_PACKET_REQUEST_GET_RRP(tail);
 
-    uint64_t *response_packet = new uint64_t[rsp_len * 2];
-    if (rsp_len > 1)
-      memcpy(&response_packet[1], rsp_payload, packetleninbit - (2 * sizeof(uint64_t)));
+    uint64_t *response_packet = new uint64_t[rsp_flits << 1];
+    if (rsp_flits > 1)
+      memcpy(&response_packet[1], rsp_payload, ((rsp_flits - 1) * FLIT_WIDTH) / 8);
     uint64_t *r_head = response_packet;
-    uint64_t *r_tail = &response_packet[rsp_len * 2 - 1];
+    uint64_t *r_tail = &response_packet[(rsp_flits << 1) - 1];
 
     /* -- packet head */
     *r_head = 0x0ull;
     *r_head |= HMCSIM_PACKET_RESPONSE_SET_CMD(rsp_cmd);
-    *r_head |= HMCSIM_PACKET_RESPONSE_SET_LNG(rsp_len);
+    *r_head |= HMCSIM_PACKET_RESPONSE_SET_LNG(rsp_flits);
     *r_head |= HMCSIM_PACKET_RESPONSE_SET_TAG(rsp_tag);
     *r_head |= HMCSIM_PACKET_RESPONSE_SET_AF(0);
 //#ifdef HMC_HAS_LOGIC

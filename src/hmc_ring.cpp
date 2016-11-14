@@ -122,7 +122,7 @@ void hmc_ring::clock(void)
       hmc_queue *next_queue = next_link->get_olink();
       assert(next_queue != nullptr);
       if (!next_queue->has_space(packetleninbit)) {
-        std::cout << "----->>>>> noooooooo space!" << std::endl;
+        //std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
       }
 
@@ -145,7 +145,7 @@ void hmc_ring::clock(void)
       hmc_queue *next_queue = next_link->get_olink();
       assert(next_queue != nullptr);
       if (!next_queue->has_space(packetleninbit)) {
-        std::cout << "----->>>>> noooooooo space!" << std::endl;
+        //std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
       }
 
@@ -169,7 +169,7 @@ void hmc_ring::clock(void)
       hmc_queue *next_queue = next_link->get_olink();
       assert(next_queue != nullptr);
       if (!next_queue->has_space(packetleninbit)) {
-        std::cout << "----->>>>> noooooooo space!" << std::endl;
+        //std::cout << "----->>>>> noooooooo space!" << std::endl;
         continue;
       }
 

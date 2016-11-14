@@ -27,7 +27,6 @@ hmc_bobsim::~hmc_bobsim(void)
 {
   if(!this->id)
   {
-    std::cout << "this id   " << this->id << std::endl;
     BobPrintStats(this->bobsim);
   }
   BobFreeWrapper(this->bobsim);
@@ -56,7 +55,7 @@ void hmc_bobsim::clock(void)
       bool no_response;
       unsigned rsp_len;
       this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_len);
-      unsigned packetleninbit = (rsp_len * 2) * sizeof(uint64_t);
+      unsigned packetleninbit = rsp_len * FLIT_WIDTH;
 
       hmc_queue *o_queue = this->link->get_olink();
       if(no_response || o_queue->has_space(packetleninbit))
@@ -83,7 +82,7 @@ void hmc_bobsim::clock(void)
     unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
     enum TransactionType type = this->hmc_determineTransactionType(cmd);
-    BobTransaction *bobtrans = BobCreateTransaction(type, packetleninbit * 8, bank, packet);
+    BobTransaction *bobtrans = BobCreateTransaction(type, packetleninbit, bank, packet);
     if (!BobSubmitTransaction(this->bobsim, bobtrans, 0 /* port */)) {
       std::cout << "should never happen!" << std::endl;
       exit(0);
@@ -93,7 +92,6 @@ void hmc_bobsim::clock(void)
     {
       this->bobnotify.notify_add(0);
     }
-    std::cout << "added!" << std::endl;
     link->get_ilink()->pop_front();
   }
 }
@@ -110,7 +108,6 @@ void hmc_bobsim::bob_printStats(void)
 
 bool hmc_bobsim::notify_up(void)
 {
-  std::cout << "notify up!" << std::endl;
   return(!this->linknotify.get_notification() &&
          !this->bobnotify.get_notification());
 }

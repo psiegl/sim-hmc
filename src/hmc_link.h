@@ -4,7 +4,6 @@
 #include "hmc_queue.h"
 #include "hmc_notify.h"
 
-
 class hmc_link {
   hmc_queue i;
   hmc_queue *o;
@@ -20,7 +19,7 @@ public:
 
   void set_ilink_notify(unsigned id, hmc_notify *notify);
 
-  void re_adjust_links(unsigned bitwidth, unsigned queuedepth);
+  void re_adjust_links(enum link_width_t bitwidth, unsigned queuedepth);
 
   // setup of two parts of hmc_link to form ONE link
   void connect_linkports(hmc_link *part);

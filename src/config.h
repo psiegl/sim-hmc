@@ -94,6 +94,100 @@ umn addresses, addressing 1Mb blocks of 16 bytes each
 
 #define   HMC_HAS_LOGIC         1 /* inofficial */
 
+#define   FLIT_WIDTH            128 /* bit */
+
+/*
+  Commands and data are transmitted in both directions across the link using a packet-
+  based protocol where the packets consist of 128-bit flow units called “FLITs.” These
+  FLITs are serialized, transmitted across the physical lanes of the link, then re-assembled
+  at the receiving end of the link. Three conceptual layers handle packet transfers:
+  • The physical layer handles serialization, transmission, and deserialization.
+  • The link layer provides the low-level handling of the packets at each end of the link.
+  • The transaction layer provides the definition of the packets, the fields within the
+  packets, and the packet verification and retry functions of the link.
+ */
+
+/*
+ * Thesis:
+ *
+ * 125 MHz (REF CLK)
+ * 10 GB/s -> vault clock: 10GB/s / (32 TSV data lanes) = 2.5Gb/s data rate (assume: double data rate transmission)
+ * yields: 1.25 GHz TSV Frequency t_CK = 0.8ns --> 8x 100ps -> 1 FLIT! (128bit for 1 clk)
+ * frequency is precisely 10 times the link ref. clock of 125 MHz
+ *
+ * uses timings:
+ *         value (cycles @    Time (ns)   value (cycles @
+ *         t_CK = 1.25ns)                 t_CK = 0.8ns)
+ * t_RP    11 cycles          13.75ns     17 cycles
+ * t_CCD   4 cycles           5ns         6 cycles
+ * t_RCD   11 cycles          13.75ns     17 cycles
+ * t_CL    11 cycles          13.75ns     17 cycles
+ * t_WR    12 cycles          15ns        19 cycles
+ * t_RAS   22 cycles          27.5ns      34 cycles
+ *
+ *
+ *
+ *
+ *
+
+CACTI3DD
+Timing Components:
+       t_RCD (Row to column command delay): 5.49162 ns              ~ 4 cycles (1.25ns)
+       t_RAS (Row access strobe latency): 11.6056 ns                ~ 9 cycles (1.25ns)
+       t_RC (Row cycle): 14.2552 ns                                 ~ 11 cycles (1.25ns)
+       t_CAS (Column access strobe latency): 26.9434 ns
+       t_RP (Row precharge latency): 3.39136 ns                     ~ 3 cycles (1.25ns)
+       t_RRD (Row activation to row activation delay): 4.35353 ns
+Power Components:
+       Activation energy: 2.30653 nJ
+       Read energy: 1.52285 nJ
+       Write energy: 1.52314 nJ
+       Precharge energy: 1.03846 nJ
+
+Time Components:
+
+     row activation bus delay (ns): 3.61179
+     row predecoder delay (ns): 0.689387
+     row decoder delay (ns): 0.516858
+     local wordline delay (ns): 0.287216
+     bitline delay (ns): 3.62016
+     sense amp delay (ns): 0.325648
+     column access bus delay (ns): 3.61179
+     column predecoder delay (ns): 0.357764
+     column decoder delay (ns): 2.1111
+     datapath bus delay (ns): 3.61179
+     global dataline delay (ns): 1.79881
+     local dataline delay (ns): 7.44249
+     data buffer delay (ns): 2.95421
+     subarray output driver delay (ns): 3.43528
+
+Energy Components:
+
+     row activation bus energy (nJ): 0.113767
+     row predecoder energy (nJ): 0.000458332
+     row decoder energy (nJ): 0.000286932
+     local wordline energy (nJ): 0.000182402
+     bitline energy (nJ): 0.943563
+     sense amp energy (nJ): 1.20011
+     column access bus energy (nJ): 0.0985983
+     column predecoder energy (nJ): 4.63255e-05
+     column decoder energy (nJ): 0.000387437
+     column selectline energy (nJ): 0.0734667
+     datapath bus energy (nJ): 0.242703
+     global dataline energy (nJ): 0.0114835
+     local dataline energy (nJ): 0.585444
+     data buffer energy (nJ): 0.00346825
+
+*/
+
+/* link bit rate in Gb/s */
+#define HMCSIM_BR12_5   12.5f
+#define HMCSIM_BR15     15.0f
+#define HMCSIM_BR25     25.0f
+#define HMCSIM_BR28     28.0f
+#define HMCSIM_BR30     30.0f /* 30Gb/s -> 15 GHz (DDR) -> 0.06666ns (48x 312.5MHz) */
+
+
 
 /* registers */
 #define   HMC_NUM_REGS          26

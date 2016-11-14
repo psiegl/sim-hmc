@@ -13,14 +13,14 @@ int main(int argc, char* argv[])
 
   unsigned cubes = 2;
   hmc_sim sim(cubes,2,4,8);
-  hmc_link* slid = sim.hmc_link_to_slid(0, 0, 0, linkwidth);
+  hmc_link* slid = sim.hmc_link_to_slid(0, 0, 0, HMCSIM_FULL_LINK_WIDTH);
   hmc_notify slidnotify;
   slid->set_ilink_notify(0, &slidnotify);
 
-  sim.hmc_link_config(0, 1, 1, 0, 256);
-  sim.hmc_link_config(0, 3, 1, 2, 256);
+  sim.hmc_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH);
+  sim.hmc_link_config(0, 3, 1, 2, HMCSIM_FULL_LINK_WIDTH);
 
-  unsigned packetlen= 256; // 1 flit = 128bit
+  unsigned sendpacketleninbit = 2*FLIT_WIDTH;
 
   unsigned issue = 100;
   unsigned send_ctr = 0;
@@ -30,30 +30,30 @@ int main(int argc, char* argv[])
   unsigned *track = new unsigned[issue];
   do
   {
-    if(issue > send_ctr && slid->get_olink()->has_space(packetlen))
+    if(issue > send_ctr && slid->get_olink()->has_space(sendpacketleninbit))
     {
-      uint64_t *packet = new uint64_t[packetlen/sizeof(uint64_t)];
-      memset(packet, 0, packetlen);
+      uint64_t *packet = new uint64_t[(sendpacketleninbit/FLIT_WIDTH) << 1];
+      memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
       packet[0] = 0;
       packet[0] |= ((0x33) & 0x7F); // RD64
-      packet[0] |= (((packetlen/128) & 0x1F) << 7);
+      packet[0] |= (((sendpacketleninbit/FLIT_WIDTH) & 0x1F) << 7);
 
       unsigned addr = 0b110000000000; // quad 3
       packet[0] |= (((uint64_t)((addr) & 0x3FFFFFFFFull)) << 24);
 
       //std::cout << "header in main: " << packet[0] << std::endl;
 
-      slid->get_olink()->push_back( packet, packetlen );
+      slid->get_olink()->push_back( packet, sendpacketleninbit );
       track[send_ctr] = clks;
       send_ctr++;
     }
     if(slidnotify.get_notification()) {
-      unsigned packetleninbit;
-      uint64_t* packet = (uint64_t*)slid->get_ilink()->front(&packetleninbit);
+      unsigned recvpacketleninbit;
+      uint64_t* packet = (uint64_t*)slid->get_ilink()->front(&recvpacketleninbit);
       if(packet != nullptr)
       {
         slid->get_ilink()->pop_front();
-        //std::cout << "---->>> pop front! size: " << packetleninbit << std::endl;
+        //std::cout << "---->>> pop front! size: " << recvpacketleninbit << std::endl;
         track[recv_ctr] = clks - track[recv_ctr];
         recv_ctr++;
         if(recv_ctr > issue)
