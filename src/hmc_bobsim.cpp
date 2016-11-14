@@ -4,7 +4,6 @@
 
 bool callback(void *bobsim, void *packet)
 {
-  std::cout << "callback!" << std::endl;
   return ((hmc_bobsim*)bobsim)->bob_feedback(packet);
 }
 
@@ -44,16 +43,35 @@ bool hmc_bobsim::bob_feedback(void *packet)
 
 void hmc_bobsim::clock(void)
 {
-  if(this->linknotify.get_notification())
+  if(this->bobnotify_ctr)
   {
-    void *pkt = BobWillCallback(this->bobsim, 0 /* num_ports */);
-    //if (pkt == nullptr) {
+    void *packet = BobWillCallback(this->bobsim, 0 /* num_ports */);
+    if(packet)
+    {
+      uint64_t header = HMC_PACKET_HEADER(packet);
+      hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
+
+      // ToDo: writes are not yet considered!
+
+      bool no_response;
+      unsigned rsp_len;
+      this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_len);
+      unsigned packetleninbit = (rsp_len * 2) * sizeof(uint64_t);
+
+      hmc_queue *o_queue = this->link->get_olink();
+      if(no_response || o_queue->has_space(packetleninbit))
+      {
+        BobUpdate(this->bobsim);
+      }
+    }
+    else
+    {
       BobUpdate(this->bobsim);
-    //}
+    }
+  }
 
-    if (BobIsPortBusy(this->bobsim, 0 /* port */))
-      return;
-
+  if(this->linknotify.get_notification() && ! BobIsPortBusy(this->bobsim, 0 /* port */))
+  {
     unsigned packetleninbit;
     void *packet = this->link->get_ilink()->front(&packetleninbit);
     if (packet == nullptr)
@@ -77,10 +95,6 @@ void hmc_bobsim::clock(void)
     }
     std::cout << "added!" << std::endl;
     link->get_ilink()->pop_front();
-  }
-  else if(this->bobnotify_ctr)
-  {
-    BobUpdate(this->bobsim);
   }
 }
 

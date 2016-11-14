@@ -149,6 +149,7 @@ class hmc_vault {
 
 protected:
   bool hmcsim_process_rqst(void *packet);
+  void hmcsim_packet_resp_len(hmc_rqst_t cmd, bool *no_response, unsigned *rsp_len);
 
 public:
   hmc_vault(unsigned id, hmc_cube *cube, hmc_notify* notify, hmc_link *link);

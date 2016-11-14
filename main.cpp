@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
   unsigned packetlen= 256; // 1 flit = 128bit
 
-  unsigned issue = 27;
+  unsigned issue = 100;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 

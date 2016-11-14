@@ -42,34 +42,10 @@ void hmc_vault::clock(void)
 #endif
 
 
-bool hmc_vault::hmcsim_process_rqst(void *packet)
+void hmc_vault::hmcsim_packet_resp_len(hmc_rqst_t cmd, bool *no_response, unsigned *rsp_len)
 {
-  uint64_t rsp_payload[HMC_MAX_UQ_PACKET - 2 * 2];
-
-  uint32_t error = 0x00;
-  hmc_response_t rsp_cmd = RSP_ERROR;
-
-
-  /*
-   * Step 1: get the request
-   *
-   */
-  uint64_t header = HMC_PACKET_HEADER(packet);
-  uint32_t length = (uint32_t)HMCSIM_PACKET_REQUEST_GET_LNG(header);
-  hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
-
-  /* -- decide where the tail is */
-  uint64_t tail = ((uint64_t*)packet)[ (length * 2) - 1 ];
-
-  /*
-   * Step 2: decode it
-   *
-   */
-  //uint64_t addr = (uint32_t)HMCSIM_PACKET_REQUEST_GET_ADRS(header);
-  //uint32_t bank = (uint32_t)this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
-
-  unsigned no_response = 0x00;
-  uint32_t rsp_len = 0x00;
+  *no_response = false;
+  *rsp_len = 0;
   switch (cmd) {
   case WR16:
   case WR32:
@@ -83,7 +59,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   case MD_WR:
   case BWR:
     /* set the response length in flits */
-    rsp_len = 1;
+    *rsp_len = 1;
     break;
 
   case TWOADD8:
@@ -103,57 +79,57 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   case P_2ADD8:
   case P_ADD16:
     /* set the response command */
-    no_response = 1;
+    *no_response = true;
     break;
 
   case RD16:
     /* set the response length in FLITS */
-    rsp_len = 2;
+    *rsp_len = 2;
     break;
 
   case RD32:
     /* set the response length in FLITS */
-    rsp_len = 3;
+    *rsp_len = 3;
     break;
 
   case RD48:
     /* set the response length in FLITS */
-    rsp_len = 4;
+    *rsp_len = 4;
     break;
 
   case RD64:
     /* set the response length in FLITS */
-    rsp_len = 5;
+    *rsp_len = 5;
     break;
 
   case RD80:
     /* set the response length in FLITS */
-    rsp_len = 6;
+    *rsp_len = 6;
     break;
 
   case RD96:
     /* set the response length in FLITS */
-    rsp_len = 7;
+    *rsp_len = 7;
     break;
 
   case RD112:
     /* set the response length in FLITS */
-    rsp_len = 8;
+    *rsp_len = 8;
     break;
 
   case RD128:
     /* set the response length in FLITS */
-    rsp_len = 9;
+    *rsp_len = 9;
     break;
 
   case RD256:
     /* set the response length in FLITS */
-    rsp_len = 17;
+    *rsp_len = 17;
     break;
 
   case MD_RD:
     /* set the response length in FLITS */
-    rsp_len = 2;
+    *rsp_len = 2;
     break;
 
   case FLOW_NULL:
@@ -161,23 +137,23 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   case TRET:
   case IRTRY:
     /* signal no response packet required */
-    no_response = 1;
+    *no_response = true;
     break;
 
   case TWOADDS8R:
   case ADDS16R:
     /* set the response length in FLITS */
-    rsp_len = 2;
+    *rsp_len = 2;
     break;
 
   case INC8:
     /* set the response length in FLITS */
-    rsp_len = 1;
+    *rsp_len = 1;
     break;
 
   case P_INC8:
     /* set the response command */
-    no_response = 1;
+    *no_response = true;
     break;
 
   case XOR16:
@@ -192,19 +168,19 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   case CASEQ8:
   case CASZERO16:
     /* set the response length in FLITS */
-    rsp_len = 2;
+    *rsp_len = 2;
     break;
 
   case EQ8:
   case EQ16:
     /* set the response length in FLITS */
-    rsp_len = 1;
+    *rsp_len = 1;
     break;
 
   case BWR8R:
   case SWAP16:
     /* set the response length in FLITS */
-    rsp_len = 2;
+    *rsp_len = 2;
     break;
 
   /* begin CMC commands */
@@ -284,7 +260,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     case MD_WR_RS:
     case RSP_NONE:
       /* no response packet */
-      no_response = 1;
+      *no_response = true;
       break;
     default:
       break;
@@ -294,7 +270,38 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
   default:
     break;
   }
+}
 
+bool hmc_vault::hmcsim_process_rqst(void *packet)
+{
+  uint64_t rsp_payload[HMC_MAX_UQ_PACKET - 2 * 2];
+
+  uint32_t error = 0x00;
+  hmc_response_t rsp_cmd = RSP_ERROR;
+
+
+  /*
+   * Step 1: get the request
+   *
+   */
+  uint64_t header = HMC_PACKET_HEADER(packet);
+  unsigned length = HMCSIM_PACKET_REQUEST_GET_LNG(header);
+  hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
+
+  /* -- decide where the tail is */
+  uint64_t tail = ((uint64_t*)packet)[ (length * 2) - 1 ];
+
+  /*
+   * Step 2: decode it
+   *
+   */
+  //uint64_t addr = (uint32_t)HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+  //uint32_t bank = (uint32_t)this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
+
+
+  bool no_response;
+  unsigned rsp_len;
+  this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_len);
 
   /*
    * Step 3: find a response slot
