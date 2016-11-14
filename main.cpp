@@ -9,10 +9,9 @@
 
 int main(int argc, char* argv[])
 {
-  unsigned linkwidth = 256;
 
   unsigned cubes = 2;
-  hmc_sim sim(cubes,2,4,8);
+  hmc_sim sim(cubes,2,4,8, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
   hmc_link* slid = sim.hmc_link_to_slid(0, 0, 0, HMCSIM_FULL_LINK_WIDTH);
   hmc_notify slidnotify;
   slid->set_ilink_notify(0, &slidnotify);

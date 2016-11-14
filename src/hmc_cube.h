@@ -21,7 +21,8 @@ private:
   std::map<unsigned, hmc_quad*> quads;
 
 public:
-  hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify);
+  hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify,
+           enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth);
   virtual ~hmc_cube(void);
 
   ALWAYS_INLINE unsigned get_id(void)

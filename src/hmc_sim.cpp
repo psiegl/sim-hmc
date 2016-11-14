@@ -4,7 +4,9 @@
 #include "hmc_quad.h"
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
-                 unsigned num_links, unsigned capacity) :
+                 unsigned num_links, unsigned capacity,
+                 enum link_width_t ringbuswidth,
+                 enum link_width_t vaultbuswidth) :
   clk(0),
   cubes_notify(0, nullptr, this)
 {
@@ -28,7 +30,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
   for (unsigned i = 0; i < num_hmcs; i++)
-    this->cubes[i] = new hmc_cube(this, i, &this->cubes_notify);
+    this->cubes[i] = new hmc_cube(this, i, &this->cubes_notify, ringbuswidth, vaultbuswidth);
 }
 
 hmc_sim::~hmc_sim(void)

@@ -30,7 +30,7 @@ private:
 
   unsigned bitoccupation;
   unsigned bitoccupationmax;
-  enum link_width_t bitwidth;
+  enum link_width_t linkwidth;
 
   std::list< std::tuple<void*, unsigned, unsigned> > list;
 

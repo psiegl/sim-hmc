@@ -40,7 +40,9 @@ class hmc_sim : private hmc_notify_cl {
 
 public:
   hmc_sim(unsigned num_hmcs, unsigned num_slids,
-          unsigned num_links, unsigned capacity);
+          unsigned num_links, unsigned capacity,
+          enum link_width_t ringbuswidth,
+          enum link_width_t vaultbuswidth);
   ~hmc_sim(void);
 
   bool hmc_link_config(unsigned src_hmcId, unsigned src_linkId,

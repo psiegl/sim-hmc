@@ -4,6 +4,7 @@
 #include <list>
 #include "hmc_ring.h"
 #include "hmc_notify.h"
+#include "hmc_link.h"
 #include "config.h"
 
 #ifdef HMC_USES_BOBSIM
@@ -12,7 +13,6 @@ class hmc_bobsim;
 class hmc_vault;
 #endif /* #ifdef HMC_USES_BOBSIM */
 class hmc_cube;
-class hmc_link;
 
 class hmc_quad : private hmc_notify_cl {
 
@@ -28,7 +28,8 @@ class hmc_quad : private hmc_notify_cl {
   std::list<hmc_link*> link_garbage;
 
 public:
-  hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cube);
+  hmc_quad(unsigned id, hmc_notify *notify,
+           hmc_cube *cube, enum link_width_t vaultbuswidth);
   virtual ~hmc_quad(void);
 
   void clock(void);
