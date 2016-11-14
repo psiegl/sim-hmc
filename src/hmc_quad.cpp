@@ -1,6 +1,10 @@
 #include "hmc_quad.h"
 #include "hmc_cube.h"
+#ifdef HMC_USES_BOBSIM
+#include "hmc_bobsim.h"
+#else
 #include "hmc_vault.h"
+#endif
 #include "hmc_notify.h"
 #include "hmc_link.h"
 #include "hmc_ring.h"
@@ -17,7 +21,11 @@ hmc_quad::hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cube) :
     link[0].re_adjust_links(64, 1); // ToDo
     this->link_garbage.push_back(link);
 
+#ifdef HMC_USES_BOBSIM
+    this->vaults[i] = new hmc_bobsim(i, 1, false, cube, &this->vault_notify, &link[1]);
+#else
     this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify, &link[1]);
+#endif /* #ifdef HMC_USES_BOBSIM */
     this->ring.set_vault_link(i, &link[0]);
   }
 

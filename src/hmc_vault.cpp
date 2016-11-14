@@ -8,7 +8,6 @@
 #include "hmc_sim.h"
 
 hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
-  id(id),
   link(link),
   cube(cube)
 {
@@ -19,6 +18,7 @@ hmc_vault::~hmc_vault(void)
 {
 }
 
+#ifndef HMC_USES_BOBSIM
 #include <iostream>
 void hmc_vault::clock(void)
 {
@@ -39,6 +39,7 @@ void hmc_vault::clock(void)
     delete (uint64_t*)packet;
   }
 }
+#endif
 
 
 bool hmc_vault::hmcsim_process_rqst(void *packet)
@@ -64,8 +65,8 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    * Step 2: decode it
    *
    */
-  uint64_t addr = (uint32_t)HMCSIM_PACKET_REQUEST_GET_ADRS(header);
-  uint32_t bank = (uint32_t)this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
+  //uint64_t addr = (uint32_t)HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+  //uint32_t bank = (uint32_t)this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
   unsigned no_response = 0x00;
   uint32_t rsp_len = 0x00;

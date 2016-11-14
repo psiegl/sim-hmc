@@ -11,7 +11,6 @@ hmc_decode::hmc_decode(unsigned bsize, unsigned num_banks_per_vault)
 
 hmc_decode::~hmc_decode(void)
 {
-
 }
 
 /*

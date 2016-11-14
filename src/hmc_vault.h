@@ -143,18 +143,19 @@ typedef enum{
 
 class hmc_vault {
 
-  unsigned id;
   hmc_link *link;
 
   hmc_cube *cube;
 
+protected:
   bool hmcsim_process_rqst(void *packet);
 
 public:
   hmc_vault(unsigned id, hmc_cube *cube, hmc_notify* notify, hmc_link *link);
   ~hmc_vault(void);
-
+#ifndef HMC_USES_BOBSIM
   void clock(void);
+#endif
 };
 
 #endif /* #ifndef _HMC_VAULT_H_ */

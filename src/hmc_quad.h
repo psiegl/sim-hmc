@@ -6,7 +6,11 @@
 #include "hmc_notify.h"
 #include "config.h"
 
+#ifdef HMC_USES_BOBSIM
+class hmc_bobsim;
+#else
 class hmc_vault;
+#endif /* #ifdef HMC_USES_BOBSIM */
 class hmc_cube;
 class hmc_link;
 
@@ -16,12 +20,16 @@ class hmc_quad : private hmc_notify_cl {
   hmc_ring ring;
 
   hmc_notify vault_notify;
+#ifdef HMC_USES_BOBSIM
+  std::map<unsigned, hmc_bobsim*> vaults;
+#else
   std::map<unsigned, hmc_vault*> vaults;
+#endif /* #ifdef HMC_USES_BOBSIM */
   std::list<hmc_link*> link_garbage;
 
 public:
   hmc_quad(unsigned id, hmc_notify *notify, hmc_cube *cube);
-  ~hmc_quad(void);
+  virtual ~hmc_quad(void);
 
   void clock(void);
   bool notify_up(void);

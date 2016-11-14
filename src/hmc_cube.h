@@ -22,7 +22,7 @@ private:
 
 public:
   hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify);
-  ~hmc_cube(void);
+  virtual ~hmc_cube(void);
 
   ALWAYS_INLINE unsigned get_id(void)
   {

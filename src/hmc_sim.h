@@ -44,8 +44,10 @@ public:
   ~hmc_sim(void);
 
   bool hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
-                       unsigned dst_hmcId, unsigned dst_linkId);
-  hmc_link* hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId);
+                       unsigned dst_hmcId, unsigned dst_linkId,
+                       unsigned bitwidth);
+  hmc_link* hmc_link_to_slid(unsigned slidId, unsigned hmcId,
+                             unsigned linkId, unsigned bitwidth);
 
   bool clock(void);
 
