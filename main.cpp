@@ -9,7 +9,6 @@
 
 int main(int argc, char* argv[])
 {
-
   unsigned cubes = 2;
   hmc_sim sim(cubes,2,4,8, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
   hmc_link* slid = sim.hmc_link_to_slid(0, 0, 0, HMCSIM_FULL_LINK_WIDTH);
@@ -21,7 +20,7 @@ int main(int argc, char* argv[])
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
 
-  unsigned issue = 100;
+  unsigned issue = 1;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 
@@ -38,7 +37,9 @@ int main(int argc, char* argv[])
       packet[0] |= (((sendpacketleninbit/FLIT_WIDTH) & 0x1F) << 7);
 
       unsigned addr = 0b110000000000; // quad 3
+      unsigned cube = 0;
       packet[0] |= (((uint64_t)((addr) & 0x3FFFFFFFFull)) << 24);
+      packet[0] |= (uint64_t)(cube) << 61;
 
       //std::cout << "header in main: " << packet[0] << std::endl;
 
@@ -52,10 +53,9 @@ int main(int argc, char* argv[])
       if(packet != nullptr)
       {
         slid->get_ilink()->pop_front();
-        //std::cout << "---->>> pop front! size: " << recvpacketleninbit << std::endl;
         track[recv_ctr] = clks - track[recv_ctr];
         recv_ctr++;
-        if(recv_ctr > issue)
+        if(recv_ctr >= issue)
           break;
       }
     }
@@ -63,7 +63,8 @@ int main(int argc, char* argv[])
     clks++;
     //if(clks > 500)
     //  return 0;
-  } while(sim.clock());
+    sim.clock();
+  } while(true);
 
   std::cout << "clks: " << clks << std::endl;
   for(unsigned i=0; i<issue; i++) {

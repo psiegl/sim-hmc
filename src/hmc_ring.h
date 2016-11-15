@@ -2,13 +2,17 @@
 #define _HMC_RING_H_
 
 #include <map>
-#include "hmc_notify.h"
 #include "config.h"
+#include "hmc_notify.h"
 
 class hmc_cube;
 class hmc_link;
 class hmc_queue;
 class hmc_quad;
+
+#define HMC_JTL_EXT_LINK()        ( 0 )
+#define HMC_JTL_RING_LINK( x )    ( 1 + (x) )
+#define HMC_JTL_VAULT_LINK( x )   ( 3 + (x) )
 
 class hmc_ring : private hmc_notify_cl {
 private:

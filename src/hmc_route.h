@@ -1,8 +1,9 @@
 #ifndef _HMC_ROUTE_H_
 #define _HMC_ROUTE_H_
 
-#include <map>
+#include <cassert>
 #include <cstring>
+#include <map>
 #include "hmc_link.h"
 #include "hmc_macros.h"
 
@@ -63,6 +64,8 @@ public:
 
   ALWAYS_INLINE hmc_link* ext_routing(unsigned cubId, unsigned curQuadId)
   {
+    hmc_route_t* route = this->tbl[cubId];
+    assert(route); // should really not happen!
     return nullptr;
   }
 };

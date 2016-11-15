@@ -84,8 +84,10 @@ hmc_link*hmc_ring::decode_link_of_packet(void *packet)
       }
     }
   }
-  else{
+  else
+  {
     p_cubId = (unsigned)HMCSIM_PACKET_REQUEST_GET_CUB(header);
+    std::cout << "this would like to go to p_cubId " << p_cubId << std::endl;
     if (p_cubId == this->cub->get_id()) {
       uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
       unsigned p_quadId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_QUAD(addr);
@@ -99,7 +101,7 @@ hmc_link*hmc_ring::decode_link_of_packet(void *packet)
       }
     }
   }
-  std::cerr << "ToDo: Not implemented yet" << std::endl;
+  std::cout << "get ext routing!" << std::endl;
   return this->cub->ext_routing(p_cubId, this->id);
 }
 

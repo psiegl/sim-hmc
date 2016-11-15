@@ -16,10 +16,11 @@ hmc_quad::hmc_quad(unsigned id, hmc_notify *notify,
   ring(id, &this->ring_notify, cube),
   vault_notify(id, notify, this)
 {
-  for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++) {
+  for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++)
+  {
     hmc_link *link = new hmc_link[2];
     link[0].connect_linkports(&link[1]);
-    link[0].re_adjust_links(vaultbuswidth, 1); // ToDo
+    link[0].re_adjust_links(vaultbuswidth, 1);
     this->link_garbage.push_back(link);
 
 #ifdef HMC_USES_BOBSIM
@@ -29,8 +30,6 @@ hmc_quad::hmc_quad(unsigned id, hmc_notify *notify,
 #endif /* #ifdef HMC_USES_BOBSIM */
     this->ring.set_vault_link(i, &link[0]);
   }
-
-  // ToDo: connect ring to ring ...
 }
 
 hmc_quad::~hmc_quad(void)
