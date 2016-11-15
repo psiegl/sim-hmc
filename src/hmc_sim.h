@@ -24,8 +24,6 @@ typedef enum{
 
 struct hmc_config_t {
   unsigned num_cubes;
-  unsigned num_slids;
-  unsigned num_links;
 };
 
 class hmc_sim : private hmc_notify_cl {
@@ -33,6 +31,8 @@ class hmc_sim : private hmc_notify_cl {
   uint64_t clk;
   hmc_notify cubes_notify;
   std::map<unsigned, hmc_cube*> cubes;
+
+  std::map<unsigned, hmc_notify*> slidnotify;
 
   struct hmc_config_t config;
 

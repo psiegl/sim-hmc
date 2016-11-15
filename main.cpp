@@ -10,10 +10,9 @@
 int main(int argc, char* argv[])
 {
   unsigned cubes = 2;
-  hmc_sim sim(cubes,2,4,8, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
+  hmc_sim sim(cubes, 2, 4, 8, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
   hmc_link* slid = sim.hmc_link_to_slid(0, 0, 0, HMCSIM_FULL_LINK_WIDTH);
-  hmc_notify slidnotify;
-  slid->set_ilink_notify(0, &slidnotify);
+  hmc_notify* slidnotify = slid->get_inotify();
 
   sim.hmc_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH);
   sim.hmc_link_config(0, 3, 1, 2, HMCSIM_FULL_LINK_WIDTH);
@@ -37,7 +36,7 @@ int main(int argc, char* argv[])
       packet[0] |= (((sendpacketleninbit/FLIT_WIDTH) & 0x1F) << 7);
 
       unsigned addr = 0b110000000000; // quad 3
-      unsigned cube = 0;
+      unsigned cube = 1;
       packet[0] |= (((uint64_t)((addr) & 0x3FFFFFFFFull)) << 24);
       packet[0] |= (uint64_t)(cube) << 61;
 
@@ -47,7 +46,7 @@ int main(int argc, char* argv[])
       track[send_ctr] = clks;
       send_ctr++;
     }
-    if(slidnotify.get_notification()) {
+    if(slidnotify->get_notification()) {
       unsigned recvpacketleninbit;
       uint64_t* packet = (uint64_t*)slid->get_ilink()->front(&recvpacketleninbit);
       if(packet != nullptr)
@@ -66,7 +65,6 @@ int main(int argc, char* argv[])
     sim.clock();
   } while(true);
 
-  std::cout << "clks: " << clks << std::endl;
   for(unsigned i=0; i<issue; i++) {
     std::cout << "pkt " << i << ". -> clks " << track[i] << std::endl;
   }

@@ -1,4 +1,5 @@
 #include "hmc_route.h"
+#include "hmc_ring.h"
 #include "hmc_cube.h"
 #include "hmc_sim.h"
 
@@ -11,7 +12,7 @@ hmc_route::hmc_route(hmc_sim *sim) :
 
   this->tbl = new hmc_route_t*[cubes];
   for (unsigned i = 0; i < cubes; i++)
-    this->tbl[i] = NULL;
+    this->tbl[i] = nullptr;
 }
 
 hmc_route::~hmc_route(void)
@@ -22,6 +23,27 @@ hmc_route::~hmc_route(void)
 void hmc_route::set_slid(unsigned slid, unsigned cubId, unsigned quadId)
 {
   this->slidToCube[slid] = std::make_pair(cubId, quadId);
+}
+
+unsigned hmc_route::ext_routing(unsigned destCubId, unsigned curQuadId)
+{
+  hmc_route_t* ext_route = this->tbl[destCubId];
+  assert(ext_route); // should really not happen!
+
+  unsigned i, links, mask = 0x1;
+  for (; ext_route != nullptr; ext_route = ext_route->next) {
+    links = *ext_route->links;
+    for (i = 0; i < 4; i++, mask <<= 1) { // max 4 links
+      if (links & mask) {
+        if (i == curQuadId)  // Mapping: each quad has its own single link (as of HMC2.1)
+          return HMC_JTL_EXT_LINK;
+        else
+          return HMC_JTL_RING_LINK(i);
+      }
+    }
+  }
+  assert(0); // should not happen!
+  return ~0x0;
 }
 
 

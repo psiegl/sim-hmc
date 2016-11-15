@@ -25,7 +25,24 @@ private:
   std::map<unsigned, hmc_link*> links;
 
   unsigned decode_link_of_packet(void* packet);
-  bool set_link(unsigned id, hmc_link *link);
+  bool set_link(unsigned lid, hmc_link *link);
+
+  ALWAYS_INLINE unsigned routing(unsigned nextquad)
+  {
+    // since this is a ring, we can't cross from 0 to 3 or 1 to 2.
+    // we will route first up then right
+    /*
+       [00]  <- ^= 0b1 -> [01]
+
+       ^=0b10             ^=0b10
+
+       [10]  <- ^= 0b1 -> [11]
+
+       scheme routes first among x-axis, than y-axis
+     */
+    unsigned shift = ((nextquad ^ this->id) & 0b01);
+    return this->id ^ (0b10 >> shift);
+  }
 
 public:
   hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub);
@@ -46,9 +63,8 @@ public:
     return this->set_link(HMC_JTL_EXT_LINK, link);
   }
 
-  void clock(void);
-
   bool notify_up(void);
+  void clock(void);
 };
 
 #endif /* #ifndef _HMC_RING_H_ */

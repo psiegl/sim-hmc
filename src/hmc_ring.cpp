@@ -26,12 +26,12 @@ hmc_ring::~hmc_ring(void)
 {
 }
 
-bool hmc_ring::set_link(unsigned id, hmc_link *link)
+bool hmc_ring::set_link(unsigned lid, hmc_link *link)
 {
-  if (this->links[id] == nullptr)
+  if (this->links[lid] == nullptr)
   {
-    this->links[id] = link;
-    link->set_ilink_notify(id, &this->links_notify);
+    this->links[lid] = link;
+    link->set_ilink_notify(lid, &this->links_notify);
     return true;
   }
   return false;
@@ -49,21 +49,9 @@ unsigned hmc_ring::decode_link_of_packet(void *packet)
       if (p_quadId == this->id) {
         return HMC_JTL_EXT_LINK;
       }
-      else{
-        // since this is a ring, we can't cross from 0 to 3 or 1 to 2.
-        // we will route first up then right
-        /*
-           [00]  <- ^= 0b1 -> [01]
-
-           ^=0b10             ^=0b10
-
-           [10]  <- ^= 0b1 -> [11]
-
-           scheme routes first among x-axis, than y-axis
-         */
-        unsigned shift = ((p_quadId ^ this->id) & 0b01);
-        unsigned ring_id = this->id ^ (0b10 >> shift);
-        return HMC_JTL_RING_LINK(ring_id);
+      else
+      {
+        return HMC_JTL_RING_LINK(this->routing(p_quadId));
       }
     }
   }
@@ -75,20 +63,24 @@ unsigned hmc_ring::decode_link_of_packet(void *packet)
       unsigned p_quadId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_QUAD(addr);
       if (p_quadId == this->id) {
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
-        return  HMC_JTL_VAULT_LINK(p_vaultId);
+        return HMC_JTL_VAULT_LINK(p_vaultId);
       }
-      else{
-        unsigned shift = ((p_quadId ^ this->id) & 0b01);
-        unsigned ring_id = this->id ^ (0b10 >> shift);
-        return HMC_JTL_RING_LINK(ring_id);
+      else
+      {
+        return HMC_JTL_RING_LINK(this->routing(p_quadId));
       }
     }
   }
-  std::cout << "get ext routing!" << std::endl;
-  return this->cub->ext_routing(p_cubId, this->id);
+  unsigned ext_id = this->cub->ext_routing(p_cubId, this->id);
+  // because the ext routing, does not now the ring routing .. handle it here ...
+  if( HMC_JTL_RING_LINK(0) <= ext_id && ext_id < HMC_JTL_RING_LINK( HMC_NUM_QUADS - 1 ) )
+  {
+    // extract id -> set routing of ring -> insert id
+    ext_id = HMC_JTL_RING_LINK(this->routing(ext_id - HMC_JTL_RING_LINK(0)));
+  }
+  return ext_id;
 }
 
-#include <iostream>
 void hmc_ring::clock(void)
 {
   // ToDo: just one packet or multiple?
@@ -106,10 +98,8 @@ void hmc_ring::clock(void)
       assert(next_link != nullptr);
       hmc_queue *next_queue = next_link->get_olink();
       assert(next_queue != nullptr);
-      if (!next_queue->has_space(packetleninbit)) {
-        //std::cout << "----->>>>> noooooooo space!" << std::endl;
+      if (!next_queue->has_space(packetleninbit))
         continue;
-      }
 
       next_queue->push_back(packet, packetleninbit);
       queue->pop_front();
@@ -119,5 +109,5 @@ void hmc_ring::clock(void)
 
 bool hmc_ring::notify_up(void)
 {
-  return (!this->links_notify.get_notification());
+  return ! this->links_notify.get_notification();
 }

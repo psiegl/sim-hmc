@@ -1,5 +1,6 @@
 #include <cassert>
 #include "hmc_queue.h"
+#include "hmc_notify.h"
 
 hmc_queue::hmc_queue(void) :
   id(-1),
@@ -18,6 +19,11 @@ void hmc_queue::set_notify(unsigned id, hmc_notify *notify)
 {
   this->id = id;
   this->notify = notify;
+}
+
+hmc_notify *hmc_queue::get_notify(void)
+{
+  return this->notify;
 }
 
 void hmc_queue::re_adjust(enum link_width_t linkwidth, unsigned queuedepth)

@@ -4,8 +4,8 @@
 #include <cassert>
 #include <cstring>
 #include <map>
-#include "hmc_link.h"
 #include "hmc_macros.h"
+#include "hmc_queue.h"
 
 class hmc_sim;
 class hmc_cube;
@@ -62,13 +62,7 @@ public:
     return this->slidToCube[slid].second;
   }
 
-  ALWAYS_INLINE unsigned ext_routing(unsigned cubId, unsigned curQuadId)
-  {
-    hmc_route_t* route = this->tbl[cubId];
-    assert(route); // should really not happen!
-    // ToDo
-    return 0;
-  }
+  unsigned ext_routing(unsigned destCubId, unsigned curQuadId);
 };
 
 #endif /* #ifndef _HMC_ROUTE_H_ */

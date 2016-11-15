@@ -4,7 +4,8 @@
 #include <list>
 #include <cstdint>
 #include <tuple>
-#include "hmc_notify.h"
+
+class hmc_notify;
 
 
 /* lanes -> each lane 1 bit per unit interval (UI). 1 UI -> 100ps (is set by the ref. clock oscillator) HMCv1.0
@@ -39,6 +40,8 @@ public:
   ~hmc_queue(void);
 
   void set_notify(unsigned id, hmc_notify *notify);
+  hmc_notify* get_notify(void);
+
   void re_adjust(enum link_width_t linkwidth, unsigned queuedepth);
 
   bool has_space(unsigned packetleninbit);

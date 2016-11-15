@@ -1,4 +1,5 @@
 #include "hmc_link.h"
+#include "hmc_notify.h"
 
 hmc_link::hmc_link(void) :
   o(nullptr),
@@ -23,6 +24,11 @@ hmc_queue*hmc_link::get_olink(void)
 void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
 {
   this->i.set_notify(id, notify);
+}
+
+hmc_notify* hmc_link::get_inotify(void)
+{
+  return this->i.get_notify();
 }
 
 void hmc_link::re_adjust_links(enum link_width_t bitwidth, unsigned queuedepth)
