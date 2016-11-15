@@ -6,7 +6,7 @@
 hmc_route::hmc_route(hmc_sim *sim) :
   sim(sim)
 {
-  unsigned cubes = this->sim->get_config()->num_cubes;
+  unsigned cubes = this->sim->get_num_cubes();
   this->link_graph = new hmc_graph_t[cubes];
   memset(this->link_graph, 0, sizeof(hmc_graph_t) * cubes);
 
@@ -51,7 +51,7 @@ void hmc_route::hmc_routing_tables_visualize(void)
 {
   std::cout << "Routing table\n" << std::endl;
   std::cout << "Src.  Dest.  Gateway  Hops\n" << std::endl;
-  unsigned cubes = this->sim->get_config()->num_cubes;
+  unsigned cubes = this->sim->get_num_cubes();
   for (unsigned d = 0; d < cubes; d++) {
     hmc_cube *cube = this->sim->get_cube(d);
     for (unsigned t = 0; t < cubes; t++) {
@@ -109,7 +109,7 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
   if (start_id == i && hop > 0)
     return 0;
 
-  for (unsigned j = 0; j < this->sim->get_config()->num_cubes; j++) {
+  for (unsigned j = 0; j < this->sim->get_num_cubes(); j++) {
     if (i != j && this->sim->get_cube(i)->get_partial_link_graph(j)->links &&
         !this->sim->get_cube(i)->get_partial_link_graph(j)->visited) {
       first_hop = (!hop) ? j : first_hop;
@@ -129,7 +129,7 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
 // ToDo: load via JTAG!
 void hmc_route::hmc_routing_tables_update(void)
 {
-  unsigned cubes = this->sim->get_config()->num_cubes;
+  unsigned cubes = this->sim->get_num_cubes();
   for (unsigned i = 0; i < cubes; i++) {
     for (unsigned j = 0; j < cubes; j++) {
       if (i != j)
@@ -161,7 +161,7 @@ void hmc_route::hmc_routing_tables_update(void)
 void hmc_route::hmc_routing_cleanup(unsigned cubeId)
 {
   struct hmc_route_t **route = this->sim->get_cube(cubeId)->get_routingtbl();
-  for (unsigned i = 0; i < this->sim->get_config()->num_cubes; i++) {
+  for (unsigned i = 0; i < this->sim->get_num_cubes(); i++) {
     struct hmc_route_t *cur = route[ i ];
     while (cur != NULL) {
       struct hmc_route_t *pre = cur;

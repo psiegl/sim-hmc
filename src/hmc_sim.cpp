@@ -42,9 +42,6 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 //    return HMC_ERROR_PARAMS;
   }
 
-  this->config.num_cubes = num_hmcs;
-
-
   for(unsigned i=0; i<num_slids; i++) {
     this->slidnotify[i] = new hmc_notify(i, nullptr, nullptr);
   }
@@ -131,7 +128,7 @@ void hmc_sim::clock(void)
   uint32_t notifymap = this->cubes_notify.get_notification();
   if (notifymap) {
     unsigned lid = __builtin_ctzl(notifymap);
-    for (unsigned h = lid; h < this->config.num_cubes; h++) {
+    for (unsigned h = lid; h < this->cubes.size(); h++) {
       if ((0x1 << h) & notifymap) {
         this->cubes[h]->clock();
       }

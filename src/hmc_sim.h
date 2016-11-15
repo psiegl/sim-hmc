@@ -21,11 +21,6 @@ typedef enum{
   RSP_CMC				/*! HMC-SIM: HMC_RESPONSE_T: CUSTOM CMC RESPONSE */
 } hmc_response_t;
 
-
-struct hmc_config_t {
-  unsigned num_cubes;
-};
-
 class hmc_sim : private hmc_notify_cl {
 
   uint64_t clk;
@@ -33,8 +28,6 @@ class hmc_sim : private hmc_notify_cl {
   std::map<unsigned, hmc_cube*> cubes;
 
   std::map<unsigned, hmc_notify*> slidnotify;
-
-  struct hmc_config_t config;
 
   std::list<hmc_link*> link_garbage;
 
@@ -53,9 +46,9 @@ public:
 
   void clock(void);
   bool notify_up(void);
-  ALWAYS_INLINE struct hmc_config_t* get_config(void)
+  ALWAYS_INLINE unsigned get_num_cubes(void)
   {
-    return &this->config;
+    return this->cubes.size();
   }
   ALWAYS_INLINE hmc_cube* get_cube(unsigned id)
   {
