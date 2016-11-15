@@ -22,7 +22,7 @@ typedef enum{
 } hmc_response_t;
 
 class hmc_sim : private hmc_notify_cl {
-
+private:
   uint64_t clk;
   hmc_notify cubes_notify;
   std::map<unsigned, hmc_cube*> cubes;
@@ -30,6 +30,8 @@ class hmc_sim : private hmc_notify_cl {
   std::map<unsigned, hmc_notify*> slidnotify;
 
   std::list<hmc_link*> link_garbage;
+
+  bool notify_up(void);
 
 public:
   hmc_sim(unsigned num_hmcs, unsigned num_slids,
@@ -45,7 +47,6 @@ public:
                              unsigned linkId, enum link_width_t bitwidth);
 
   void clock(void);
-  bool notify_up(void);
   ALWAYS_INLINE unsigned get_num_cubes(void)
   {
     return this->cubes.size();

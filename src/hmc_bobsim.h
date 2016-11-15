@@ -173,6 +173,8 @@ private:
   void bob_printStatsPeriodical(bool flag);
   void bob_printStats(void);
 
+  bool notify_up(void);
+
 public:
   hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
              hmc_cube *cube, hmc_notify *notify, hmc_link *link);
@@ -180,8 +182,6 @@ public:
 
   void clock(void);
   bool bob_feedback(void *packet);
-
-  bool notify_up(void);
 };
 
 #endif /* #ifndef _HMC_BOBSIM_H_ */

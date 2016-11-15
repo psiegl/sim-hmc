@@ -44,6 +44,8 @@ private:
     return this->id ^ (0b10 >> shift);
   }
 
+  bool notify_up(void);
+
 public:
   hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub);
   ~hmc_ring(void);
@@ -63,7 +65,6 @@ public:
     return this->set_link(HMC_JTL_EXT_LINK, link);
   }
 
-  bool notify_up(void);
   void clock(void);
 };
 

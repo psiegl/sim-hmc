@@ -20,6 +20,8 @@ private:
   hmc_notify quad_notify;
   std::map<unsigned, hmc_quad*> quads;
 
+  bool notify_up(void);
+
 public:
   hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify,
            enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth);
@@ -36,8 +38,6 @@ public:
   }
 
   void clock(void);
-
-  bool notify_up(void);
 };
 
 

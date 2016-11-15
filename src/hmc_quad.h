@@ -27,13 +27,14 @@ class hmc_quad : private hmc_notify_cl {
 #endif /* #ifdef HMC_USES_BOBSIM */
   std::list<hmc_link*> link_garbage;
 
+  bool notify_up(void);
+
 public:
   hmc_quad(unsigned id, hmc_notify *notify,
            hmc_cube *cube, enum link_width_t vaultbuswidth);
   virtual ~hmc_quad(void);
 
   void clock(void);
-  bool notify_up(void);
 
   bool set_ext_link(hmc_link* link);
   bool set_ring_link(unsigned id, hmc_link* link);
