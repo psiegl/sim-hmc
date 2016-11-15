@@ -11,10 +11,10 @@ class hmc_link;
 class hmc_queue;
 class hmc_quad;
 
-#define HMC_JTL_ALL_LINKS         ( 1 + HMC_NUM_QUADS + HMC_NUM_VAULTS / HMC_NUM_QUADS )
+#define HMC_JTL_ALL_LINKS         ( HMC_MAX_LINKS/HMC_NUM_QUADS + HMC_NUM_QUADS + HMC_NUM_VAULTS / HMC_NUM_QUADS )
 #define HMC_JTL_EXT_LINK          ( 0 )
-#define HMC_JTL_RING_LINK( x )    ( 1 + (x) )
-#define HMC_JTL_VAULT_LINK( x )   ( 1 + HMC_NUM_QUADS + (x) )
+#define HMC_JTL_RING_LINK( x )    ( HMC_MAX_LINKS/HMC_NUM_QUADS + (x) )
+#define HMC_JTL_VAULT_LINK( x )   ( HMC_MAX_LINKS/HMC_NUM_QUADS + HMC_NUM_QUADS + (x) )
 
 class hmc_ring : private hmc_notify_cl {
 private:
