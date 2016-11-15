@@ -34,8 +34,7 @@ bool hmc_register::hmcsim_get_decode_field(hmc_regslots_e name, hmcsim_reg_decod
     return true;
   }
   else {
-    unsigned i;
-    for (i = 0; i < (unsigned)elemsof(this->hmcsim_decode_fields); i++) {
+    for (unsigned i = 0; i < (unsigned)elemsof(this->hmcsim_decode_fields); i++) {
       if (this->hmcsim_decode_fields[ i ].name == name) {
         *field = &this->hmcsim_decode_fields[ i ];
         return true;

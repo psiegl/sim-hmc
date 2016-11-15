@@ -10,13 +10,11 @@ hmc_cube::hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify,
   id(id),
   quad_notify(id, notify, this)
 {
-  for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
-  {
+  for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
     this->quads[i] = new hmc_quad(i, &this->quad_notify, this, vaultbuswidth);
   }
 
-  for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
-  {
+  for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
     unsigned map[] = { 0x2, 0x0, 0x3, 0x1 };
 
     unsigned neighbour = map[i];

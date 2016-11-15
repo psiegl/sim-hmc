@@ -16,8 +16,7 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   cub(cub),
   links_notify(id, notify, this)
 {
-  for(unsigned i=0; i<HMC_JTL_ALL_LINKS; i++)
-  {
+  for (unsigned i = 0; i < HMC_JTL_ALL_LINKS; i++) {
     this->links[i] = nullptr;
   }
 }
@@ -28,8 +27,7 @@ hmc_ring::~hmc_ring(void)
 
 bool hmc_ring::set_link(unsigned lid, hmc_link *link)
 {
-  if (this->links[lid] == nullptr)
-  {
+  if (this->links[lid] == nullptr) {
     this->links[lid] = link;
     link->set_ilink_notify(lid, &this->links_notify);
     return true;
@@ -49,14 +47,12 @@ unsigned hmc_ring::decode_link_of_packet(void *packet)
       if (p_quadId == this->id) {
         return HMC_JTL_EXT_LINK;
       }
-      else
-      {
+      else{
         return HMC_JTL_RING_LINK(this->routing(p_quadId));
       }
     }
   }
-  else
-  {
+  else{
     p_cubId = (unsigned)HMCSIM_PACKET_REQUEST_GET_CUB(header);
     if (p_cubId == this->cub->get_id()) {
       uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
@@ -65,16 +61,14 @@ unsigned hmc_ring::decode_link_of_packet(void *packet)
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
         return HMC_JTL_VAULT_LINK(p_vaultId);
       }
-      else
-      {
+      else{
         return HMC_JTL_RING_LINK(this->routing(p_quadId));
       }
     }
   }
   unsigned ext_id = this->cub->ext_routing(p_cubId, this->id);
   // because the ext routing, does not now the ring routing .. handle it here ...
-  if( HMC_JTL_RING_LINK(0) <= ext_id && ext_id < HMC_JTL_RING_LINK( HMC_NUM_QUADS - 1 ) )
-  {
+  if (HMC_JTL_RING_LINK(0) <= ext_id && ext_id < HMC_JTL_RING_LINK(HMC_NUM_QUADS - 1)) {
     // extract id -> set routing of ring -> insert id
     ext_id = HMC_JTL_RING_LINK(this->routing(ext_id - HMC_JTL_RING_LINK(0)));
   }
@@ -109,5 +103,5 @@ void hmc_ring::clock(void)
 
 bool hmc_ring::notify_up(void)
 {
-  return ! this->links_notify.get_notification();
+  return !this->links_notify.get_notification();
 }

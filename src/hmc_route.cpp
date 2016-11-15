@@ -27,7 +27,7 @@ void hmc_route::set_slid(unsigned slid, unsigned cubId, unsigned quadId)
 
 unsigned hmc_route::ext_routing(unsigned destCubId, unsigned curQuadId)
 {
-  hmc_route_t* ext_route = this->tbl[destCubId];
+  hmc_route_t *ext_route = this->tbl[destCubId];
   assert(ext_route); // should really not happen!
 
   unsigned i, links, mask = 0x1;

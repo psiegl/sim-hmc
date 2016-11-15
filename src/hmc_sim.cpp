@@ -42,26 +42,26 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 //    return HMC_ERROR_PARAMS;
   }
 
-  for(unsigned i=0; i<num_slids; i++) {
+  for (unsigned i = 0; i < num_slids; i++) {
     this->slidnotify[i] = new hmc_notify(i, nullptr, nullptr);
   }
 
-  for (unsigned i=0; i<num_hmcs; i++) {
+  for (unsigned i = 0; i < num_hmcs; i++) {
     this->cubes[i] = new hmc_cube(this, i, &this->cubes_notify, ringbuswidth, vaultbuswidth);
   }
 }
 
 hmc_sim::~hmc_sim(void)
 {
-  for (auto it=this->slidnotify.begin(); it!=this->slidnotify.end(); ++it) {
+  for (auto it = this->slidnotify.begin(); it != this->slidnotify.end(); ++it) {
     delete (*it).second;
   }
 
-  for (auto it=this->cubes.begin(); it!=this->cubes.end(); ++it) {
+  for (auto it = this->cubes.begin(); it != this->cubes.end(); ++it) {
     delete (*it).second;
   }
 
-  for (auto it=this->link_garbage.begin(); it!=this->link_garbage.end(); ++it) {
+  for (auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {
     delete[] *it;
   }
 }
@@ -99,7 +99,7 @@ bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
   }
 }
 
-hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
+hmc_link*hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 

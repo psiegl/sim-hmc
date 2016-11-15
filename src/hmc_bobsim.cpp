@@ -25,8 +25,7 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
 
 hmc_bobsim::~hmc_bobsim(void)
 {
-  if(!this->id)
-  {
+  if (!this->id) {
     BobPrintStats(this->bobsim);
   }
   BobFreeWrapper(this->bobsim);
@@ -35,18 +34,16 @@ hmc_bobsim::~hmc_bobsim(void)
 
 bool hmc_bobsim::bob_feedback(void *packet)
 {
-  if(! --this->bobnotify_ctr)
+  if (!--this->bobnotify_ctr)
     this->bobnotify.notify_del(0);
   return this->hmcsim_process_rqst(packet);
 }
 
 void hmc_bobsim::clock(void)
 {
-  if(this->bobnotify_ctr)
-  {
+  if (this->bobnotify_ctr) {
     void *packet = BobWillCallback(this->bobsim, 0 /* num_ports */);
-    if(packet)
-    {
+    if (packet) {
       uint64_t header = HMC_PACKET_HEADER(packet);
       hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
 
@@ -58,19 +55,16 @@ void hmc_bobsim::clock(void)
       unsigned packetleninbit = rsp_len * FLIT_WIDTH;
 
       hmc_queue *o_queue = this->link->get_olink();
-      if(no_response || o_queue->has_space(packetleninbit))
-      {
+      if (no_response || o_queue->has_space(packetleninbit)) {
         BobUpdate(this->bobsim);
       }
     }
-    else
-    {
+    else{
       BobUpdate(this->bobsim);
     }
   }
 
-  if(this->linknotify.get_notification() && ! BobIsPortBusy(this->bobsim, 0 /* port */))
-  {
+  if (this->linknotify.get_notification() && !BobIsPortBusy(this->bobsim, 0 /* port */)) {
     unsigned packetleninbit;
     void *packet = this->link->get_ilink()->front(&packetleninbit);
     if (packet == nullptr)
@@ -83,13 +77,11 @@ void hmc_bobsim::clock(void)
 
     enum TransactionType type = this->hmc_determineTransactionType(cmd);
     BobTransaction *bobtrans = BobCreateTransaction(type, packetleninbit, bank, packet);
-    if (!BobSubmitTransaction(this->bobsim, bobtrans, 0 /* port */))
-    {
+    if (!BobSubmitTransaction(this->bobsim, bobtrans, 0 /* port */)) {
       exit(0);
     }
 
-    if(!(this->bobnotify_ctr++))
-    {
+    if (!(this->bobnotify_ctr++)) {
       this->bobnotify.notify_add(0);
     }
     link->get_ilink()->pop_front();

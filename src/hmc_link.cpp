@@ -26,7 +26,7 @@ void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
   this->i.set_notify(id, notify);
 }
 
-hmc_notify* hmc_link::get_inotify(void)
+hmc_notify*hmc_link::get_inotify(void)
 {
   return this->i.get_notify();
 }

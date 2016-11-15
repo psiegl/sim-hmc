@@ -45,7 +45,7 @@ $(BUILDDIR):
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp $(BUILDDIR)
 	@echo "[$(CXX)] $@"
-	#@uncrustify  --no-backup -c tools/uncrustify.cfg -q --replace $<
+	@uncrustify  --no-backup -c tools/uncrustify.cfg -q --replace $<
 	@$(CXX) $(CFLAGS) -MD -MF $(@:.o=.deps) -c -o $@ $<
 
 $(TARGET): $(OBJECTS) $(LIBS)

@@ -16,8 +16,7 @@ hmc_quad::hmc_quad(unsigned id, hmc_notify *notify,
   ring(id, &this->ring_notify, cube),
   vault_notify(id, notify, this)
 {
-  for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++)
-  {
+  for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++) {
     hmc_link *link = new hmc_link[2];
     link[0].connect_linkports(&link[1]);
     link[0].re_adjust_links(vaultbuswidth, 1);
