@@ -58,8 +58,8 @@ void hmc_quad::clock(void)
 
 bool hmc_quad::notify_up(void)
 {
-  return(!this->vault_notify.get_notification() &&
-         !this->ring_notify.get_notification());
+  return (!this->vault_notify.get_notification() &&
+          !this->ring_notify.get_notification());
 }
 
 bool hmc_quad::set_ext_link(hmc_link *link)

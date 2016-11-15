@@ -21,7 +21,7 @@ void hmc_queue::set_notify(unsigned id, hmc_notify *notify)
   this->notify = notify;
 }
 
-hmc_notify*hmc_queue::get_notify(void)
+hmc_notify* hmc_queue::get_notify(void)
 {
   return this->notify;
 }
@@ -35,7 +35,7 @@ void hmc_queue::re_adjust(enum link_width_t linkwidth, unsigned queuedepth)
 bool hmc_queue::has_space(unsigned packetleninbit)
 {
   assert(this->bitoccupationmax); // otherwise not initialized!
-  return(this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax);
+  return (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax);
 }
 
 int hmc_queue::push_back(void *packet, unsigned packetleninbit)
@@ -54,7 +54,7 @@ int hmc_queue::push_back(void *packet, unsigned packetleninbit)
   return -1;
 }
 
-void*hmc_queue::front(unsigned *packetleninbit)
+void* hmc_queue::front(unsigned *packetleninbit)
 {
   assert(!this->list.empty());
   auto *q = &this->list;
@@ -69,7 +69,7 @@ void*hmc_queue::front(unsigned *packetleninbit)
   return (!cyclestowait) ? std::get<0>(q->front()) : nullptr;
 }
 
-void*hmc_queue::pop_front(void)
+void* hmc_queue::pop_front(void)
 {
   std::list< std::tuple<void*, unsigned, unsigned> > *q = &this->list;
   void *front = std::get<0>(q->front());

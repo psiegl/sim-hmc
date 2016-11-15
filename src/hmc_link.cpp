@@ -11,12 +11,12 @@ hmc_link::~hmc_link(void)
 {
 }
 
-hmc_queue*hmc_link::get_ilink(void)
+hmc_queue* hmc_link::get_ilink(void)
 {
   return &this->i;
 }
 
-hmc_queue*hmc_link::get_olink(void)
+hmc_queue* hmc_link::get_olink(void)
 {
   return this->o;
 }
@@ -26,7 +26,7 @@ void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
   this->i.set_notify(id, notify);
 }
 
-hmc_notify*hmc_link::get_inotify(void)
+hmc_notify* hmc_link::get_inotify(void)
 {
   return this->i.get_notify();
 }

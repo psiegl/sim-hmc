@@ -99,7 +99,7 @@ bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
   }
 }
 
-hmc_link*hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
+hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 

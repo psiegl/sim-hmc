@@ -100,6 +100,6 @@ void hmc_bobsim::bob_printStats(void)
 
 bool hmc_bobsim::notify_up(void)
 {
-  return(!this->linknotify.get_notification() &&
-         !this->bobnotify.get_notification());
+  return (!this->linknotify.get_notification() &&
+          !this->bobnotify.get_notification());
 }

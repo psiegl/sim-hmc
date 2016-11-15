@@ -49,5 +49,5 @@ void hmc_cube::clock(void)
 
 bool hmc_cube::notify_up(void)
 {
-  return(!this->quad_notify.get_notification());
+  return (!this->quad_notify.get_notification());
 }
