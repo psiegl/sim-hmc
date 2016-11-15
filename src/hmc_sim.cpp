@@ -112,7 +112,7 @@ hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned li
   link[1].set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
 
   // notify all!
-  for (unsigned i = 0; i < this->config.num_cubes; i++)
+  for (unsigned i = 0; i < this->cubes.size(); i++)
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
 
   if (quad->set_ext_link(&link[0])) {
