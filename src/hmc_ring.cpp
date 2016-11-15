@@ -16,6 +16,10 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   cub(cub),
   links_notify(id, notify, this)
 {
+  for(unsigned i=0; i<HMC_JTL_ALL_LINKS; i++)
+  {
+    this->links[i] = nullptr;
+  }
 }
 
 hmc_ring::~hmc_ring(void)
@@ -24,7 +28,8 @@ hmc_ring::~hmc_ring(void)
 
 bool hmc_ring::set_link(unsigned id, hmc_link *link)
 {
-  if (this->links.find(id) == this->links.end()) {
+  if (this->links[id] == nullptr)
+  {
     this->links[id] = link;
     link->set_ilink_notify(id, &this->links_notify);
     return true;
@@ -97,8 +102,7 @@ void hmc_ring::clock(void)
       if (packet == nullptr)
         continue;
 
-      unsigned next_link_id = decode_link_of_packet(packet);
-      hmc_link *next_link = this->links[next_link_id];
+      hmc_link *next_link = this->links[decode_link_of_packet(packet)];
       assert(next_link != nullptr);
       hmc_queue *next_queue = next_link->get_olink();
       assert(next_queue != nullptr);
