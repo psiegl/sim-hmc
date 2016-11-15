@@ -52,8 +52,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_EDR(2):
   case HMC_REG_EDR(3): {
     unsigned id = (reg - HMC_REG_EDR__BASE) / HMC_REG_EDR__OFFSET;
-    if (id > 3)
-      return -1;
+    assert (id <= 3);
     return HMC_REG_EDR_IDX + id;
   }
 
@@ -68,8 +67,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_LC(2):
   case HMC_REG_LC(3): {
     unsigned id = (reg - HMC_REG_LC__BASE) / HMC_REG_LC__OFFSET;
-    if (id > 3)
-      return -1;
+    assert (id <= 3);
     return HMC_REG_LC_IDX + id;
   }
 
@@ -78,8 +76,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_LRLL(2):
   case HMC_REG_LRLL(3): {
     unsigned id = (reg - HMC_REG_LRLL__BASE) / HMC_REG_LRLL__OFFSET;
-    if (id > 3)
-      return -1;
+    assert (id <= 3);
     return HMC_REG_LRLL_IDX + id;
   }
 
@@ -88,8 +85,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_LR(2):
   case HMC_REG_LR(3): {
     unsigned id = (reg - HMC_REG_LR__BASE) / HMC_REG_LR__OFFSET;
-    if (id > 3)
-      return -1;
+    assert (id <= 3);
     return HMC_REG_LR_IDX + id;
   }
 
@@ -98,8 +94,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_IBTC(2):
   case HMC_REG_IBTC(3): {
     unsigned id = (reg - HMC_REG_IBTC__BASE) / HMC_REG_IBTC__OFFSET;
-    if (id > 3)
-      return -1;
+    assert (id <= 3);
     return HMC_REG_IBTC_IDX + id;
   }
 
@@ -142,10 +137,8 @@ int hmc_register::hmcsim_reg_value_set_internal(unsigned reg_addr, hmc_regslots_
 
   if (slot == HMC_REG_AC__ADDRESS_MAPPING_MODE) {
     int bsize = this->hmcsim_util_decode_bsize(value);
-    if (bsize == -1)
-      return -1;
     int banks = this->hmcsim_util_get_num_banks_per_vault();
-    if (banks == -1)
+    if (banks == -1 || banks == -1)
       return -1;
 
     this->cube->set_decoding(bsize, banks);   // psiegl: speedup!
@@ -173,11 +166,8 @@ int hmc_register::hmcsim_reg_value_set_full(unsigned reg_addr, uint64_t value)
       return -1;
 
     int bsize = this->hmcsim_util_decode_bsize((value >> field->start_bit) & ((0x1 << field->size) - 1));
-    if (bsize == -1)
-      return -1;
-
     int banks = this->hmcsim_util_get_num_banks_per_vault();
-    if (banks == -1)
+    if (banks == -1 || bsize == -1)
       return -1;
 
     this->cube->set_decoding(bsize, banks);   // psiegl: speedup!
