@@ -13,7 +13,7 @@ hmc_register::hmc_register(hmc_cube *cube) :
   }
 
   for (unsigned i = 0; i < (unsigned)elemsof(this->hmcsim_decode); i++) {
-    hmcsim_reg_decode_fields_t *field;
+    struct hmcsim_reg_decode_fields_t *field;
     if (!this->hmcsim_get_decode_field(this->hmcsim_decode[i].name, &field)) {
       std::cerr << "ERROR: No mapping found!" << std::endl;
       continue;
@@ -27,7 +27,7 @@ hmc_register::~hmc_register(void)
 {
 }
 
-bool hmc_register::hmcsim_get_decode_field(hmc_regslots_e name, hmcsim_reg_decode_fields_t **field)
+bool hmc_register::hmcsim_get_decode_field(hmc_regslots_e name, struct hmcsim_reg_decode_fields_t **field)
 {
   if (this->hmcsim_decode_fields[ name ].name == name) {
     *field = &this->hmcsim_decode_fields[ name ];
@@ -119,7 +119,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
 int hmc_register::hmcsim_reg_value_set_internal(unsigned reg_addr, hmc_regslots_e slot,
                                                 uint64_t value, bool force_write)
 {
-  hmcsim_reg_decode_fields_t *field;
+  struct hmcsim_reg_decode_fields_t *field;
   if (!this->hmcsim_get_decode_field(slot, &field))
     return -1;
 
@@ -161,7 +161,7 @@ int hmc_register::hmcsim_reg_value_set_full(unsigned reg_addr, uint64_t value)
   this->regs[ idx ] = value;
 
   if (reg_addr == HMC_REG_AC) {
-    hmcsim_reg_decode_fields_t *field;
+    struct hmcsim_reg_decode_fields_t *field;
     if (!this->hmcsim_get_decode_field(HMC_REG_AC__ADDRESS_MAPPING_MODE, &field))
       return -1;
 
@@ -182,7 +182,7 @@ int hmc_register::hmcsim_reg_value_set_full(unsigned reg_addr, uint64_t value)
 
 int hmc_register::hmcsim_reg_value_get(unsigned reg_addr, hmc_regslots_e slot, uint64_t *ret)
 {
-  hmcsim_reg_decode_fields_t *field;
+  struct hmcsim_reg_decode_fields_t *field;
   if (!this->hmcsim_get_decode_field(slot, &field))
     return -1;
 

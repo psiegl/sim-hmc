@@ -2,7 +2,6 @@
 #define _HMC_REGISTER_H_
 
 #include <cstdint>
-#include <iostream>
 #include "config.h"
 #include "hmc_macros.h"
 
@@ -20,11 +19,11 @@ class hmc_cube;
 #define    HMC_REG_FEAT_IDX   0x000018
 #define    HMC_REG_RVID_IDX   0x000019
 
-typedef enum{
-  HMC_RW,				/*! HMC-SIM: HMC_REG_DEF_T: READ+WRITE REGISTER */
-  HMC_RO,				/*! HMC-SIM: HMC_REG_DEF_T: READ-ONLY REGISTER */
-  HMC_RWS				/*! HMC-SIM: HMC_REG_DEF_T: CLEAR ON WRITE REGISTER */
-} hmc_reg_def_t;
+enum hmc_reg_def_t {
+  HMC_RW,
+  HMC_RO,
+  HMC_RWS
+};
 
 enum _hmc_regslots_e {
 /* table 32: External Request Register */
@@ -96,18 +95,17 @@ enum _hmc_regslots_e {
 };
 typedef enum _hmc_regslots_e hmc_regslots_e;
 
-typedef struct _hmcsim_reg_decode_fields_t hmcsim_reg_decode_fields_t;
-struct _hmcsim_reg_decode_fields_t {
+struct hmcsim_reg_decode_fields_t {
   hmc_regslots_e name;
   unsigned start_bit;
   unsigned size;
-  hmc_reg_def_t type;
+  enum hmc_reg_def_t type;
   unsigned reset_value;
 };
 
 class hmc_register {
 private:
-  hmcsim_reg_decode_fields_t hmcsim_decode_fields[47] = {
+  struct hmcsim_reg_decode_fields_t hmcsim_decode_fields[47] = {
   /* table 32: External Request Register */
     { HMC_REG_ERR__REGISTER_REQUEST_CMD, 0, 8, HMC_RW, 0x00 },
     { HMC_REG_ERR__TYPE, 8, 8, HMC_RW, 0x00 },
@@ -331,13 +329,14 @@ private:
   };
 
   hmc_cube *cube;
-  uint32_t regs[ HMC_NUM_REGS ];              /*! HMC-SIM: HMC_DEV_T: DEVICE CONFIGURATION REGISTERS */
-
+  uint32_t regs[ HMC_NUM_REGS ];
 
   int hmcsim_get_decode_idx(unsigned reg);
-  bool hmcsim_get_decode_field(hmc_regslots_e name, hmcsim_reg_decode_fields_t **field);
+  bool hmcsim_get_decode_field(hmc_regslots_e name, struct hmcsim_reg_decode_fields_t **field);
   int hmcsim_reg_value_set_internal(unsigned reg_addr, hmc_regslots_e slot,
                                     uint64_t value, bool force_write);
+  int hmcsim_util_decode_bsize(unsigned value);
+
 public:
   hmc_register(hmc_cube *cube);
   ~hmc_register(void);
@@ -371,8 +370,6 @@ public:
 
     return this->hmcsim_util_decode_bsize((unsigned)ret);
   }
-
-  int hmcsim_util_decode_bsize(unsigned value);
 };
 
 #endif /* #ifndef _HMC_REGISTER_H_ */

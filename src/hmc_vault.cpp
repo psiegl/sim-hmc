@@ -23,7 +23,7 @@ hmc_vault::~hmc_vault(void)
 void hmc_vault::clock(void)
 {
   unsigned packetleninbit;
-  void *packet = link->get_ilink()->front(&packetleninbit);
+  void *packet = this->link->get_ilink()->front(&packetleninbit);
   if (packet == nullptr)
     return;
 
@@ -35,11 +35,11 @@ void hmc_vault::clock(void)
   // ToDo: Bank Conflict!
 
   if (this->hmcsim_process_rqst(packet)) {
-    link->get_ilink()->pop_front();
+    this->link->get_ilink()->pop_front();
     delete (uint64_t*)packet;
   }
 }
-#endif
+#endif /* #ifndef HMC_USES_BOBSIM */
 
 
 void hmc_vault::hmcsim_packet_resp_len(hmc_rqst_t cmd, bool *no_response, unsigned *rsp_len)
