@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
 
-  unsigned issue = 1;
+  unsigned issue = 100;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 
@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
     }
     // set clk anyway
     clks++;
-    //if(clks > 500)
-    //  return 0;
+    //if(clks > 311)
+    //  exit(0);
     sim.clock();
   } while(true);
 

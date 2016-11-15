@@ -51,8 +51,7 @@ public:
   hmc_link* hmc_link_to_slid(unsigned slidId, unsigned hmcId,
                              unsigned linkId, enum link_width_t bitwidth);
 
-  bool clock(void);
-
+  void clock(void);
   bool notify_up(void);
   ALWAYS_INLINE struct hmc_config_t* get_config(void)
   {

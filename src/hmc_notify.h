@@ -8,8 +8,7 @@ public:
   hmc_notify_cl(void) {}
   ~hmc_notify_cl(void) {}
 
-//  virtual bool clock(void) = 0;
-
+  virtual void clock(void) = 0;
   virtual bool notify_up(void) = 0;
 };
 

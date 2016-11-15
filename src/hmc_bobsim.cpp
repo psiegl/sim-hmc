@@ -83,8 +83,8 @@ void hmc_bobsim::clock(void)
 
     enum TransactionType type = this->hmc_determineTransactionType(cmd);
     BobTransaction *bobtrans = BobCreateTransaction(type, packetleninbit, bank, packet);
-    if (!BobSubmitTransaction(this->bobsim, bobtrans, 0 /* port */)) {
-      std::cout << "should never happen!" << std::endl;
+    if (!BobSubmitTransaction(this->bobsim, bobtrans, 0 /* port */))
+    {
       exit(0);
     }
 

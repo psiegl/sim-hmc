@@ -14,10 +14,7 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   hmc_notify_cl(),
   id(id),
   cub(cub),
-  ringlinks_notify(id, notify, this),
-  vaultlinks_notify(id, notify, this),
-  extlinks_notify(id, notify, this),
-  ext_link(nullptr)
+  links_notify(id, notify, this)
 {
 }
 
@@ -25,37 +22,17 @@ hmc_ring::~hmc_ring(void)
 {
 }
 
-int hmc_ring::set_ring_link(unsigned id, hmc_link *link)
+bool hmc_ring::set_link(unsigned id, hmc_link *link)
 {
-  if (this->ring_link.find(id) == this->ring_link.end()) {
-    this->ring_link[id] = link;
-    link->set_ilink_notify(id, &ringlinks_notify);
-    return 0;
-  }
-  return -1;
-}
-
-int hmc_ring::set_vault_link(unsigned id, hmc_link *link)
-{
-  if (this->vault_link.find(id) == this->vault_link.end()) {
-    this->vault_link[id] = link;
-    link->set_ilink_notify(id, &this->vaultlinks_notify);
-    return 0;
-  }
-  return -1;
-}
-
-bool hmc_ring::set_ext_link(hmc_link *link)
-{
-  if (this->ext_link == nullptr) {
-    this->ext_link = link;
-    link->set_ilink_notify(0, &extlinks_notify);
+  if (this->links.find(id) == this->links.end()) {
+    this->links[id] = link;
+    link->set_ilink_notify(id, &this->links_notify);
     return true;
   }
   return false;
 }
 
-hmc_link*hmc_ring::decode_link_of_packet(void *packet)
+unsigned hmc_ring::decode_link_of_packet(void *packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
   unsigned p_cubId;
@@ -65,7 +42,7 @@ hmc_link*hmc_ring::decode_link_of_packet(void *packet)
     if (p_cubId == this->cub->get_id()) {
       unsigned p_quadId = this->cub->slid_to_quadid(slid);
       if (p_quadId == this->id) {
-        return this->ext_link;
+        return HMC_JTL_EXT_LINK;
       }
       else{
         // since this is a ring, we can't cross from 0 to 3 or 1 to 2.
@@ -80,24 +57,25 @@ hmc_link*hmc_ring::decode_link_of_packet(void *packet)
            scheme routes first among x-axis, than y-axis
          */
         unsigned shift = ((p_quadId ^ this->id) & 0b01);
-        return this->ring_link[this->id ^ (0b10 >> shift)];
+        unsigned ring_id = this->id ^ (0b10 >> shift);
+        return HMC_JTL_RING_LINK(ring_id);
       }
     }
   }
   else
   {
     p_cubId = (unsigned)HMCSIM_PACKET_REQUEST_GET_CUB(header);
-    std::cout << "this would like to go to p_cubId " << p_cubId << std::endl;
     if (p_cubId == this->cub->get_id()) {
       uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
       unsigned p_quadId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_QUAD(addr);
       if (p_quadId == this->id) {
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
-        return this->vault_link[p_vaultId];
+        return  HMC_JTL_VAULT_LINK(p_vaultId);
       }
       else{
         unsigned shift = ((p_quadId ^ this->id) & 0b01);
-        return this->ring_link[this->id ^ (0b10 >> shift)];
+        unsigned ring_id = this->id ^ (0b10 >> shift);
+        return HMC_JTL_RING_LINK(ring_id);
       }
     }
   }
@@ -109,64 +87,18 @@ hmc_link*hmc_ring::decode_link_of_packet(void *packet)
 void hmc_ring::clock(void)
 {
   // ToDo: just one packet or multiple?
-  uint32_t notifymap = this->ringlinks_notify.get_notification();
+  uint32_t notifymap = this->links_notify.get_notification();
   unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
-  for (unsigned i = lid; i < HMC_NUM_QUADS; i++) {
+  for (unsigned i = lid; i < HMC_JTL_ALL_LINKS; i++) {
     if ((0x1 << i) & notifymap) {
-      hmc_queue *queue = this->ring_link[i]->get_ilink();
+      hmc_queue *queue = this->links[i]->get_ilink();
       unsigned packetleninbit;
       void *packet = queue->front(&packetleninbit);
       if (packet == nullptr)
         continue;
 
-      hmc_link *next_link = decode_link_of_packet(packet);
-      assert(next_link != nullptr);
-      hmc_queue *next_queue = next_link->get_olink();
-      assert(next_queue != nullptr);
-      if (!next_queue->has_space(packetleninbit)) {
-        //std::cout << "----->>>>> noooooooo space!" << std::endl;
-        continue;
-      }
-
-      next_queue->push_back(packet, packetleninbit);
-      queue->pop_front();
-    }
-  }
-
-  notifymap = this->extlinks_notify.get_notification();
-  do {
-    if (notifymap) {
-      hmc_queue *queue = this->ext_link->get_ilink();
-      unsigned packetleninbit;
-      void *packet = queue->front(&packetleninbit);
-      if (packet == nullptr)
-        continue;
-
-      hmc_link *next_link = decode_link_of_packet(packet);
-      assert(next_link != nullptr);
-      hmc_queue *next_queue = next_link->get_olink();
-      assert(next_queue != nullptr);
-      if (!next_queue->has_space(packetleninbit)) {
-        //std::cout << "----->>>>> noooooooo space!" << std::endl;
-        continue;
-      }
-
-      next_queue->push_back(packet, packetleninbit);
-      queue->pop_front();
-    }
-  } while (0);
-
-  notifymap = this->vaultlinks_notify.get_notification();
-  lid = __builtin_ctzl(notifymap); // round robin?
-  for (unsigned i = lid; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++) {
-    if ((0x1 << i) & notifymap) {
-      hmc_queue *queue = this->vault_link[i]->get_ilink();
-      unsigned packetleninbit;
-      void *packet = queue->front(&packetleninbit);
-      if (packet == nullptr)
-        continue;
-
-      hmc_link *next_link = decode_link_of_packet(packet);
+      unsigned next_link_id = decode_link_of_packet(packet);
+      hmc_link *next_link = this->links[next_link_id];
       assert(next_link != nullptr);
       hmc_queue *next_queue = next_link->get_olink();
       assert(next_queue != nullptr);
@@ -183,7 +115,5 @@ void hmc_ring::clock(void)
 
 bool hmc_ring::notify_up(void)
 {
-  return(!this->extlinks_notify.get_notification() &&
-         !this->ringlinks_notify.get_notification() &&
-         !this->vaultlinks_notify.get_notification());
+  return (!this->links_notify.get_notification());
 }

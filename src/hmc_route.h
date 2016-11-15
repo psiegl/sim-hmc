@@ -62,11 +62,12 @@ public:
     return this->slidToCube[slid].second;
   }
 
-  ALWAYS_INLINE hmc_link* ext_routing(unsigned cubId, unsigned curQuadId)
+  ALWAYS_INLINE unsigned ext_routing(unsigned cubId, unsigned curQuadId)
   {
     hmc_route_t* route = this->tbl[cubId];
     assert(route); // should really not happen!
-    return nullptr;
+    // ToDo
+    return 0;
   }
 };
 

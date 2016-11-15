@@ -99,7 +99,7 @@ hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned li
   }
 }
 
-bool hmc_sim::clock(void)
+void hmc_sim::clock(void)
 {
   this->clk++;
   uint32_t notifymap = this->cubes_notify.get_notification();
@@ -110,7 +110,5 @@ bool hmc_sim::clock(void)
         this->cubes[h]->clock();
       }
     }
-    return true;
   }
-  return false; // ToDo: this->clk
 }
