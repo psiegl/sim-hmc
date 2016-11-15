@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <iostream>
 #include <cstdint>
 #include "config.h"
 #include "hmc_register.h"
@@ -15,7 +15,7 @@ hmc_register::hmc_register(hmc_cube *cube) :
   for (unsigned i = 0; i < (unsigned)elemsof(this->hmcsim_decode); i++) {
     hmcsim_reg_decode_fields_t *field;
     if (!this->hmcsim_get_decode_field(this->hmcsim_decode[i].name, &field)) {
-      fprintf(stderr, "No mapping found!\n");
+      std::cerr << "ERROR: No mapping found!" << std::endl;
       continue;
     }
 
@@ -52,7 +52,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_EDR(2):
   case HMC_REG_EDR(3): {
     unsigned id = (reg - HMC_REG_EDR__BASE) / HMC_REG_EDR__OFFSET;
-    assert (id <= 3);
+    assert(id <= 3);
     return HMC_REG_EDR_IDX + id;
   }
 
@@ -67,7 +67,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_LC(2):
   case HMC_REG_LC(3): {
     unsigned id = (reg - HMC_REG_LC__BASE) / HMC_REG_LC__OFFSET;
-    assert (id <= 3);
+    assert(id <= 3);
     return HMC_REG_LC_IDX + id;
   }
 
@@ -76,7 +76,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_LRLL(2):
   case HMC_REG_LRLL(3): {
     unsigned id = (reg - HMC_REG_LRLL__BASE) / HMC_REG_LRLL__OFFSET;
-    assert (id <= 3);
+    assert(id <= 3);
     return HMC_REG_LRLL_IDX + id;
   }
 
@@ -85,7 +85,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_LR(2):
   case HMC_REG_LR(3): {
     unsigned id = (reg - HMC_REG_LR__BASE) / HMC_REG_LR__OFFSET;
-    assert (id <= 3);
+    assert(id <= 3);
     return HMC_REG_LR_IDX + id;
   }
 
@@ -94,7 +94,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
   case HMC_REG_IBTC(2):
   case HMC_REG_IBTC(3): {
     unsigned id = (reg - HMC_REG_IBTC__BASE) / HMC_REG_IBTC__OFFSET;
-    assert (id <= 3);
+    assert(id <= 3);
     return HMC_REG_IBTC_IDX + id;
   }
 
@@ -111,7 +111,7 @@ int hmc_register::hmcsim_get_decode_idx(unsigned reg)
     return HMC_REG_RVID_IDX;
 
   default:
-    fprintf(stderr, "REG not defined %#x\n", reg);
+    std::cerr << "ERROR: reg not defined " << reg << std::endl;
     return -1;
   }
 }
