@@ -1,6 +1,7 @@
 #ifndef _HMC_BOBSIM_H_
 #define _HMC_BOBSIM_H_
 
+#include <list>
 #include "hmc_notify.h"
 #include "hmc_macros.h"
 #include "hmc_vault.h"
@@ -21,6 +22,8 @@ private:
   unsigned bobnotify_ctr;
   hmc_notify bobnotify;
   BobWrapper *bobsim;
+
+  std::list<void*>feedback_cache;
 
   enum TransactionType hmc_determineTransactionType(hmc_rqst_t cmd)
   {

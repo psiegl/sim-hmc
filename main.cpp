@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
 
-  unsigned issue = 100;
+  unsigned issue = 2002;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 
@@ -32,7 +32,10 @@ int main(int argc, char* argv[])
       uint64_t *packet = new uint64_t[(sendpacketleninbit/FLIT_WIDTH) << 1];
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
       packet[0] = 0;
-      packet[0] |= ((0x33) & 0x7F); // RD64
+      if(send_ctr < 2000)
+        packet[0] |= ((0x33) & 0x7F); // RD64
+      else
+        packet[0] |= ((0x0B) & 0x7F); // WR64
       packet[0] |= (((sendpacketleninbit/FLIT_WIDTH) & 0x1F) << 7);
 
       unsigned addr = 0b110000000000; // quad 3
@@ -56,6 +59,7 @@ int main(int argc, char* argv[])
         recv_ctr++;
         if(recv_ctr >= issue)
           break;
+        delete[] packet;
       }
     }
     // set clk anyway

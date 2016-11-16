@@ -34,33 +34,34 @@ hmc_bobsim::~hmc_bobsim(void)
 
 bool hmc_bobsim::bob_feedback(void *packet)
 {
-  if (!--this->bobnotify_ctr)
-    this->bobnotify.notify_del(0);
-  return this->hmcsim_process_rqst(packet);
+  if (this->hmcsim_process_rqst(packet)) {
+    if (!--this->bobnotify_ctr)
+      this->bobnotify.notify_del(0);
+    return true;
+  }
+  else {
+    this->feedback_cache.push_back(packet);
+    return false;
+  }
 }
 
 void hmc_bobsim::clock(void)
 {
   if (this->bobnotify_ctr) {
-    void *packet = BobWillCallback(this->bobsim, 0 /* num_ports */);
-    if (packet) {
-      uint64_t header = HMC_PACKET_HEADER(packet);
-      hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
-
-      // ToDo: writes are not yet considered!
-
-      bool no_response;
-      unsigned rsp_len;
-      this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_len);
-      unsigned packetleninbit = rsp_len * FLIT_WIDTH;
-
-      hmc_queue *o_queue = this->link->get_olink();
-      if (no_response || o_queue->has_space(packetleninbit)) {
+    if (this->feedback_cache.empty()) {
+      BobUpdate(this->bobsim);
+    }
+    else {
+      bool update = true;
+      for (auto it = this->feedback_cache.begin(); it != this->feedback_cache.end(); ++it) {
+        if (!this->bob_feedback(*it)) {
+          update = false;
+          break;
+        }
+      }
+      if (update) {
         BobUpdate(this->bobsim);
       }
-    }
-    else{
-      BobUpdate(this->bobsim);
     }
   }
 

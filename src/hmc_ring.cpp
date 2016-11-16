@@ -47,12 +47,12 @@ unsigned hmc_ring::decode_link_of_packet(void *packet)
       if (p_quadId == this->id) {
         return HMC_JTL_EXT_LINK;
       }
-      else{
+      else {
         return HMC_JTL_RING_LINK(this->routing(p_quadId));
       }
     }
   }
-  else{
+  else {
     p_cubId = (unsigned)HMCSIM_PACKET_REQUEST_GET_CUB(header);
     if (p_cubId == this->cub->get_id()) {
       uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
@@ -61,7 +61,7 @@ unsigned hmc_ring::decode_link_of_packet(void *packet)
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
         return HMC_JTL_VAULT_LINK(p_vaultId);
       }
-      else{
+      else {
         return HMC_JTL_RING_LINK(this->routing(p_quadId));
       }
     }

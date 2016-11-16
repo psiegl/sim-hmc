@@ -93,7 +93,7 @@ bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
     this->link_garbage.push_back(link);
     return true;
   }
-  else{
+  else {
     delete[] link;
     return false;
   }
@@ -116,7 +116,7 @@ hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned li
     this->link_garbage.push_back(link);
     return &link[1];
   }
-  else{
+  else {
     delete[] link;
     return nullptr;
   }
