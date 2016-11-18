@@ -45,7 +45,7 @@ public:
   void re_adjust(enum link_width_t linkwidth, unsigned queuedepth);
 
   bool has_space(unsigned packetleninbit);
-  int push_back(void *packet, unsigned packetleninbit);
+  bool push_back(void *packet, unsigned packetleninbit);
   void* front(unsigned *packetleninbit);
   void* pop_front(void);
 };

@@ -38,7 +38,7 @@ bool hmc_queue::has_space(unsigned packetleninbit)
   return (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax);
 }
 
-int hmc_queue::push_back(void *packet, unsigned packetleninbit)
+bool hmc_queue::push_back(void *packet, unsigned packetleninbit)
 {
   if (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax) {
     if (this->notify != NULL && !this->bitoccupation)
@@ -49,9 +49,9 @@ int hmc_queue::push_back(void *packet, unsigned packetleninbit)
     if (!cycles)
       cycles = 1;
     this->list.push_back(std::make_tuple(packet, cycles, packetleninbit));
-    return 0;
+    return true;
   }
-  return -1;
+  return false;
 }
 
 void* hmc_queue::front(unsigned *packetleninbit)
