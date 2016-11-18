@@ -33,7 +33,8 @@ int main(int argc, char* argv[])
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
       packet[0] = 0;
       if(send_ctr < 2000)
-        packet[0] |= ((0x33) & 0x7F); // RD64
+        //packet[0] |= ((0x33) & 0x7F); // RD64
+        packet[0] |= ((0x77) & 0x7F); // RD256
       else
         packet[0] |= ((0x0B) & 0x7F); // WR64
       packet[0] |= (((sendpacketleninbit/FLIT_WIDTH) & 0x1F) << 7);

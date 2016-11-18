@@ -2,6 +2,7 @@
 # HMCSIM TOP-LEVEL MAKEFILE
 #
 
+
 include Makefile.inc
 
 LIBNAME  := hmcsim
@@ -14,21 +15,23 @@ TARGET   := lib$(LIBNAME).a
 
 SOURCES  := $(shell find $(SRCDIR) -type f -name "*.cpp")
 OBJECTS  := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
-DEPS     := $(OBJECTS:.o=.deps)
+DEPS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.deps))
+
+-include $(DEPS)
 
 default: $(TARGET)
 
 ####### Conditional ##############################
 
 ifneq (,$(findstring HMC_DEBUG, $(HMCSIM_MACROS)))
-CFLAGS        += -g
-CXXFLAGS      += -g
+CFLAGS   += -g
+CXXFLAGS += -g
 else
 HMCSIM_MACROS += -DNDEBUG
 endif
 
 ifneq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
-LIBS          += extern/bobsim/libbobsim.a
+LIBS     += extern/bobsim/libbobsim.a
 
 extern/bobsim/libbobsim.a:
 	@echo "-- BUILDING -- $@"; make -C extern/bobsim/ libbobsim.a
