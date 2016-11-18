@@ -5,8 +5,10 @@
 #include <map>
 #include <list>
 #include "config.h"
-#include "hmc_cube.h"
+#include "hmc_jtag.h"
+#include "hmc_macros.h"
 #include "hmc_notify.h"
+#include "hmc_queue.h"
 
 class hmc_link;
 class hmc_cube;
@@ -26,7 +28,9 @@ private:
   uint64_t clk;
   hmc_notify cubes_notify;
   std::map<unsigned, hmc_cube*> cubes;
+  hmc_jtag* jtags[HMC_MAX_DEVS];
 
+  std::map<unsigned, hmc_link*> slids;
   std::map<unsigned, hmc_notify*> slidnotify;
 
   std::list<hmc_link*> link_garbage;
@@ -40,21 +44,20 @@ public:
           enum link_width_t vaultbuswidth);
   ~hmc_sim(void);
 
-  bool hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
-                       unsigned dst_hmcId, unsigned dst_linkId,
-                       enum link_width_t bitwidth);
-  hmc_link* hmc_link_to_slid(unsigned slidId, unsigned hmcId,
-                             unsigned linkId, enum link_width_t bitwidth);
+
+  ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)
+  {
+    return this->jtags[id];
+  }
+  bool hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
+                           unsigned dst_hmcId, unsigned dst_linkId,
+                           enum link_width_t bitwidth);
+  hmc_link* hmc_define_slid(unsigned slidId, unsigned hmcId,
+                         unsigned linkId, enum link_width_t bitwidth);
+
+  bool hmc_send_pkt(unsigned slidId, void *pkt);
 
   void clock(void);
-  ALWAYS_INLINE unsigned get_num_cubes(void)
-  {
-    return this->cubes.size();
-  }
-  ALWAYS_INLINE hmc_cube* get_cube(unsigned id)
-  {
-    return this->cubes[id];
-  }
 };
 
 #endif /* #ifndef _HMC_SIM_H_ */

@@ -36,13 +36,6 @@
 #define   HMC_PHY_SPEED         0x0
 #endif
 
-/* -------------------------------------------- TRACE VALUES */
-#define   HMC_TRACE_BANK        (1<<0)
-#define   HMC_TRACE_QUEUE       (1<<1)
-#define   HMC_TRACE_CMD         (1<<2)
-#define   HMC_TRACE_STALL       (1<<3)
-#define   HMC_TRACE_LATENCY     (1<<4)
-
 /* -------------------------------------------- MACROS */
 #define   HMC_MAX_DEVS          8
 #define   HMC_MAX_LINKS         4
@@ -89,12 +82,40 @@ umn addresses, addressing 1Mb blocks of 16 bytes each
 #define   HMC_MAX_CMDS          (1<<7)
 #define   HMC_MAX_CMC           70
 
-#define   HMC_1GB               (1ull<<30)
-
-
-#define   HMC_HAS_LOGIC         1 /* inofficial */
+//#define   HMC_HAS_LOGIC         1 /* inofficial */
 
 #define   FLIT_WIDTH            128 /* bit */
+
+/* registers */
+#define   HMC_NUM_REGS          26
+
+#define   HMC_REG_EDR__BASE     0x2B0000
+#define   HMC_REG_EDR__OFFSET   0x000001
+#define   HMC_REG_EDR( i )      (HMC_REG_EDR__BASE + (( i ) * HMC_REG_EDR__OFFSET))
+
+#define   HMC_REG_ERR           0x2B0004
+#define   HMC_REG_GC            0x280000
+
+#define   HMC_REG_LC__BASE      0x240000
+#define   HMC_REG_LC__OFFSET    0x010000
+#define   HMC_REG_LC( i )       (HMC_REG_LC__BASE + (( i ) * HMC_REG_LC__OFFSET))
+
+#define   HMC_REG_LRLL__BASE    0x240003
+#define   HMC_REG_LRLL__OFFSET  0x010000
+#define   HMC_REG_LRLL( i )    (HMC_REG_LRLL__BASE + (( i ) * HMC_REG_LRLL__OFFSET))
+
+#define   HMC_REG_LR__BASE      0x0C0000
+#define   HMC_REG_LR__OFFSET    0x010000
+#define   HMC_REG_LR( i )      (HMC_REG_LR__BASE + (( i ) * HMC_REG_LR__OFFSET))
+
+#define   HMC_REG_IBTC__BASE    0x040000
+#define   HMC_REG_IBTC__OFFSET  0x010000
+#define   HMC_REG_IBTC( i )     (HMC_REG_IBTC__BASE + (( i ) * HMC_REG_IBTC__OFFSET))
+
+#define   HMC_REG_AC            0x2C0000
+#define   HMC_REG_VCR           0x108000
+#define   HMC_REG_FEAT          0x2C0003
+#define   HMC_REG_RVID          0x2C0004
 
 /*
   Commands and data are transmitted in both directions across the link using a packet-
@@ -188,36 +209,5 @@ Energy Components:
 #define HMCSIM_BR30     30.0f /* 30Gb/s -> 15 GHz (DDR) -> 0.06666ns (48x 312.5MHz) */
 
 
-
-/* registers */
-#define   HMC_NUM_REGS          26
-
-#define   HMC_REG_EDR__BASE     0x2B0000
-#define   HMC_REG_EDR__OFFSET   0x000001
-#define   HMC_REG_EDR( i )      (HMC_REG_EDR__BASE + (( i ) * HMC_REG_EDR__OFFSET))
-
-#define   HMC_REG_ERR           0x2B0004
-#define   HMC_REG_GC            0x280000
-
-#define   HMC_REG_LC__BASE      0x240000
-#define   HMC_REG_LC__OFFSET    0x010000
-#define   HMC_REG_LC( i )       (HMC_REG_LC__BASE + (( i ) * HMC_REG_LC__OFFSET))
-
-#define   HMC_REG_LRLL__BASE    0x240003
-#define   HMC_REG_LRLL__OFFSET  0x010000
-#define   HMC_REG_LRLL( i )    (HMC_REG_LRLL__BASE + (( i ) * HMC_REG_LRLL__OFFSET))
-
-#define   HMC_REG_LR__BASE      0x0C0000
-#define   HMC_REG_LR__OFFSET    0x010000
-#define   HMC_REG_LR( i )      (HMC_REG_LR__BASE + (( i ) * HMC_REG_LR__OFFSET))
-
-#define   HMC_REG_IBTC__BASE    0x040000
-#define   HMC_REG_IBTC__OFFSET  0x010000
-#define   HMC_REG_IBTC( i )     (HMC_REG_IBTC__BASE + (( i ) * HMC_REG_IBTC__OFFSET))
-
-#define   HMC_REG_AC            0x2C0000
-#define   HMC_REG_VCR           0x108000
-#define   HMC_REG_FEAT          0x2C0003
-#define   HMC_REG_RVID          0x2C0004
 
 #endif /* #ifndef _CONFIG_H_ */

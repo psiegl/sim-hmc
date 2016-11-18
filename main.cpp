@@ -1,9 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include "src/hmc_notify.h"
-#include "src/hmc_ring.h"
 #include "src/hmc_link.h"
-#include "src/hmc_cube.h"
 #include "src/hmc_sim.h"
 
 
@@ -11,11 +9,17 @@ int main(int argc, char* argv[])
 {
   unsigned cubes = 2;
   hmc_sim sim(cubes, 2, 4, 8, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
-  hmc_link* slid = sim.hmc_link_to_slid(0, 0, 0, HMCSIM_FULL_LINK_WIDTH);
+  unsigned slidId = 0;
+  hmc_link* slid = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH);
+
+  bool ret = sim.hmc_set_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH);
+  ret &= sim.hmc_set_link_config(0, 3, 1, 2, HMCSIM_FULL_LINK_WIDTH);
+  if (!ret || slid == nullptr) {
+    std::cerr << "link setup was not successful" << std::endl;
+  }
+
   hmc_notify* slidnotify = slid->get_inotify();
 
-  sim.hmc_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH);
-  sim.hmc_link_config(0, 3, 1, 2, HMCSIM_FULL_LINK_WIDTH);
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
 
@@ -46,7 +50,7 @@ int main(int argc, char* argv[])
 
       //std::cout << "header in main: " << packet[0] << std::endl;
 
-      slid->get_olink()->push_back( packet, sendpacketleninbit );
+      sim.hmc_send_pkt(slidId, packet);
       track[send_ctr] = clks;
       send_ctr++;
     }

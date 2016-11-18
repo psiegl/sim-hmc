@@ -7,7 +7,6 @@
 #include "hmc_macros.h"
 #include "hmc_queue.h"
 
-class hmc_sim;
 class hmc_cube;
 
 struct hmc_graph_t {
@@ -23,8 +22,7 @@ struct hmc_route_t {
 };
 
 class hmc_route {
-  hmc_sim *sim;
-
+  std::map<unsigned, hmc_cube*>* cubes;
   std::map<unsigned, std::pair<unsigned,unsigned>> slidToCube;
 
   hmc_route_t ** tbl;
@@ -34,7 +32,7 @@ class hmc_route {
   int hmc_graph_search(unsigned start_id, unsigned i, unsigned first_hop, unsigned end_id, unsigned hop);
 
 public:
-  hmc_route(hmc_sim *sim);
+  hmc_route(std::map<unsigned, hmc_cube*>* cubes, unsigned numcubes);
   ~hmc_route(void);
 
   void hmc_routing_tables_visualize(void);

@@ -95,79 +95,10 @@ private:
     case WR256:
     case P_WR256:
       return DATA_WRITE;
-    case CMC04:
-    case CMC05:
-    case CMC06:
-    case CMC07:
-    case CMC20:
-    case CMC21:
-    case CMC22:
-    case CMC23:
-    case CMC32:
-    case CMC36:
-    case CMC37:
-    case CMC38:
-    case CMC39:
-    case CMC41:
-    case CMC42:
-    case CMC43:
-    case CMC44:
-    case CMC45:
-    case CMC46:
-    case CMC47:
-    case CMC56:
-    case CMC57:
-    case CMC58:
-    case CMC59:
-    case CMC60:
-    case CMC61:
-    case CMC62:
-    case CMC63:
-    case CMC69:
-    case CMC70:
-    case CMC71:
-    case CMC72:
-    case CMC73:
-    case CMC74:
-    case CMC75:
-    case CMC76:
-    case CMC77:
-    case CMC78:
-    case CMC85:
-    case CMC86:
-    case CMC87:
-    case CMC88:
-    case CMC89:
-    case CMC90:
-    case CMC91:
-    case CMC92:
-    case CMC93:
-    case CMC94:
-    case CMC102:
-    case CMC103:
-    case CMC107:
-    case CMC108:
-    case CMC109:
-    case CMC110:
-    case CMC111:
-    case CMC112:
-    case CMC113:
-    case CMC114:
-    case CMC115:
-    case CMC116:
-    case CMC117:
-    case CMC118:
-    case CMC120:
-    case CMC121:
-    case CMC122:
-    case CMC123:
-    case CMC124:
-    case CMC125:
-    case CMC126:
-    case CMC127:
-      return LOGIC_OPERATION;
       break;
     default:
+      // ToDo:  if CMC!
+      // return LOGIC_OPERATION;
       break;
     }
     return LOGIC_OPERATION;

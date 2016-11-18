@@ -1,9 +1,10 @@
 #include "hmc_cube.h"
 #include "hmc_quad.h"
 
-hmc_cube::hmc_cube(hmc_sim *sim, unsigned id, hmc_notify *notify,
-                   enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth) :
-  hmc_route(sim),
+hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
+                   enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth,
+                   std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes) :
+  hmc_route(cubes, numcubes),
   hmc_notify_cl(),
   hmc_register(this), // register needs to be before decode!
   hmc_decode(this->hmcsim_util_get_bsize(), this->hmcsim_util_get_num_banks_per_vault()),

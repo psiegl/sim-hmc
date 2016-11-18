@@ -1,7 +1,10 @@
 #include <iostream>
+#include <cassert>
+#include "hmc_cube.h"
 #include "hmc_sim.h"
 #include "hmc_link.h"
 #include "hmc_quad.h"
+#include "hmc_queue.h"
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
@@ -12,7 +15,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 {
   if ((num_hmcs > HMC_MAX_DEVS) || (!num_hmcs)) {
     std::cerr << "INSUFFICIENT NUMBER DEVICES: between 1 to " << HMC_MAX_DEVS << " (" << num_hmcs << ")" << std::endl;
-//    return HMC_ERROR_PARAMS;
+    throw false;
   }
 
   switch (num_links) {
@@ -21,16 +24,12 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     break;
   default:
     std::cerr << "INSUFFICIENT NUMBER LINKS: between " << HMC_MIN_LINKS << " to " << HMC_MAX_LINKS << " (" << num_links << ")" << std::endl;
-//    return HMC_ERROR_PARAMS;
+    throw false;
   }
 
-  switch (num_slids) {
-  case HMC_MIN_LINKS:
-  case HMC_MAX_LINKS:
-    break;
-  default:
+  if (num_slids >= HMC_MAX_LINKS) {
     std::cerr << "INSUFFICIENT NUMBER SLIDS: between " << HMC_MIN_LINKS << " to " << HMC_MAX_LINKS << " (" << num_links << ")" << std::endl;
-//    return HMC_ERROR_PARAMS;
+    throw false;
   }
 
   switch (capacity) {
@@ -39,7 +38,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     break;
   default:
     std::cerr << "INSUFFICIENT AMOUNT CAPACITY: between " << HMC_MIN_CAPACITY << " to " << HMC_MAX_CAPACITY << " (" << capacity << ")" << std::endl;
-//    return HMC_ERROR_PARAMS;
+    throw false;
   }
 
   for (unsigned i = 0; i < num_slids; i++) {
@@ -47,7 +46,8 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
   for (unsigned i = 0; i < num_hmcs; i++) {
-    this->cubes[i] = new hmc_cube(this, i, &this->cubes_notify, ringbuswidth, vaultbuswidth);
+    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, vaultbuswidth, &this->cubes, num_hmcs);
+    this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 }
 
@@ -57,8 +57,10 @@ hmc_sim::~hmc_sim(void)
     delete (*it).second;
   }
 
+  unsigned i = 0;
   for (auto it = this->cubes.begin(); it != this->cubes.end(); ++it) {
     delete (*it).second;
+    delete this->jtags[i++];
   }
 
   for (auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {
@@ -68,12 +70,12 @@ hmc_sim::~hmc_sim(void)
 
 bool hmc_sim::notify_up(void)
 {
-  return true;
+  return true; // don't care
 }
 
-bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
-                              unsigned dst_hmcId, unsigned dst_linkId,
-                              enum link_width_t bitwidth)
+bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
+                                  unsigned dst_hmcId, unsigned dst_linkId,
+                                  enum link_width_t bitwidth)
 {
   hmc_link *link = new hmc_link[2];
   link[0].connect_linkports(&link[1]);
@@ -99,7 +101,7 @@ bool hmc_sim::hmc_link_config(unsigned src_hmcId, unsigned src_linkId,
   }
 }
 
-hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
+hmc_link* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 
@@ -109,12 +111,14 @@ hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned li
   link[1].set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
 
   // notify all!
-  for (unsigned i = 0; i < this->cubes.size(); i++)
+  for (unsigned i = 0; i < this->cubes.size(); i++) {
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
+  }
 
   if (quad->set_ext_link(&link[0])) {
     this->link_garbage.push_back(link);
-    return &link[1];
+    this->slids[slidId] = &link[1];
+    return &link[1]; // ToDo return slidnotify!
   }
   else {
     delete[] link;
@@ -122,16 +126,30 @@ hmc_link* hmc_sim::hmc_link_to_slid(unsigned slidId, unsigned hmcId, unsigned li
   }
 }
 
+bool hmc_sim::hmc_send_pkt(unsigned slidId, void *pkt)
+{
+  uint64_t header = HMC_PACKET_HEADER(pkt);
+
+  assert(HMCSIM_PACKET_REQUEST_GET_CUB(header) < this->cubes.size());
+  assert(this->slids.find(slidId) != this->slids.end());
+
+  unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
+  unsigned len64bit = flits << 1;
+  uint64_t *packet = new uint64_t[len64bit];
+  memcpy(packet, pkt, len64bit * sizeof(uint64_t));
+  packet[0] |= HMCSIM_PACKET_SET_REQUEST();
+
+  return this->slids[slidId]->get_olink()->push_back(packet, flits * FLIT_WIDTH);
+}
+
 void hmc_sim::clock(void)
 {
   this->clk++;
   uint32_t notifymap = this->cubes_notify.get_notification();
-  if (notifymap) {
-    unsigned lid = __builtin_ctzl(notifymap);
-    for (unsigned h = lid; h < this->cubes.size(); h++) {
-      if ((0x1 << h) & notifymap) {
-        this->cubes[h]->clock();
-      }
+  unsigned lid = __builtin_ctzl(notifymap);
+  for (unsigned h = lid; h < this->cubes.size(); h++) {
+    if ((0x1 << h) & notifymap) {
+      this->cubes[h]->clock();
     }
   }
 }

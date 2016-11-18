@@ -17,7 +17,7 @@ SOURCES  := $(shell find $(SRCDIR) -type f -name "*.cpp")
 OBJECTS  := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
 DEPS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.deps))
 
--include $(DEPS)
+#-include $(DEPS)
 
 default: $(TARGET)
 

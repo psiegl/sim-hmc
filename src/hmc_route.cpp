@@ -2,17 +2,15 @@
 #include "hmc_route.h"
 #include "hmc_ring.h"
 #include "hmc_cube.h"
-#include "hmc_sim.h"
 
-hmc_route::hmc_route(hmc_sim *sim) :
-  sim(sim)
+hmc_route::hmc_route(std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes) :
+  cubes(cubes)
 {
-  unsigned cubes = this->sim->get_num_cubes();
-  this->link_graph = new hmc_graph_t[cubes];
-  memset(this->link_graph, 0, sizeof(hmc_graph_t) * cubes);
+  this->link_graph = new hmc_graph_t[numcubes];
+  memset(this->link_graph, 0, sizeof(hmc_graph_t) * numcubes);
 
-  this->tbl = new hmc_route_t*[cubes];
-  for (unsigned i = 0; i < cubes; i++)
+  this->tbl = new hmc_route_t*[numcubes];
+  for (unsigned i = 0; i < numcubes; i++)
     this->tbl[i] = nullptr;
 }
 
@@ -52,10 +50,10 @@ void hmc_route::hmc_routing_tables_visualize(void)
 {
   std::cout << "Routing table\n" << std::endl;
   std::cout << "Src.  Dest.  Gateway  Hops\n" << std::endl;
-  unsigned cubes = this->sim->get_num_cubes();
-  for (unsigned d = 0; d < cubes; d++) {
-    hmc_cube *cube = this->sim->get_cube(d);
-    for (unsigned t = 0; t < cubes; t++) {
+  unsigned numcubes = this->cubes->size();
+  for (unsigned d = 0; d < numcubes; d++) {
+    hmc_cube *cube = (*this->cubes)[d];
+    for (unsigned t = 0; t < numcubes; t++) {
       struct hmc_route_t *cur = cube->get_routingtbl()[ t ];
       while (cur != NULL) {
         std::cout << "  " << d << "     " << t << "       " << cur->next_dev << "   " << cur->hops << std::endl;
@@ -101,8 +99,8 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
     struct hmc_route_t *route = new struct hmc_route_t;
     route->hops = hop - 1;
     route->next_dev = first_hop;
-    route->links = &this->sim->get_cube(start_id)->get_partial_link_graph(first_hop)->links;             // fixME
-    this->hmc_insert_route(this->sim->get_cube(start_id), end_id, route);
+    route->links = &(*this->cubes)[start_id]->get_partial_link_graph(first_hop)->links;             // fixME
+    this->hmc_insert_route((*this->cubes)[start_id], end_id, route);
 //		printf("  found -> %d via %d to %d hops: %d  first link: %d (links: %d)\n", start_id, first_hop, end_id, hop - 1,
 //						__builtin_ctz( hmc->link_graph[ start_id ][ first_hop ].links ), hmc_utils_popcount( sizeof(unsigned), hmc->link_graph[ start_id ][ first_hop ].links ) );
     return 1;
@@ -110,16 +108,16 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
   if (start_id == i && hop > 0)
     return 0;
 
-  for (unsigned j = 0; j < this->sim->get_num_cubes(); j++) {
-    if (i != j && this->sim->get_cube(i)->get_partial_link_graph(j)->links &&
-        !this->sim->get_cube(i)->get_partial_link_graph(j)->visited) {
+  for (unsigned j = 0; j < this->cubes->size(); j++) {
+    if (i != j && (*this->cubes)[i]->get_partial_link_graph(j)->links &&
+        !(*this->cubes)[i]->get_partial_link_graph(j)->visited) {
       first_hop = (!hop) ? j : first_hop;
 //			printf("checking  (h%d) %d -- %d --> %d  (cur %d)\n", hop, start_id, first_hop, j, i );
-      this->sim->get_cube(i)->get_partial_link_graph(j)->visited = 1;
-      this->sim->get_cube(j)->get_partial_link_graph(i)->visited = 1;
+      (*this->cubes)[i]->get_partial_link_graph(j)->visited = 1;
+      (*this->cubes)[j]->get_partial_link_graph(i)->visited = 1;
       /*unsigned ret =*/ this->hmc_graph_search(start_id, j, first_hop, end_id, hop + 1);
-      this->sim->get_cube(i)->get_partial_link_graph(j)->visited = 0;
-      this->sim->get_cube(j)->get_partial_link_graph(i)->visited = 0;
+      (*this->cubes)[i]->get_partial_link_graph(j)->visited = 0;
+      (*this->cubes)[j]->get_partial_link_graph(i)->visited = 0;
 //			if( ret )  // commented -> search for all
 //				return 1;
     }
@@ -130,28 +128,28 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
 // ToDo: load via JTAG!
 void hmc_route::hmc_routing_tables_update(void)
 {
-  unsigned cubes = this->sim->get_num_cubes();
-  for (unsigned i = 0; i < cubes; i++) {
-    for (unsigned j = 0; j < cubes; j++) {
+  unsigned numcubes = this->cubes->size();
+  for (unsigned i = 0; i < numcubes; i++) {
+    for (unsigned j = 0; j < numcubes; j++) {
       if (i != j)
         this->hmc_graph_search(i, i, i, j, 0);                           // ToDo: check in which direction routing is possible! NON SRC MODE <-> PASSTHROUGH
 
       // remove routing entries, if directly attached
-      struct hmc_route_t *cur = this->sim->get_cube(i)->get_routingtbl()[j];
+      struct hmc_route_t *cur = (*this->cubes)[i]->get_routingtbl()[j];
       while (cur != NULL) {
         if (cur->next_dev == j)
           break;
         cur = cur->next;
       }
       if (cur != NULL) {
-        struct hmc_route_t *tmp = this->sim->get_cube(i)->get_routingtbl()[j];
+        struct hmc_route_t *tmp = (*this->cubes)[i]->get_routingtbl()[j];
         while (tmp != NULL) {
           struct hmc_route_t *next = tmp->next;
           if (tmp != cur)
             delete tmp;
           tmp = next;
         }
-        this->sim->get_cube(i)->get_routingtbl()[j] = cur;
+        (*this->cubes)[i]->get_routingtbl()[j] = cur;
         cur->next = NULL;
       }
     }
@@ -161,8 +159,8 @@ void hmc_route::hmc_routing_tables_update(void)
 
 void hmc_route::hmc_routing_cleanup(unsigned cubeId)
 {
-  struct hmc_route_t **route = this->sim->get_cube(cubeId)->get_routingtbl();
-  for (unsigned i = 0; i < this->sim->get_num_cubes(); i++) {
+  struct hmc_route_t **route = (*this->cubes)[cubeId]->get_routingtbl();
+  for (unsigned i = 0; i < this->cubes->size(); i++) {
     struct hmc_route_t *cur = route[ i ];
     while (cur != NULL) {
       struct hmc_route_t *pre = cur;
