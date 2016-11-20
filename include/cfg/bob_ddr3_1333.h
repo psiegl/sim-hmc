@@ -19,13 +19,13 @@
 
 //in clock ticks
 //ACT to READ or WRITE
-#define tRCD    9
+#define tRCD    9   // 13.5ns
 //PRE command period
 #define tRP     9
 //ACT to ACT
 #define tRC     33
 //ACT to PRE
-#define tRAS    24
+#define tRAS    24  // 36 ns
 
 //CAS latency
 #define tCL     9
@@ -51,20 +51,23 @@
 //Rank to rank switch
 #define tRTRS   2 //clk
 
+// names of IDD: High-Level Power Estimation and Optimization of DRAMs, Karthik Chandrasekar
+//          and: Viking Technology, DDR3 VLP UDIMM VR7VUxx7258xBx
+//          and: Micron 4Gb: x4, x8, x16 DDR3 SDRAM
 //IDD Values
-#define IDD0    75
-#define IDD1    90
-#define IDD2P0  12
-#define IDD2P1  30
-#define IDD2Q   35
-#define IDD2N   40
-#define IDD2NT  55
-#define IDD3P   35
-#define IDD3N   45
-#define IDD4R   150
-#define IDD4W   155
-#define IDD5B   230
-#define IDD6    12
-#define IDD6ET  16
-#define IDD7    290
-#define IDD8    0
+#define IDD0    75    // mA One Bank Activate-Precharge Current
+//#define IDD1    90  // mA One Bank Activate-Read-Precharge current
+//#define IDD2P0  12  // mA Precharge power-down current: Slow exit
+//#define IDD2P1  30  // mA Precharge power-down current: Fast exit
+//#define IDD2Q   35  // mA Precharge quiet standby current;
+#define IDD2N   40    // mA Precharge Standby Current
+//#define IDD2NT  55  // mA Precharge standby ODT current
+//#define IDD3P   35  // mA activate power-down standby current
+#define IDD3N   45    // mA Activate Standby Current
+#define IDD4R   150   // mA Burst Read Current
+#define IDD4W   155   // mA Burst Write Current
+#define IDD5B   230   // mA Burst Refresh Current
+//#define IDD6    12  // mA Self Refresh Current
+//#define IDD6ET  16  // mA Extended Temperature Range Self-Refresh Current;
+//#define IDD7    290 // mA Operating bank interleave read current
+//#define IDD8    0   // mA Deep Power Down Current

@@ -70,13 +70,13 @@ public:
 //      nextStrobeMin(0),
 //      nextStrobeMax(0),
 //      nextRefresh(0),
-      lastCommand(REFRESH), // ToDo
-      stateChangeCountdown(0)
+      stateChangeCountdown(0),
+      lastCommand(REFRESH) // ToDo
     {}
 
     void UpdateStateChange(void)
     {
-      if(this->stateChangeCountdown>0 && !--this->stateChangeCountdown)
+      if(this->stateChangeCountdown && !--this->stateChangeCountdown)
       {
         switch(lastCommand)
         {

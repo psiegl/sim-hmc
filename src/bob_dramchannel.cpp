@@ -66,7 +66,6 @@ DRAMChannel::~DRAMChannel(void)
     }
 }
 
-#include <iostream>
 void DRAMChannel::Update(void)
 {
 	//update buses
@@ -108,7 +107,6 @@ void DRAMChannel::Update(void)
             }
             break;
         case WRITE_DATA:
-            std::cout << "callback!!" << std::endl;
 #ifdef HMCSIM_SUPPORT
             if(bob->bobwrapper->callback)
                 bob->bobwrapper->callback(bob->bobwrapper->vault, inFlightDataPacket->payload);

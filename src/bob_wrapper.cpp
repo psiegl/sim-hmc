@@ -171,19 +171,19 @@ BOBWrapper::BOBWrapper(void) :
 	statsOut<<"tXP=0"<<endl;
 	statsOut<<"tCMD=1"<<endl;
 	statsOut<<"IDD0="<<IDD0<<endl;
-	statsOut<<"IDD1="<<IDD1<<endl;
-	statsOut<<"IDD2P="<<IDD2P1<<endl;
-	statsOut<<"IDD2Q="<<IDD2Q<<endl;
+	//statsOut<<"IDD1="<<IDD1<<endl;
+	//statsOut<<"IDD2P="<<IDD2P1<<endl;
+	//statsOut<<"IDD2Q="<<IDD2Q<<endl;
 	statsOut<<"IDD2N="<<IDD2N<<endl;
-	statsOut<<"IDD3Pf="<<IDD3P<<endl;
-	statsOut<<"IDD3Ps=0"<<endl;
+	//statsOut<<"IDD3Pf="<<IDD3P<<endl;
+	//statsOut<<"IDD3Ps=0"<<endl;
 	statsOut<<"IDD3N="<<IDD3N<<endl;
 	statsOut<<"IDD4W="<<IDD4W<<endl;
 	statsOut<<"IDD4R="<<IDD4R<<endl;
 	statsOut<<"IDD5="<<IDD5B<<endl;
-	statsOut<<"IDD6="<<IDD6<<endl;
-	statsOut<<"IDD6L="<<IDD6ET<<endl;
-	statsOut<<"IDD7="<<IDD7<<endl;
+	//statsOut<<"IDD6="<<IDD6<<endl;
+	//statsOut<<"IDD6L="<<IDD6ET<<endl;
+	//statsOut<<"IDD7="<<IDD7<<endl;
 
 	statsOut<<"!!EPOCH_DATA"<<endl;
 }

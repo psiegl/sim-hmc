@@ -76,7 +76,6 @@ SimpleController::SimpleController(DRAMChannel *parent) :
         burstEnergy[i] = 0;
         actpreEnergy[i] = 0;
         refreshEnergy[i] = 0;
-        idd2nCount[i] = 0;
     }
 }
 
@@ -136,17 +135,8 @@ void SimpleController::Update(void)
             break;
         }
 
-		if(bankOpen)
-		{
-			//DRAM_BUS_WIDTH/2 because value accounts for DDR
-			backgroundEnergy[r] += IDD3N * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
-		}
-		else
-		{
-			//DRAM_BUS_WIDTH/2 because value accounts for DDR
-			idd2nCount[r]++;
-			backgroundEnergy[r] += IDD2N * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
-        }
+        //DRAM_BUS_WIDTH/2 because value accounts for DDR
+        backgroundEnergy[r] += (bankOpen ? IDD3N : IDD2N) * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
         //
         //Update

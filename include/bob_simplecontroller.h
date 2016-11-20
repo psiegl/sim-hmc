@@ -108,8 +108,6 @@ public:
     uint64_t burstEnergy[NUM_RANKS];
     uint64_t actpreEnergy[NUM_RANKS];
     uint64_t refreshEnergy[NUM_RANKS];
-
-    unsigned idd2nCount[NUM_RANKS];
 };
 }
 
