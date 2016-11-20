@@ -128,7 +128,7 @@ void SimpleController::Update(void)
         //Power
         //
         bool bankOpen = false;
-		for(unsigned b=0; b<NUM_RANKS; b++)
+        for(unsigned b=0; b<NUM_BANKS; b++)
 		{
           if( (bankOpen = (bankStates[r][b].currentBankState == ROW_ACTIVE ||
                            bankStates[r][b].currentBankState == REFRESHING)) )
