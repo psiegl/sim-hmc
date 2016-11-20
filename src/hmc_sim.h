@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <map>
 #include <list>
+#include <zlib.h> // crc32(), uLong
 #include "config.h"
 #include "hmc_jtag.h"
 #include "hmc_macros.h"
@@ -62,20 +63,16 @@ private:
   {
     return 0x01;
   }
-  ALWAYS_INLINE uint32_t hmcsim_crc32(unsigned char *_packet, unsigned flits)
+  ALWAYS_INLINE uint32_t hmcsim_crc32(unsigned char *packet, unsigned flits)
   {
-  #if 0
-    uLong crc = 0L;
-    const Bytef *buf = _packet;
-    uInt len = (flits*2) * sizeof(uint64_t);
-  /*
-     As incoming packets flow through the link slave CRC is calculated from the header to
-     the tail (inserting 0s into the CRC field) of every packet.
-   */
-    return crc32(crc, buf, len);
-  #else
-    return 0;
-  #endif
+
+    uLong crc = crc32(0L, Z_NULL, 0);
+    unsigned len = (flits << 1) * sizeof(uint64_t);
+    /*
+       As incoming packets flow through the link slave CRC is calculated from the header to
+       the tail (inserting 0s into the CRC field) of every packet.
+     */
+    return crc32(crc, packet, len);
   }
 
 public:

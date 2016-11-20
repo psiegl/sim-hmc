@@ -40,7 +40,6 @@ public:
   ~hmc_queue(void);
 
   void set_notify(unsigned id, hmc_notify *notify);
-  hmc_notify* get_notify(void);
 
   void re_adjust(enum link_width_t linkwidth, unsigned queuedepth);
 

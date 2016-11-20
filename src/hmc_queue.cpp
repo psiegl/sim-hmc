@@ -21,11 +21,6 @@ void hmc_queue::set_notify(unsigned id, hmc_notify *notify)
   this->notify = notify;
 }
 
-hmc_notify* hmc_queue::get_notify(void)
-{
-  return this->notify;
-}
-
 void hmc_queue::re_adjust(enum link_width_t linkwidth, unsigned queuedepth)
 {
   this->linkwidth = linkwidth;

@@ -138,7 +138,7 @@ int hmc_register::hmcsim_reg_value_set_internal(unsigned reg_addr, hmc_regslots_
   if (slot == HMC_REG_AC__ADDRESS_MAPPING_MODE) {
     int bsize = this->hmcsim_util_decode_bsize(value);
     int banks = this->hmcsim_util_get_num_banks_per_vault();
-    if (banks == -1 || banks == -1)
+    if (bsize == -1 || banks == -1)
       return -1;
 
     this->cube->set_decoding(bsize, banks);   // psiegl: speedup!

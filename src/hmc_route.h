@@ -30,6 +30,7 @@ class hmc_route {
 
   void hmc_insert_route(hmc_cube *cube, unsigned cube_endId, struct hmc_route_t *route);
   int hmc_graph_search(unsigned start_id, unsigned i, unsigned first_hop, unsigned end_id, unsigned hop);
+  void hmc_routing_cleanup(void);
 
 public:
   hmc_route(std::map<unsigned, hmc_cube*>* cubes, unsigned numcubes);
@@ -37,7 +38,6 @@ public:
 
   void hmc_routing_tables_visualize(void);
   void hmc_routing_tables_update(void);
-  void hmc_routing_cleanup(unsigned cubeId);
 
   void set_slid(unsigned slid, unsigned cubId, unsigned quadId);
 

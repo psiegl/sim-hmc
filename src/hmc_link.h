@@ -19,7 +19,6 @@ public:
   hmc_queue* get_olink(void);
 
   void set_ilink_notify(unsigned id, hmc_notify *notify);
-  hmc_notify* get_inotify(void);
 
   void re_adjust_links(enum link_width_t bitwidth, unsigned queuedepth);
 

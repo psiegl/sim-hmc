@@ -17,6 +17,7 @@ hmc_route::hmc_route(std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes) :
 hmc_route::~hmc_route(void)
 {
   delete[] this->link_graph;
+  this->hmc_routing_cleanup();
 }
 
 void hmc_route::set_slid(unsigned slid, unsigned cubId, unsigned quadId)
@@ -157,15 +158,15 @@ void hmc_route::hmc_routing_tables_update(void)
   }
 }
 
-void hmc_route::hmc_routing_cleanup(unsigned cubeId)
+void hmc_route::hmc_routing_cleanup(void)
 {
-  struct hmc_route_t **route = (*this->cubes)[cubeId]->get_routingtbl();
   for (unsigned i = 0; i < this->cubes->size(); i++) {
-    struct hmc_route_t *cur = route[ i ];
+    struct hmc_route_t *cur = this->tbl[ i ];
     while (cur != NULL) {
       struct hmc_route_t *pre = cur;
       cur = cur->next;
       delete pre;
     }
   }
+  delete[] this->tbl;
 }
