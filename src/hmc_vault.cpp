@@ -901,7 +901,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     if (error)
       *r_tail |= HMCSIM_PACKET_RESPONSE_SET_ERRSTAT(0x1);    // ToDo: FixME with specific code
     *r_tail |= HMCSIM_PACKET_RESPONSE_SET_RTC(rsp_rtc);
-    *r_tail |= HMCSIM_PACKET_RESPONSE_SET_CRC(0x0);    // ToDo: create CRC!
+    *r_tail |= HMCSIM_PACKET_RESPONSE_SET_CRC(hmcsim_crc32(response_packet, rsp_flits));    // ToDo: create CRC!
 
     /* -- register the response */
     o_queue->push_back(response_packet, packetleninbit);

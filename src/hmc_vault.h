@@ -1,7 +1,10 @@
 #ifndef _HMC_VAULT_H_
 #define _HMC_VAULT_H_
 
+#include <zlib.h>
+#include <cstdint>
 #include "hmc_notify.h"
+#include "hmc_macros.h"
 
 class hmc_link;
 class hmc_cube;
@@ -73,6 +76,18 @@ class hmc_vault {
 private:
   hmc_link *link;
   hmc_cube *cube;
+
+  ALWAYS_INLINE uint32_t hmcsim_crc32(void *packet, unsigned flits)
+  {
+
+    uLong crc = crc32(0L, Z_NULL, 0);
+    unsigned len = (flits << 1) * sizeof(uint64_t);
+    /*
+       As incoming packets flow through the link slave CRC is calculated from the header to
+       the tail (inserting 0s into the CRC field) of every packet.
+     */
+    return crc32(crc, (const Bytef *)packet, len);
+  }
 
 protected:
   bool hmcsim_process_rqst(void *packet);
