@@ -32,8 +32,8 @@
 #include <bitset>
 #include <cstring>
 #include <cmath>
-#include "bob.h"
-#include "bob_wrapper.h"
+#include "../include/bob.h"
+#include "../include/bob_wrapper.h"
 
 using namespace std;
 
@@ -60,6 +60,7 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     cacheOffset(log2(CACHE_LINE_SIZE))
 {
     dram_channel_clk = 0;
+    currentClockCycle = 0;
 
 #ifdef LOG_OUTPUT
     string output_filename("BOBsim");
@@ -70,7 +71,6 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
 #endif
     DEBUG("busoff:"<<busOffsetBitWidth<<" col:"<<colBitWidth<<" row:"<<rowBitWidth<<" rank:"<<rankBitWidth<<" bank:"<<bankBitWidth<<" chan:"<<channelBitWidth);
 
-    currentClockCycle = 0;
 
     //Compute ratios of various clock frequencies
     if(fmod(CPU_CLK_PERIOD,LINK_BUS_CLK_PERIOD)>0.00001)
@@ -80,12 +80,14 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
         abort();
     }
 
-
-    cout<<"Channel to CPU ratio : "<<LINK_CPU_CLK_RATIO<<endl;
+    if(LINK_CPU_CLK_RATIO!=1)
+      cout<<"Channel to CPU ratio : "<<LINK_CPU_CLK_RATIO<<endl;
     DRAM_CPU_CLK_RATIO = tCK / CPU_CLK_PERIOD;
-    cout<<"DRAM to CPU ratio : "<<DRAM_CPU_CLK_RATIO<<endl;
+    if(DRAM_CPU_CLK_RATIO!=1)
+      cout<<"DRAM to CPU ratio : "<<DRAM_CPU_CLK_RATIO<<endl;
     DRAM_CPU_CLK_ADJUSTMENT = tCK / fmod(tCK,CPU_CLK_PERIOD);
-    cout<<"DRAM_CPU_CLK_ADJUSTMENT : "<<DRAM_CPU_CLK_ADJUSTMENT<<endl;
+    if(DRAM_CPU_CLK_ADJUSTMENT!=1)
+      cout<<"DRAM_CPU_CLK_ADJUSTMENT : "<<DRAM_CPU_CLK_ADJUSTMENT<<endl;
 
     //Ensure that parameters have been set correclty
     if(NUM_CHANNELS / CHANNELS_PER_LINK_BUS != NUM_LINK_BUSES)
@@ -101,15 +103,16 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     }
 
     //Initialize fields for bookkeeping
-    memset(inFlightRequestLinkCountdowns, 0, sizeof(unsigned) * NUM_LINK_BUSES);
-    memset(inFlightResponseLinkCountdowns, 0, sizeof(unsigned) * NUM_LINK_BUSES);
-
     for(unsigned i=0; i<NUM_LINK_BUSES; i++)
     {
-        inFlightRequestLink[i] = NULL;
-        inFlightResponseLink[i] = NULL;
-        serDesBufferRequest[i] = NULL;
-        serDesBufferResponse[i] = NULL;
+        reqLinkBus[i].inFlightLink = NULL;
+        reqLinkBus[i].serDesBuffer = NULL;
+        reqLinkBus[i].inFlightLinkCountdowns = 0;
+        reqLinkBus[i].linkIdle = 0;
+        respLinkBus[i].inFlightLink = NULL;
+        respLinkBus[i].serDesBuffer = NULL;
+        respLinkBus[i].inFlightLinkCountdowns = 0;
+        respLinkBus[i].linkIdle = 0;
     }
 
     memset(responseLinkRoundRobin, 0, sizeof(unsigned) * NUM_LINK_BUSES);
@@ -121,9 +124,6 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     memset(portInputBufferAvg, 0, sizeof(unsigned)*NUM_PORTS);
     portOutputBufferAvg = new unsigned[NUM_PORTS];
     memset(portOutputBufferAvg, 0, sizeof(unsigned)*NUM_PORTS);
-
-    memset(requestLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
-    memset(responseLinkIdle, 0, sizeof(unsigned) * NUM_LINK_BUSES);
 
     //Create channels
     for(unsigned i=0; i<NUM_CHANNELS; i++)
@@ -146,6 +146,18 @@ BOB::~BOB(void)
     {
         delete channels[i];
     }
+
+    for(unsigned p=0; p<NUM_PORTS; p++)
+    {
+      for(unsigned i=0; i<ports[p].inputBuffer.size(); i++)
+        delete ports[p].inputBuffer[i];
+      for(unsigned i=0; i<ports[p].outputBuffer.size(); i++)
+        delete ports[p].outputBuffer[i];
+    }
+    for(vector<Transaction*>::iterator it = pendingReads.begin(); it!=pendingReads.end(); ++it)
+    {
+      delete *it;
+    }
 }
 
 void BOB::Update(void)
@@ -158,7 +170,8 @@ void BOB::Update(void)
     for(unsigned i=0; i<pendingReads.size(); i++)
     {
         //look in the channel that the request was mapped to and search its return queue
-        for(unsigned j=0; j<channels[pendingReads[i]->mappedChannel]->readReturnQueue.size(); j++)
+        unsigned mappedChannel = pendingReads[i]->mappedChannel;
+        for(unsigned j=0; j<channels[mappedChannel]->readReturnQueue.size(); j++)
         {
             //if the transaction IDs match, then the data is waiting there to return (it might not be ready yet,
             //  which would not trigger this condition)
@@ -178,8 +191,8 @@ void BOB::Update(void)
     //keep track of idle link buses
     for(unsigned i=0; i<NUM_LINK_BUSES; i++)
     {
-        requestLinkIdle[i] += (inFlightRequestLink[i]==NULL);
-        responseLinkIdle[i] += (inFlightResponseLink[i]==NULL);
+        reqLinkBus[i].linkIdle += (reqLinkBus[i].inFlightLink==NULL);
+        respLinkBus[i].linkIdle += (respLinkBus[i].inFlightLink==NULL);
     }
 
     //keep track of average entries in port in/out-buffers
@@ -209,39 +222,41 @@ void BOB::Update(void)
 
     for(unsigned i=0; i<NUM_LINK_BUSES; i++)
     {
-        if(inFlightRequestLinkCountdowns[i]>0 && !--inFlightRequestLinkCountdowns[i])
+        struct linkbus *i_reqLinkBus = &reqLinkBus[i];
+        if(i_reqLinkBus->inFlightLinkCountdowns && !--i_reqLinkBus->inFlightLinkCountdowns)
         {
             //compute total time in serDes and travel up channel
-            inFlightRequestLink[i]->cyclesReqLink = currentClockCycle - inFlightRequestLink[i]->cyclesReqLink;
+            i_reqLinkBus->inFlightLink->cyclesReqLink = currentClockCycle - i_reqLinkBus->inFlightLink->cyclesReqLink;
 
             //add to channel
-            channels[inFlightRequestLink[i]->mappedChannel]->AddTransaction(inFlightRequestLink[i]); //0 is not used
+            channels[i_reqLinkBus->inFlightLink->mappedChannel]->AddTransaction(i_reqLinkBus->inFlightLink); //0 is not used
 
             //remove from channel bus
-            inFlightRequestLink[i] = NULL;
+            i_reqLinkBus->inFlightLink = NULL;
 
             //remove from SerDes buffer
-            serDesBufferRequest[i] = NULL;
+            i_reqLinkBus->serDesBuffer = NULL;
         }
 
-        if(inFlightResponseLinkCountdowns[i]>0 && !--inFlightResponseLinkCountdowns[i])
+        struct linkbus *i_respLinkBus = &respLinkBus[i];
+        if(i_respLinkBus->inFlightLinkCountdowns && !--i_respLinkBus->inFlightLinkCountdowns)
         {
-            if(serDesBufferResponse[i]!=NULL)
+            if(i_respLinkBus->serDesBuffer!=NULL)
             {
                 ERROR("== Error - Response SerDes Buffer "<<i<<" collision");
                 exit(0);
             }
 
             //note the time
-            inFlightResponseLink[i]->channelTimeTotal = currentClockCycle - inFlightResponseLink[i]->channelStartTime;
+            i_respLinkBus->inFlightLink->channelTimeTotal = currentClockCycle - i_respLinkBus->inFlightLink->channelStartTime;
 
             //remove from return queue
-            BusPacket* front = *channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin();
-            channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.erase(channels[inFlightResponseLink[i]->mappedChannel]->readReturnQueue.begin());
+            BusPacket* front = *channels[respLinkBus[i].inFlightLink->mappedChannel]->readReturnQueue.begin();
+            channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.erase(channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.begin());
             delete front;
 
-            serDesBufferResponse[i] = inFlightResponseLink[i];
-            inFlightResponseLink[i] = NULL;
+            i_respLinkBus->serDesBuffer = i_respLinkBus->inFlightLink;
+            i_respLinkBus->inFlightLink = NULL;
         }
     }
 
@@ -253,11 +268,12 @@ void BOB::Update(void)
         //
         //REQUEST
         //
-        if(serDesBufferRequest[c]!=NULL &&
-           inFlightRequestLinkCountdowns[c]==0)
+        struct linkbus *i_reqLinkBus = &reqLinkBus[c];
+        if(i_reqLinkBus->serDesBuffer!=NULL &&
+           i_reqLinkBus->inFlightLinkCountdowns==0)
         {
             //error checking
-            if(inFlightRequestLink[c]!=NULL)
+            if(i_reqLinkBus->inFlightLink!=NULL)
             {
                 ERROR("== Error - item in SerDes buffer without channel being free");
                 ERROR("   == Channel : "<<c);
@@ -265,13 +281,13 @@ void BOB::Update(void)
             }
 
             //put on channel bus
-            inFlightRequestLink[c] = serDesBufferRequest[c];
+            i_reqLinkBus->inFlightLink = i_reqLinkBus->serDesBuffer;
             //note the time
-            inFlightRequestLink[c]->channelStartTime = currentClockCycle;
+            i_reqLinkBus->inFlightLink->channelStartTime = currentClockCycle;
 
             //the total number of channel cycles the packet will be on the bus
             unsigned totalChannelCycles;
-            switch(inFlightRequestLink[c]->transactionType) {
+            switch(i_reqLinkBus->inFlightLink->transactionType) {
             case DATA_READ:
                 //
                 //widths are in bits
@@ -284,15 +300,15 @@ void BOB::Update(void)
                 //widths are in bits
                 //
                 // inFlightRequestLink[c]->transactionSize == TRANSACTION_SIZE
-                totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + inFlightRequestLink[c]->transactionSize) * 8) / REQUEST_LINK_BUS_WIDTH +
-                                     !!(((WR_REQUEST_PACKET_OVERHEAD + inFlightRequestLink[c]->transactionSize) * 8) % REQUEST_LINK_BUS_WIDTH);
+                totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->transactionSize) * 8) / REQUEST_LINK_BUS_WIDTH +
+                                     !!(((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->transactionSize) * 8) % REQUEST_LINK_BUS_WIDTH);
                 break;
             case LOGIC_OPERATION:
                 //
                 //widths are in bits
                 //
-                totalChannelCycles = (inFlightRequestLink[c]->transactionSize * 8) / REQUEST_LINK_BUS_WIDTH +
-                                     !!((inFlightRequestLink[c]->transactionSize * 8) % REQUEST_LINK_BUS_WIDTH);
+                totalChannelCycles = (i_reqLinkBus->inFlightLink->transactionSize * 8) / REQUEST_LINK_BUS_WIDTH +
+                                     !!((i_reqLinkBus->inFlightLink->transactionSize * 8) % REQUEST_LINK_BUS_WIDTH);
                 break;
             default:
                 ERROR("== Error - wrong type ");
@@ -307,11 +323,11 @@ void BOB::Update(void)
 
             //since the channel is faster than the CPU, figure out how many CPU
             //  cycles the channel will be in use
-            inFlightRequestLinkCountdowns[c] = (totalChannelCycles / LINK_CPU_CLK_RATIO) +
+            i_reqLinkBus->inFlightLinkCountdowns = (totalChannelCycles / LINK_CPU_CLK_RATIO) +
                                                !!(totalChannelCycles%LINK_CPU_CLK_RATIO);
 
             //error check
-            if(inFlightRequestLinkCountdowns[c]==0)
+            if(i_reqLinkBus->inFlightLinkCountdowns==0)
             {
                 ERROR("== Error - countdown is 0");
                 exit(0);
@@ -328,16 +344,17 @@ void BOB::Update(void)
         if(ports[p].outputBusyCountdown==0)
         {
             //check to see if something has been received from a channel
-            if(serDesBufferResponse[priorityLinkBus[p]]!=NULL &&
-               serDesBufferResponse[priorityLinkBus[p]]->portID==p)
+            struct linkbus *i_respLinkBus = &respLinkBus[priorityLinkBus[p]];
+            if(i_respLinkBus->serDesBuffer!=NULL &&
+               i_respLinkBus->serDesBuffer->portID==p)
             {
-                serDesBufferResponse[priorityLinkBus[p]]->cyclesRspLink = currentClockCycle - serDesBufferResponse[priorityLinkBus[p]]->cyclesRspLink;
-                serDesBufferResponse[priorityLinkBus[p]]->cyclesRspPort = currentClockCycle;
-                ports[p].outputBuffer.push_back(serDesBufferResponse[priorityLinkBus[p]]);
-                switch(serDesBufferResponse[priorityLinkBus[p]]->transactionType)
+                i_respLinkBus->serDesBuffer->cyclesRspLink = currentClockCycle - i_respLinkBus->serDesBuffer->cyclesRspLink;
+                i_respLinkBus->serDesBuffer->cyclesRspPort = currentClockCycle;
+                ports[p].outputBuffer.push_back(i_respLinkBus->serDesBuffer);
+                switch(i_respLinkBus->serDesBuffer->transactionType)
                 {
                 case RETURN_DATA:
-                    ports[p].outputBusyCountdown = serDesBufferResponse[priorityLinkBus[p]]->transactionSize / PORT_WIDTH; // serDesBufferResponse[priorityLinkBus[p]]->transactionSize == TRANSACTION_SIZE
+                    ports[p].outputBusyCountdown = i_respLinkBus->serDesBuffer->transactionSize / PORT_WIDTH; // serDesBufferResponse[priorityLinkBus[p]]->transactionSize == TRANSACTION_SIZE
                     break;
                 case LOGIC_RESPONSE:
                     ports[p].outputBusyCountdown = 1;
@@ -347,7 +364,7 @@ void BOB::Update(void)
                     exit(0);
                     break;
                 };
-                serDesBufferResponse[priorityLinkBus[p]] = NULL;
+                i_respLinkBus->serDesBuffer = NULL;
             }
             priorityLinkBus[p]++;
             if(priorityLinkBus[p]==NUM_LINK_BUSES)priorityLinkBus[p]=0;
@@ -373,19 +390,20 @@ void BOB::Update(void)
                 unsigned linkBusID = channelID / CHANNELS_PER_LINK_BUS;
 
                 //make sure the serDe isn't busy and the queue isn't full
-                if(serDesBufferRequest[linkBusID]==NULL &&
-                        channels[channelID]->simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
+                struct linkbus *i_reqLinkBus = &reqLinkBus[linkBusID];
+                if(i_reqLinkBus->serDesBuffer==NULL &&
+                    channels[channelID]->simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
                 {
                     //put on channel bus
-                    serDesBufferRequest[linkBusID] = ports[p].inputBuffer[i];
-                    serDesBufferRequest[linkBusID]->cyclesReqLink = currentClockCycle;
-                    serDesBufferRequest[linkBusID]->cyclesReqPort = currentClockCycle - serDesBufferRequest[linkBusID]->cyclesReqPort;
-                    serDesBufferRequest[linkBusID]->mappedChannel = channelID;
+                    i_reqLinkBus->serDesBuffer = ports[p].inputBuffer[i];
+                    i_reqLinkBus->serDesBuffer->cyclesReqLink = currentClockCycle;
+                    i_reqLinkBus->serDesBuffer->cyclesReqPort = currentClockCycle - i_reqLinkBus->serDesBuffer->cyclesReqPort;
+                    i_reqLinkBus->serDesBuffer->mappedChannel = channelID;
 
                     //keep track of requests
                     channelCounters[channelID]++;
 
-                    switch(serDesBufferRequest[linkBusID]->transactionType) {
+                    switch(i_reqLinkBus->serDesBuffer->transactionType) {
                     case DATA_READ:
                         //put in pending queue
                         //  make it a RETURN_DATA type before we put it in pending queue
@@ -400,13 +418,13 @@ void BOB::Update(void)
                         writeCounter++;
 
                         //set port busy time
-                        ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
+                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
                         break;
                     case LOGIC_OPERATION:
 //						logicOpCounter++;
 
                         //set port busy time
-                        ports[p].inputBusyCountdown = serDesBufferRequest[linkBusID]->transactionSize / PORT_WIDTH;
+                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
                         break;
                     default:
                         ERROR("== Error - unknown transaction type going to channel : ");
@@ -432,8 +450,9 @@ void BOB::Update(void)
     for(unsigned link=0; link<NUM_LINK_BUSES; link++)
     {
         //make sure output is not busy sending something else
-        if(inFlightResponseLinkCountdowns[link]==0 &&
-                serDesBufferResponse[link]==NULL)
+        struct linkbus *i_respLinkBus = &respLinkBus[link];
+        if(i_respLinkBus->inFlightLinkCountdowns==0 &&
+           i_respLinkBus->serDesBuffer==NULL)
         {
 
             for(unsigned z=0; z<CHANNELS_PER_LINK_BUS; z++)
@@ -455,11 +474,11 @@ void BOB::Update(void)
                     }
 
                     //channel countdown
-                    inFlightResponseLinkCountdowns[link] = totalChannelCycles / LINK_CPU_CLK_RATIO +
+                    i_respLinkBus->inFlightLinkCountdowns = totalChannelCycles / LINK_CPU_CLK_RATIO +
                                                            !!(totalChannelCycles % LINK_CPU_CLK_RATIO);
 
                     //make sure computation worked
-                    if(inFlightResponseLinkCountdowns[link]==0)
+                    if(i_respLinkBus->inFlightLinkCountdowns==0)
                     {
                         ERROR("== ERROR - Countdown 0 on link "<<link);
                         ERROR("==         totalChannelCycles : "<<totalChannelCycles);
@@ -467,7 +486,7 @@ void BOB::Update(void)
                     }
 
                     //make in-flight
-                    if(inFlightResponseLink[link]!=NULL)
+                    if(i_respLinkBus->inFlightLink!=NULL)
                     {
                         ERROR("== Error - Trying to set Transaction on down channel while something is there");
                         ERROR("   Cycle : "<<currentClockCycle);
@@ -477,7 +496,7 @@ void BOB::Update(void)
                     }
 
                     //make in flight
-                    inFlightResponseLink[link] = channels[chan]->pendingLogicResponse;
+                    i_respLinkBus->inFlightLink = channels[chan]->pendingLogicResponse;
                     //remove from channel
                     channels[chan]->pendingLogicResponse = NULL;
                     break;
@@ -506,18 +525,18 @@ void BOB::Update(void)
                             }
 
                             //channel countdown
-                            inFlightResponseLinkCountdowns[link] = totalChannelCycles / LINK_CPU_CLK_RATIO
+                            i_respLinkBus->inFlightLinkCountdowns = totalChannelCycles / LINK_CPU_CLK_RATIO
                                                                    + !!(totalChannelCycles % LINK_CPU_CLK_RATIO);
 
                             //make sure computation worked
-                            if(inFlightResponseLinkCountdowns[link]==0)
+                            if(i_respLinkBus->inFlightLinkCountdowns==0)
                             {
                                 ERROR("== ERROR - Countdown 0 on link "<<link);
                                 exit(0);
                             }
 
                             //make in-flight
-                            if(inFlightResponseLink[link]!=NULL)
+                            if(i_respLinkBus->inFlightLink!=NULL)
                             {
                                 ERROR("== Error - Trying to set Transaction on down channel while something is there");
                                 ERROR("   Cycle : "<<currentClockCycle);
@@ -526,12 +545,14 @@ void BOB::Update(void)
                                 exit(0);
                             }
 
-                            inFlightResponseLink[link] = pendingReads[p];
+                            i_respLinkBus->inFlightLink = pendingReads[p];
+
                             //note the time
-                            inFlightResponseLink[link]->cyclesRspLink = currentClockCycle;
+                            i_respLinkBus->inFlightLink->cyclesRspLink = currentClockCycle;
 
                             //remove pending queues
                             pendingReads.erase(pendingReads.begin()+p);
+
                             //delete channels[chan]->readReturnQueue[0];
                             //channels[chan]->readReturnQueue.erase(channels[chan]->readReturnQueue.begin());
                             break;
@@ -539,7 +560,7 @@ void BOB::Update(void)
                     }
 
                     //check to see if we cound an item, and break out of the loop over chans_per_link
-                    if(inFlightResponseLinkCountdowns[link]>0)
+                    if(i_respLinkBus->inFlightLinkCountdowns>0)
                     {
                         //increment round robin (increment here to go to next index before we break)
                         responseLinkRoundRobin[link]++;
@@ -575,7 +596,8 @@ void BOB::Update(void)
                     channels[i]->Update();
                 }
             }
-            else clockCycleAdjustmentCounter=0;
+            else
+              clockCycleAdjustmentCounter=0;
 
             clockCycleAdjustmentCounter++;
         }
@@ -701,12 +723,12 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     double rsptotal = 0;
     for(int l=0; l<NUM_LINK_BUSES; l++)
     {
-        reqtotal += (1-(float)requestLinkIdle[l]/(float)elapsedCycles) * reqbwpeak;
-        rsptotal += (1-(float)responseLinkIdle[l]/(float)elapsedCycles) * rspbwpeak;
-        PRINTN("      "<<(1-(float)requestLinkIdle[l]/(float)elapsedCycles) * reqbwpeak<<" GB/s             ");
-        requestLinkIdle[l]=0;
-        PRINT((1-(float)responseLinkIdle[l]/(float)elapsedCycles) * rspbwpeak<<" GB/s");
-        responseLinkIdle[l]=0;
+        reqtotal += (1-(float)reqLinkBus[l].linkIdle/(float)elapsedCycles) * reqbwpeak;
+        rsptotal += (1-(float)respLinkBus[l].linkIdle/(float)elapsedCycles) * rspbwpeak;
+        PRINTN("      "<<(1-(float)reqLinkBus[l].linkIdle/(float)elapsedCycles) * reqbwpeak<<" GB/s             ");
+        reqLinkBus[l].linkIdle=0;
+        PRINT((1-(float)respLinkBus[l].linkIdle/(float)elapsedCycles) * rspbwpeak<<" GB/s");
+        respLinkBus[l].linkIdle=0;
     }
 
 

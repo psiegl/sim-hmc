@@ -30,9 +30,9 @@
 
 //DRAM Channel source
 
-#include "bob.h"
-#include "bob_dramchannel.h"
-#include "bob_logiclayerinterface.h"
+#include "../include/bob.h"
+#include "../include/bob_dramchannel.h"
+#include "../include/bob_logiclayerinterface.h"
 #ifdef HMCSIM_SUPPORT
 #include "bob_wrapper.h"
 #endif
@@ -50,11 +50,12 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob):
     readReturnQueueMax(0),
     logicLayer(new LogicLayerInterface(id, this)),
     bob(_bob),
+    pendingLogicResponse(NULL),
     DRAMBusIdleCount(0)
 {
     for(unsigned i=0; i<NUM_RANKS; i++)
     {
-        ranks[i] = new Rank(i, this);
+        ranks.push_back(new Rank(i, this));
     }
 }
 
@@ -64,6 +65,17 @@ DRAMChannel::~DRAMChannel(void)
     {
         delete ranks[i];
     }
+    for(deque<BusPacket*>::iterator it = readReturnQueue.begin(); it !=readReturnQueue.end(); ++it)
+    {
+      delete *it;
+    }
+    if(pendingLogicResponse)
+      delete pendingLogicResponse;
+    if(inFlightCommandPacket)
+      delete inFlightCommandPacket;
+//    if(inFlightDataPacket)
+//      delete inFlightDataPacket;
+    delete logicLayer;
 }
 
 void DRAMChannel::Update(void)

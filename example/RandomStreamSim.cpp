@@ -39,12 +39,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <deque>
-#include "bob_globals.h"
-#include "bob_transaction.h"
-#include "bob.h"
-#include "bob_wrapper.h"
-#include "bob_logiclayerinterface.h"
-#include "bob_logicoperation.h"
+#include "../include/bob_globals.h"
+#include "../include/bob_transaction.h"
+#include "../include/bob.h"
+#include "../include/bob_wrapper.h"
+#include "../include/bob_logiclayerinterface.h"
+#include "../include/bob_logicoperation.h"
 
 
 
@@ -85,7 +85,6 @@ void FillTransactionBuffer(int port)
 		unsigned long temp = rand();
         unsigned long physicalAddress = (temp<<32)|rand();
 		Transaction *newTrans;
-		
 		if(physicalAddress%1000<READ_WRITE_RATIO*10)
 		{
 			newTrans = new Transaction(DATA_READ,TRANSACTION_SIZE,physicalAddress);
@@ -99,8 +98,8 @@ void FillTransactionBuffer(int port)
 			useCounters[port]+=(WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE)/PORT_WIDTH +
 				!!((WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE)%PORT_WIDTH);
 		}
-		
-		transactionBuffer[port].push_back(newTrans);
+
+        transactionBuffer[port].push_back(newTrans);
 	}
 	
 	//cout<<"use for "<<port<<" is "<<useCounters[port]<<endl;
@@ -164,7 +163,7 @@ int main(int argc, char **argv)
 			if(transactionBuffer[l].size()>0)
 			{
                 if(bobWrapper.AddTransaction(*transactionBuffer[l].begin(),l))
-				{
+                {
 					transactionBuffer[l].erase(transactionBuffer[l].begin());
 				}
 			}
@@ -186,6 +185,14 @@ int main(int argc, char **argv)
         bobWrapper.Update();
 	}
 
+    // remove not required transactions
+    for(unsigned l=0; l<NUM_PORTS; l++)
+    {
+      for(vector<Transaction *>::iterator it = transactionBuffer[l].begin(); it != transactionBuffer[l].end(); ++it)
+      {
+        //delete *it;
+      }
+    }
 	//
 	//Debug output
 	//

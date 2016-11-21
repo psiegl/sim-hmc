@@ -3,9 +3,9 @@ CC=clang
 CXX=clang++
 SRCDIR=src
 DEVICE?=DDR3_1333
-CXXFLAGS=-O3 -DHMCSIM_SUPPORT #-g
+CXXFLAGS=-DHMCSIM_SUPPORT -g
 LIB_NAME=bobsim
-#EXE_NAME=BOBSim
+EXE_NAME=BOBSim
 LINKFLAGS=
 INC=-Iinclude/ -Iinclude/cfg
 
@@ -25,9 +25,9 @@ all: lib${LIB_NAME}.a
 #	$(CXX) -L$(shell pwd) -Wl,-rpath=$(shell pwd) -s $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< -lbobsim
 #	@echo "Built $@ successfully" 
 
-#$(EXE_NAME): $(EXE_OBJ) lib$(LIB_NAME).a
-#	$(CXX) $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< lib$(LIB_NAME).a
-#	@echo "Built $@ successfully" 
+$(EXE_NAME): $(EXE_OBJ) lib$(LIB_NAME).a
+	$(CXX) $(CXXFLAGS) -D${DEVICE} $(INC) $(LINKFLAGS) -o $@ $< lib$(LIB_NAME).a
+	@echo "Built $@ successfully" 
 
 #for now, I'm assuming that -ltcmalloc will be linked with the binary, not the library
 #lib$(LIB_NAME).so: $(LOBJ)
@@ -48,14 +48,14 @@ lib$(LIB_NAME).a: $(OBJ)
 clean: 
 	-rm -f $(EXE_NAME) $(EXE_NAME).shared lib$(LIB_NAME).* $(SRCDIR)/*.lo $(SRCDIR)/*.o *.so $(SRCDIR)/*.dep *.txt tmp.log
 
-#test: $(EXE_NAME)
-#	@ls -lh $(EXE_NAME)
-#	@ls -l $(EXE_NAME)
-#	@LD_LIBRARY_PATH=$(shellpwd) ./$(EXE_NAME) -c 2000 > tmp.log
-#	@diff tmp.log example/zz_ref_C2000.log
-#
+test: $(EXE_NAME)
+	@ls -lh $(EXE_NAME)
+	@ls -l $(EXE_NAME)
+	@LD_LIBRARY_PATH=$(shellpwd) ./$(EXE_NAME) -c 2000 > tmp.log
+	@diff tmp.log example/zz_ref_C2000.log
+
 #meld:
 #	meld tmp.log example/zz_ref_C2000.log
-#
-#cppcheck:
-#	cppcheck --enable=all --enable=information $(INC) example $(SRCDIR) 2>&1 >/dev/null | less
+
+cppcheck:
+	cppcheck --enable=all --enable=information $(INC) example $(SRCDIR) 2>&1 >/dev/null | less

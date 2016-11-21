@@ -32,9 +32,9 @@
 
 #include <cmath>
 #include <cstring>
-#include "bob_simplecontroller.h"
-#include "bob_dramchannel.h"
-#include "bob_buspacket.h"
+#include "../include/bob_simplecontroller.h"
+#include "../include/bob_dramchannel.h"
+#include "../include/bob_buspacket.h"
 
 using namespace std;
 using namespace BOBSim;
@@ -77,6 +77,18 @@ SimpleController::SimpleController(DRAMChannel *parent) :
         actpreEnergy[i] = 0;
         refreshEnergy[i] = 0;
     }
+}
+
+SimpleController::~SimpleController(void)
+{
+  for(deque<BusPacket*>::iterator it = commandQueue.begin(); it != commandQueue.end(); ++it)
+  {
+    delete *it;
+  }
+  for(vector< pair<unsigned, BusPacket*> >::iterator it = writeBurst.begin(); it != writeBurst.end(); ++it)
+  {
+    delete (*it).second;
+  }
 }
 
 //Updates the state of everything 
@@ -175,7 +187,7 @@ void SimpleController::Update(void)
     //Figure out if everyone who needs a refresh can actually receive one
 	for(unsigned r=0; r<NUM_RANKS; r++)
 	{
-		if(refreshCounters[r]==0)
+        if( ! refreshCounters[r])
 		{
 			if(DEBUG_CHANNEL) DEBUG("      !! -- Rank "<<r<<" needs refresh");
 			//Check to be sure we can issue a refresh
@@ -185,7 +197,7 @@ void SimpleController::Update(void)
                 if(bankStates[r][b].nextActivate > currentClockCycle ||
                    bankStates[r][b].currentBankState != IDLE)
 				{
-					canIssueRefresh = false;
+                    canIssueRefresh = false;
                     break;
 				}
 			}
@@ -201,8 +213,8 @@ void SimpleController::Update(void)
 				//Send to command bus
                 channel->ReceiveOnCmdBus(refreshPacket);
 
-				//make sure we don't send anythign else
-				issuingRefresh = true;
+                //make sure we don't send anythign else
+                issuingRefresh = true;
 
 				refreshEnergy[r] += (IDD5B-IDD3N) * tRFC * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
 
@@ -217,7 +229,7 @@ void SimpleController::Update(void)
 				//reset refresh counters
 				for(unsigned i=0; i<NUM_RANKS; i++)
 				{
-					if(refreshCounters[r]==0)
+                    if( ! refreshCounters[r])
 					{
 						refreshCounters[r] = 7800/tCK;
 					}
@@ -233,14 +245,14 @@ void SimpleController::Update(void)
 	if(!issuingRefresh)
 	{
         for(unsigned i=0; i<commandQueue.size(); i++)
-		{
+        {
             //make sure we don't send a command ahead of its own ACTIVATE
             if( ( ! (i>0 &&
                      commandQueue[i]->transactionID == commandQueue[i-1]->transactionID)) &&
                 IsIssuable(commandQueue[i])) //Checks to see if this particular request can be issued
             {
 				//send to channel
-                channel->ReceiveOnCmdBus(commandQueue[i]);
+                this->channel->ReceiveOnCmdBus(commandQueue[i]);
 
 				//update channel controllers bank state bookkeeping
 				unsigned rank = commandQueue[i]->rank;
@@ -271,26 +283,19 @@ void SimpleController::Update(void)
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
                     {
-						if(r==rank)
-						{
-							for(unsigned b=0; b<NUM_BANKS; b++)
-                            {
-								bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + max((uint)tCCD, commandQueue[i]->burstLength)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-								bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle + (tCL + commandQueue[i]->burstLength + tRTRS - tCWL)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-							}
-						}
-						else
-						{
-							for(unsigned b=0; b<NUM_BANKS; b++)
-							{
-								bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + commandQueue[i]->burstLength  + tRTRS); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-								bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle + (tCL + commandQueue[i]->burstLength + tRTRS - tCWL));// commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-							}
-						}
+                        uint64_t read_offset;
+                        if(r==rank)
+                          read_offset = max((uint)tCCD, commandQueue[i]->burstLength);
+                        else
+                          read_offset = commandQueue[i]->burstLength + tRTRS;
+
+                        for(unsigned b=0; b<NUM_BANKS; b++)
+                        {
+                            bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
+                                                            currentClockCycle + read_offset); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                            bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
+                                                             currentClockCycle + (tCL + commandQueue[i]->burstLength + tRTRS - tCWL)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                        }
 					}
 
 					//prevents read or write being issued while waiting for auto-precharge to close page
@@ -315,8 +320,9 @@ void SimpleController::Update(void)
                     if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurst.size()<<" "<<writeBurst.size()<<" with head : "<<(*writeBurst.begin()).second);
 
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
-                    bankstate->stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-                    bankstate->nextActivate = currentClockCycle + tCWL + commandQueue[i]->burstLength + tWR + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                    unsigned stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR;
+                    bankstate->stateChangeCountdown = stateChangeCountdown; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                    bankstate->nextActivate = currentClockCycle + stateChangeCountdown + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 //					bankstate->nextRefresh = bankstate->nextActivate; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 
 					for(unsigned r=0; r<NUM_RANKS; r++)
@@ -326,7 +332,7 @@ void SimpleController::Update(void)
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + tCWL + commandQueue[i]->burstLength + tWTR); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                                currentClockCycle + commandQueue[i]->burstLength + tCWL + tWTR); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
                                                                  currentClockCycle+(uint64_t)max((uint)tCCD, commandQueue[i]->burstLength)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 							}
@@ -336,7 +342,7 @@ void SimpleController::Update(void)
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + tCWL + commandQueue[i]->burstLength + tRTRS - tCL); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                                currentClockCycle + commandQueue[i]->burstLength + tRTRS + tCWL - tCL); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
                                                                  currentClockCycle + commandQueue[i]->burstLength + tRTRS); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 							}
@@ -375,8 +381,8 @@ void SimpleController::Update(void)
 					abort();
 				}
 
-				//erase
-				commandQueue.erase(commandQueue.begin()+i);
+                //erase
+                commandQueue.erase(commandQueue.begin()+i);
 
                 break;
 			}
@@ -417,7 +423,6 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 			{
 				RRQFull++;
 			}
-
 			return false;
         }
 
@@ -453,12 +458,10 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 void SimpleController::AddTransaction(Transaction *trans)
 {
 	//map physical address to rank/bank/row/col
-    unsigned mappedRank;
-    unsigned mappedBank;
-    unsigned mappedRow;
-    unsigned mappedCol;
+    unsigned mappedRank, mappedBank, mappedRow, mappedCol;
     AddressMapping(trans->address, &mappedRank, &mappedBank, &mappedRow, &mappedCol);
 
+    bool originatedFromLogicOp = trans->originatedFromLogicOp;;
     BusPacket *action, *activate = new BusPacket(ACTIVATE,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
     switch(trans->transactionType)
     {
@@ -486,19 +489,19 @@ void SimpleController::AddTransaction(Transaction *trans)
     }
 
     //if requests from logic ops have priority, put them at the front so they go first
-    if(GIVE_LOGIC_PRIORITY && trans->originatedFromLogicOp)
+    if(GIVE_LOGIC_PRIORITY && originatedFromLogicOp)
     {
       //create column write bus packet and add it to command queue
-      commandQueue.push_front(action);
+      this->commandQueue.push_front(action);
       //since we're pushing front, add the ACT after so it ends up being first
-      commandQueue.push_front(activate);
+      this->commandQueue.push_front(activate);
     }
     else
     {
       //create the row activate bus packet and add it to command queue
-      commandQueue.push_back(activate);
+      this->commandQueue.push_back(activate);
       //create column write bus packet and add it to command queue
-      commandQueue.push_back(action);
+      this->commandQueue.push_back(action);
     }
 
 	waitingACTS++;

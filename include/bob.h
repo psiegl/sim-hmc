@@ -39,9 +39,20 @@
 #include "bob_port.h"
 
 using namespace std;
-#include <iostream>
+
 namespace BOBSim
 {
+struct linkbus {
+  //SerDes buffer for holding incoming request packet
+  Transaction* serDesBuffer;
+  //The packet which is currently being sent
+  Transaction* inFlightLink;
+  //Coutner to determine how long packet is to be sent
+  unsigned inFlightLinkCountdowns;
+  //Counts cycles that link bus is idle
+  unsigned linkIdle;
+};
+
 class BOBWrapper;
 class BOB
 {
@@ -64,7 +75,7 @@ public:
     unsigned channelCounters[NUM_CHANNELS];
     uint64_t channelCountersLifetime[NUM_CHANNELS];
 
-	//Storage for pending read request information
+    //Storage for pending read request information
     vector<Transaction*> pendingReads;
 
 	//Bookkeeping for port statistics
@@ -73,27 +84,13 @@ public:
 
 	//
 	//Request Link Bus
-	//
-	//SerDes buffer for holding outgoing request packet
-    Transaction* serDesBufferRequest[NUM_LINK_BUSES];
-	//The packet which is currently being sent
-    Transaction* inFlightRequestLink[NUM_LINK_BUSES];
-	//Counter to determine how long packet is to be sent
-    unsigned inFlightRequestLinkCountdowns[NUM_LINK_BUSES];
-	//Counts cycles that request link bus is idle
-    unsigned requestLinkIdle[NUM_LINK_BUSES];
+    //
+    struct linkbus reqLinkBus[NUM_LINK_BUSES];
 
 	//
 	//Response Link Bus
 	//
-	//SerDes buffer for holding incoming request packet
-    Transaction* serDesBufferResponse[NUM_LINK_BUSES];
-	//The packet which is currently being sent
-    Transaction* inFlightResponseLink[NUM_LINK_BUSES];
-	//Coutner to determine how long packet is to be sent
-    unsigned inFlightResponseLinkCountdowns[NUM_LINK_BUSES];
-    //Counts cycles that response link bus is idle
-    unsigned responseLinkIdle[NUM_LINK_BUSES];
+    struct linkbus respLinkBus[NUM_LINK_BUSES];
 
 	//Round-robin counter
     unsigned responseLinkRoundRobin[NUM_LINK_BUSES];

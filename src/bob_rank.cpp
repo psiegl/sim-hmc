@@ -59,7 +59,7 @@ void Rank::Update(void)
         bankStates[i].UpdateStateChange();
     }
 
-    if(readReturn.size()>0)
+    if(readReturn.size())
     {
         for(unsigned i=0; i<readReturn.size(); i++)
         {

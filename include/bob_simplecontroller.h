@@ -68,6 +68,7 @@ private:
 public:
 	//Functions
     SimpleController(DRAMChannel *parent);
+    ~SimpleController(void);
     void Update(void);
     void AddTransaction(Transaction *trans);
 

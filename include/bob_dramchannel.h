@@ -37,6 +37,7 @@
 #include "bob_simplecontroller.h"
 #include "bob_rank.h"
 #include <deque>
+#include <vector>
 
 using namespace std;
 
@@ -59,7 +60,7 @@ public:
 	//Controller used to operate ranks of DRAM
 	SimpleController simpleController;
 	//Ranks of DRAM
-    Rank* ranks[NUM_RANKS];
+    std::vector<Rank*> ranks;
 	//This channel's ID in relation to the entire system
 	unsigned channelID;
 	//Logic chip

@@ -186,6 +186,11 @@ BOBWrapper::BOBWrapper(void) :
 	//statsOut<<"IDD7="<<IDD7<<endl;
 
 	statsOut<<"!!EPOCH_DATA"<<endl;
+
+#ifdef HMCSIM_SUPPORT
+    callback = 0;
+    vault = 0;
+#endif
 }
 
 BOBWrapper::~BOBWrapper(void)
@@ -196,9 +201,17 @@ BOBWrapper::~BOBWrapper(void)
   delete[] readsPerPort;
   delete[] writesPerPort;
   delete[] returnsPerPort;
+//  for(unsigned i=0; i<NUM_PORTS; i++) {
+//      if(inFlightRequest.Cache[i])
+//        delete inFlightRequest.Cache[i];
+//  }
   delete[] inFlightRequest.Cache;
   delete[] inFlightRequest.Counter;
   delete[] inFlightRequest.HeaderCounter;
+//  for(unsigned i=0; i<NUM_PORTS; i++) {
+//      if(inFlightResponse.Cache[i])
+//        delete inFlightResponse.Cache[i];
+//  }
   delete[] inFlightResponse.Cache;
   delete[] inFlightResponse.Counter;
   powerOut.close();
