@@ -69,10 +69,10 @@ DRAMChannel::~DRAMChannel(void)
     {
       delete *it;
     }
-    if(pendingLogicResponse)
-      delete pendingLogicResponse;
-    if(inFlightCommandPacket)
-      delete inFlightCommandPacket;
+//    if(pendingLogicResponse)
+//      delete pendingLogicResponse;
+//    if(inFlightCommandPacket)
+//      delete inFlightCommandPacket;
 //    if(inFlightDataPacket)
 //      delete inFlightDataPacket;
     delete logicLayer;
