@@ -61,10 +61,10 @@ CXX=clang++ -std=c++11
 INC=
 
 #-- C COMPILER FLAGS
-CFLAGS=-O0 -Wall $(INC) $(HMCSIM_MACROS) -pg
+CFLAGS= -Wall $(INC) $(HMCSIM_MACROS) -pg
 
 #-- C++ COMPILER FLAGS
-CXXFLAGS=-O0 -Wall $(INC) $(HMCSIM_MACROS) -lz
+CXXFLAGS= -Wall $(INC) $(HMCSIM_MACROS) -lz
 
 #-- ARCHIVE BINARY
 AR=ar

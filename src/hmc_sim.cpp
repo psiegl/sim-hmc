@@ -140,7 +140,7 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, void *pkt)
   memcpy(packet, pkt, len64bit * sizeof(uint64_t));
   packet[0] |= HMCSIM_PACKET_SET_REQUEST();
 
-  //packet[len64bit - 1] &= ~(uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(~0x0); // mask out whatever is set for slid
+  packet[len64bit - 1] &= ~(uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(~0x0); // mask out whatever is set for slid
   packet[len64bit - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slidId); // set slidId
 
   return this->slids[slidId]->get_olink()->push_back(packet, flits * FLIT_WIDTH);
@@ -202,7 +202,7 @@ void hmc_sim::hmc_decode_pkt(void *packet, uint64_t *response_head, uint64_t *re
     *crc = (uint32_t)HMCSIM_PACKET_RESPONSE_GET_CRC(tail);
 }
 
-void hmc_sim::hmc_encode_pkt(unsigned cub, unsigned slid, uint64_t addr,
+void hmc_sim::hmc_encode_pkt(unsigned cub, uint64_t addr,
                              uint16_t tag, hmc_rqst_t cmd, void *packet)
 {
   unsigned flits = 0;
@@ -303,7 +303,7 @@ void hmc_sim::hmc_encode_pkt(unsigned cub, unsigned slid, uint64_t addr,
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_FRP(hmcsim_rqst_getfrp());
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SEQ(hmcsim_rqst_getseq(cmd));
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_Pb(0x1);
-  pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slid);
+  //pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slid);
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_RTC(hmcsim_rqst_getrtc());
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_CRC(hmcsim_crc32((unsigned char*)pkt, 2 * flits));  // crc32 calc. needs to be last of packet init!
 }

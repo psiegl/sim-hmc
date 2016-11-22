@@ -11,6 +11,8 @@
 class hmc_link;
 class hmc_cube;
 
+#define ALWAYS_NOTIFY_BOBSIM 1
+
 class hmc_bobsim : private hmc_notify_cl, private hmc_vault {
 private:
   unsigned id;
@@ -19,25 +21,46 @@ private:
   hmc_notify linknotify;
   hmc_link *link;
 
+#ifndef ALWAYS_NOTIFY_BOBSIM
   unsigned bobnotify_ctr;
+#endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   hmc_notify bobnotify;
   BobWrapper *bobsim;
 
   std::list<void*>feedback_cache;
 
-  enum TransactionType hmc_determineTransactionType(hmc_rqst_t cmd)
+  enum TransactionType hmc_determineTransactionType(hmc_rqst_t cmd, unsigned *rqstlen)
   {
     switch (cmd) {
     case RD16:
+      *rqstlen = 16;
+      return DATA_READ;
     case RD32:
+      *rqstlen = 32;
+      return DATA_READ;
     case RD48:
+      *rqstlen = 48;
+      return DATA_READ;
     case RD64:
+      *rqstlen = 64;
+      return DATA_READ;
     case RD80:
+      *rqstlen = 80;
+      return DATA_READ;
     case RD96:
+      *rqstlen = 96;
+      return DATA_READ;
     case RD112:
+      *rqstlen = 112;
+      return DATA_READ;
     case RD128:
+      *rqstlen = 128;
+      return DATA_READ;
     case RD256:
+      *rqstlen = 256;
+      return DATA_READ;
     case MD_RD:
+      *rqstlen = 8;
       return DATA_READ;
     case FLOW_NULL:
     case PRET:
@@ -45,10 +68,14 @@ private:
     case IRTRY:
     case INC8:
     case P_INC8:
+      *rqstlen = 8;
       return LOGIC_OPERATION;
     case WR16:
+      *rqstlen = 16;
+      return DATA_WRITE;
     case MD_WR:
     case BWR:
+      *rqstlen = 8;
       return DATA_WRITE;
     case TWOADD8:
     case ADD16:
@@ -80,20 +107,35 @@ private:
       return LOGIC_OPERATION;
     case WR32:
     case P_WR32:
+      *rqstlen = 32;
+      return DATA_WRITE;
     case WR48:
     case P_WR48:
+      *rqstlen = 48;
+      return DATA_WRITE;
     case WR64:
     case P_WR64:
+      *rqstlen = 64;
+      return DATA_WRITE;
     case WR80:
     case P_WR80:
+      *rqstlen = 80;
+      return DATA_WRITE;
     case WR96:
     case P_WR96:
+      *rqstlen = 96;
+      return DATA_WRITE;
     case WR112:
     case P_WR112:
+      *rqstlen = 112;
+      return DATA_WRITE;
     case WR128:
     case P_WR128:
+      *rqstlen = 128;
+      return DATA_WRITE;
     case WR256:
     case P_WR256:
+      *rqstlen = 256;
       return DATA_WRITE;
       break;
     default:

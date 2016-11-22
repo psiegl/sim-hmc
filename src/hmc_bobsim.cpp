@@ -15,12 +15,17 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
   cube(cube),
   linknotify(id, notify, this),
   link(link),
+#ifndef ALWAYS_NOTIFY_BOBSIM
   bobnotify_ctr(0),
+#endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   bobnotify(id, notify, this),
   bobsim(BobNewWrapper(num_ports, periodPrintStats))
 {
   this->link->set_ilink_notify(0, &linknotify);
   BobAddHMCSIMCallback(this->bobsim, this, callback);
+#ifdef ALWAYS_NOTIFY_BOBSIM
+  this->bobnotify.notify_add(0);
+#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
 }
 
 hmc_bobsim::~hmc_bobsim(void)
@@ -35,8 +40,10 @@ hmc_bobsim::~hmc_bobsim(void)
 bool hmc_bobsim::bob_feedback(void *packet)
 {
   if (this->hmcsim_process_rqst(packet)) {
+#ifndef ALWAYS_NOTIFY_BOBSIM
     if (!--this->bobnotify_ctr)
       this->bobnotify.notify_del(0);
+#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
     return true;
   }
   else {
@@ -47,7 +54,10 @@ bool hmc_bobsim::bob_feedback(void *packet)
 
 void hmc_bobsim::clock(void)
 {
-  if (this->bobnotify_ctr) {
+#ifndef ALWAYS_NOTIFY_BOBSIM
+  if (this->bobnotify_ctr)
+#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
+  {
     if (this->feedback_cache.empty()) {
       BobUpdate(this->bobsim);
     }
@@ -76,15 +86,17 @@ void hmc_bobsim::clock(void)
     hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
     unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
-    enum TransactionType type = this->hmc_determineTransactionType(cmd);
-    BobTransaction *bobtrans = BobCreateTransaction(type, packetleninbit, bank, packet);
+    unsigned rqstlen;
+    enum TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
+    BobTransaction *bobtrans = BobCreateTransaction(type, rqstlen, bank, packet);
     if (!BobSubmitTransaction(this->bobsim, bobtrans, 0 /* port */)) {
       exit(0);
     }
-
+#ifndef ALWAYS_NOTIFY_BOBSIM
     if (!(this->bobnotify_ctr++)) {
       this->bobnotify.notify_add(0);
     }
+#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
     link->get_ilink()->pop_front();
   }
 }

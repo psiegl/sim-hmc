@@ -99,7 +99,7 @@ public:
                       hmc_response_t *type, unsigned *flits, uint16_t *tag,
                       uint8_t *slid, uint8_t *rrp, uint8_t *frp, uint8_t *seq,
                       uint8_t *dinv, uint8_t *errstat, uint8_t *rtc, uint32_t *crc);
-  void hmc_encode_pkt(unsigned cub, unsigned slid, uint64_t addr,
+  void hmc_encode_pkt(unsigned cub, uint64_t addr,
                       uint16_t tag, hmc_rqst_t cmd, void *packet);
 
   void clock(void);

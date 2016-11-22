@@ -24,9 +24,11 @@ default: $(TARGET)
 ####### Conditional ##############################
 
 ifneq (,$(findstring HMC_DEBUG, $(HMCSIM_MACROS)))
-CFLAGS   += -g
-CXXFLAGS += -g
+CFLAGS   += -O0 -g
+CXXFLAGS += -O0 -g
 else
+CFLAGS   += -O3 -ffast-math
+CXXFLAGS += -O3 -ffast-math
 HMCSIM_MACROS += -DNDEBUG
 endif
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <cstdint>
 #include "src/hmc_sim.h"
 
 
@@ -33,38 +34,25 @@ int main(int argc, char* argv[])
   {
     if(issue > send_ctr)
     {
-      uint64_t *packet = new uint64_t[(sendpacketleninbit/FLIT_WIDTH) << 1];
+      uint64_t packet[(sendpacketleninbit/FLIT_WIDTH) << 1];
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
-      packet[0] = 0;
-      if(send_ctr < 2000)
-        //packet[0] |= ((0x33) & 0x7F); // RD64
-        packet[0] |= ((0x77) & 0x7F); // RD256
+
+      if(send_ctr < (issue - 2))
+        sim.hmc_encode_pkt(destcub, addr, 0, RD256, packet);
       else
-        packet[0] |= ((0x0B) & 0x7F); // WR64
-      packet[0] |= (((sendpacketleninbit/FLIT_WIDTH) & 0x1F) << 7);
-
-
-      packet[0] |= (((uint64_t)((addr) & 0x3FFFFFFFFull)) << 24);
-      packet[0] |= (uint64_t)(destcub) << 61;
-
-      //std::cout << "header in main: " << packet[0] << std::endl;
+        sim.hmc_encode_pkt(destcub, addr, 0, WR64, packet);
 
       if(sim.hmc_send_pkt(slidId, packet)) {
         track[send_ctr] = clks;
         send_ctr++;
       }
-      else
-        delete packet;
     }
-    if(slidnotify->get_notification()) {
-      bool ret = sim.hmc_recv_pkt(slidId, retpacket);
-      if(ret)
-      {
-        track[recv_ctr] = clks - track[recv_ctr];
-        recv_ctr++;
-        if(recv_ctr >= issue)
-          break;
-      }
+    if(slidnotify->get_notification() && sim.hmc_recv_pkt(slidId, retpacket))
+    {
+      track[recv_ctr] = clks - track[recv_ctr];
+      recv_ctr++;
+      if(recv_ctr >= issue)
+        break;
     }
     // set clk anyway
     clks++;
@@ -73,12 +61,15 @@ int main(int argc, char* argv[])
     sim.clock();
   } while(true);
 
+  uint64_t avg = 0;
   for(unsigned i=0; i<issue; i++) {
-    std::cout << "pkt " << i << ". -> clks " << track[i] << std::endl;
+    avg += track[i];
+//    std::cout << "pkt " << i << ". -> clks " << track[i] << std::endl;
   }
+  avg /= issue;
 
   delete[] track;
-  std::cout << "done in " << clks << " clks " << std::endl;
+  std::cout << "done in " << clks << " clks, avg.: " << avg << std::endl;
 
   return 0;
 }
