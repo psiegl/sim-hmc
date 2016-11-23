@@ -65,6 +65,23 @@ private:
 
     uint64_t currentClockCycle;
 
+    //Bank states for all banks in this channel
+    BankState bankStates[NUM_RANKS][NUM_BANKS];
+
+    //Storage and counters to determine write bursts
+    vector< pair<unsigned, BusPacket*> > writeBurst; /* Countdown & Queue */
+
+    //Sliding window for each rank to determine tFAW adherence
+    vector<unsigned> tFAWWindow[NUM_RANKS];
+
+    //Refresh counters
+    unsigned refreshCounters[NUM_RANKS];
+
+    //More bookkeeping
+    unsigned refreshCounter;
+    unsigned readCounter;
+    unsigned writeCounter;
+
 public:
 	//Functions
     SimpleController(DRAMChannel *parent);
@@ -72,39 +89,23 @@ public:
     void Update(void);
     void AddTransaction(Transaction *trans);
 
-	//Fields
-	//Statistics and bookkeeping
-	unsigned commandQueueMax;
+    //Fields
+    //Statistics and bookkeeping
+    unsigned commandQueueMax;
     unsigned commandQueueAverage;
     unsigned numIdleBanksAverage;
     unsigned numActBanksAverage;
     unsigned numPreBanksAverage;
     unsigned numRefBanksAverage;
 
-	//Work queue for pending requests (DRAM specific commands go here)
-	deque<BusPacket*> commandQueue;
+    //Work queue for pending requests (DRAM specific commands go here)
+    deque<BusPacket*> commandQueue;
 
-	//Bank states for all banks in this channel
-    BankState bankStates[NUM_RANKS][NUM_BANKS];
+    unsigned RRQFull;
+    unsigned outstandingReads;
+    int waitingACTS;
 
-	//Storage and counters to determine write bursts
-    vector< pair<unsigned, BusPacket*> > writeBurst; /* Countdown & Queue */
-
-	//Sliding window for each rank to determine tFAW adherence
-    vector<unsigned> tFAWWindow[NUM_RANKS];
-
-	//Refresh counters
-    unsigned refreshCounters[NUM_RANKS];
-
-	//More bookkeeping
-	unsigned refreshCounter;
-	unsigned readCounter;
-	unsigned writeCounter;
-	unsigned RRQFull;
-	unsigned outstandingReads;
-	int waitingACTS;
-
-	//Power fields
+    //Power fields
     uint64_t backgroundEnergy[NUM_RANKS];
     uint64_t burstEnergy[NUM_RANKS];
     uint64_t actpreEnergy[NUM_RANKS];

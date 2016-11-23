@@ -41,6 +41,9 @@ namespace BOBSim
 {
 class Port
 {
+    //Fields
+    //The port identifier in relation to the entire system
+    unsigned portID;
 public:
     //Functions
     Port(unsigned id):
@@ -54,10 +57,6 @@ public:
       for(unsigned i=0; i<this->outputBuffer.size(); i++)
         delete this->outputBuffer[i];
     }
-
-	//Fields
-	//The port identifier in relation to the entire system
-	unsigned portID;
 	
 	//Amount of time that the port's input is busy
     unsigned inputBusyCountdown;

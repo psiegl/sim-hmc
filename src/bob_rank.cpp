@@ -30,7 +30,6 @@
 
 //Rank source
 
-#include <cstring>
 #include "../include/bob_rank.h"
 #include "../include/bob_dramchannel.h"
 
@@ -44,7 +43,6 @@ Rank::Rank(unsigned rankid, DRAMChannel *_channel):
     bankStates(new BankState[NUM_BANKS]),
     currentClockCycle(0)
 {
-    memset(bankStates, 0, sizeof(BankState) * NUM_BANKS);
 }
 
 Rank::~Rank(void)

@@ -39,18 +39,28 @@
 #include <deque>
 #include <vector>
 
-using namespace std;
-
 namespace BOBSim
 {
 class BOB;
 class LogicLayerInterface;
 class DRAMChannel
 {
-  //Command packet being sent on DRAM command bus
-  BusPacket *inFlightCommandPacket;
-  //Time to send DRAM command packet
-  unsigned inFlightCommandCountdown;
+private:
+    //Ranks of DRAM
+    std::vector<Rank*> ranks;
+    //Logic chip
+    LogicLayerInterface *logicLayer;
+    // bob interface
+    BOB *bob;
+    //Command packet being sent on DRAM command bus
+    BusPacket *inFlightCommandPacket;
+    //Time to send DRAM command packet
+    unsigned inFlightCommandCountdown;
+
+    //Data packet being sent on the DRAM data bus
+    BusPacket *inFlightDataPacket;
+    //Time to send DRAM data packet
+    unsigned inFlightDataCountdown;
 
 public:
     //Functions
@@ -64,15 +74,9 @@ public:
     //Fields
     //Controller used to operate ranks of DRAM
     SimpleController simpleController;
-	//Ranks of DRAM
-    std::vector<Rank*> ranks;
-	//This channel's ID in relation to the entire system
-	unsigned channelID;
-	//Logic chip
-	LogicLayerInterface *logicLayer;
-    // bob interface
-    BOB *bob;
-	//Pending outgoing logic response
+    //This channel's ID in relation to the entire system
+    unsigned channelID;
+    //Pending outgoing logic response
     Transaction *pendingLogicResponse;
 
     //Bookkeeping for maximum number of requests waiting in queue
@@ -80,13 +84,8 @@ public:
     //Storage for pending response data
     deque<BusPacket*> readReturnQueue;
 
-    //Data packet being sent on the DRAM data bus
-    BusPacket *inFlightDataPacket;
-    //Time to send DRAM data packet
-    unsigned inFlightDataCountdown;
-
-	//Number of cycles there is no data on the DRAM bus
-	unsigned DRAMBusIdleCount;
+    //Number of cycles there is no data on the DRAM bus
+    unsigned DRAMBusIdleCount;
 };
 }
 

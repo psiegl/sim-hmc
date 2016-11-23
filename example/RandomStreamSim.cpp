@@ -190,7 +190,7 @@ int main(int argc, char **argv)
     {
       for(vector<Transaction *>::iterator it = transactionBuffer[l].begin(); it != transactionBuffer[l].end(); ++it)
       {
-        //delete *it;
+        delete *it;
       }
     }
 	//

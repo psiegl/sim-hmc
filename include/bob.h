@@ -56,72 +56,73 @@ struct linkbus {
 class BOBWrapper;
 class BOB
 {
-public:
-	//Functions
-    BOB(BOBWrapper *_bobwrapper);
-    ~BOB(void);
-	unsigned FindChannelID(Transaction* trans);
-    void Update(void);
-	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
-    void ReportCallback(BusPacket *bp);
-
-	//Fields
-	//Ports used on main BOB controller to communicate with cache
-    vector<Port*> ports;
-	//All DRAM channel objects (which includes ranks of DRAM and the simple contorller)
+private:
+    //All DRAM channel objects (which includes ranks of DRAM and the simple contorller)
     DRAMChannel* channels[NUM_CHANNELS];
 
-	//Bookkeeping for the number of requests to each channel
+    //Bookkeeping for the number of requests to each channel
     unsigned channelCounters[NUM_CHANNELS];
     uint64_t channelCountersLifetime[NUM_CHANNELS];
 
     //Storage for pending read request information
     vector<Transaction*> pendingReads;
 
-	//Bookkeeping for port statistics
+    //Bookkeeping for port statistics
     unsigned* portInputBufferAvg;
     unsigned* portOutputBufferAvg;
 
-	//
-	//Request Link Bus
+    //
+    //Request Link Bus
     //
     struct linkbus reqLinkBus[NUM_LINK_BUSES];
 
-	//
-	//Response Link Bus
-	//
+    //
+    //Response Link Bus
+    //
     struct linkbus respLinkBus[NUM_LINK_BUSES];
 
-	//Round-robin counter
+    //Round-robin counter
     unsigned responseLinkRoundRobin[NUM_LINK_BUSES];
 
-	//Used for round-robin 
-	unsigned priorityPort;
+    //Used for round-robin
+    unsigned priorityPort;
     unsigned* priorityLinkBus;
 
     //Bookkeeping
-	unsigned readCounter;
-	unsigned writeCounter;
-	unsigned committedWrites;
+    unsigned readCounter;
+    unsigned writeCounter;
+    unsigned committedWrites;
 //	unsigned logicOpCounter;
-	
-    //Callback
-    BOBWrapper *bobwrapper;
 
-	//Address mapping widths 
-	unsigned rankBitWidth;
-	unsigned bankBitWidth;
-	unsigned rowBitWidth;
-	unsigned colBitWidth;
-	unsigned busOffsetBitWidth;
-	unsigned channelBitWidth;
-	unsigned cacheOffset;
+    //Address mapping widths
+    unsigned rankBitWidth;
+    unsigned bankBitWidth;
+    unsigned rowBitWidth;
+    unsigned colBitWidth;
+    unsigned busOffsetBitWidth;
+    unsigned channelBitWidth;
+    unsigned cacheOffset;
 
-	//Used to adjust for uneven clock frequencies
-	unsigned clockCycleAdjustmentCounter;
+    //Used to adjust for uneven clock frequencies
+    unsigned clockCycleAdjustmentCounter;
 
     uint64_t dram_channel_clk;
     uint64_t currentClockCycle;
+
+    unsigned FindChannelID(Transaction* trans);
+public:
+	//Functions
+    BOB(BOBWrapper *_bobwrapper);
+    ~BOB(void);
+    void Update(void);
+	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
+    void ReportCallback(BusPacket *bp);
+
+    //Ports used on main BOB controller to communicate with cache
+    vector<Port*> ports;
+
+    //Callback
+    BOBWrapper *bobwrapper;
 };
 }
 #endif

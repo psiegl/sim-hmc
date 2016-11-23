@@ -81,7 +81,7 @@ DRAMChannel::~DRAMChannel(void)
 void DRAMChannel::Update(void)
 {
 	//update buses
-    if(inFlightCommandCountdown>0 && !--inFlightCommandCountdown)
+    if(inFlightCommandCountdown && !--inFlightCommandCountdown)
     {
         ranks[inFlightCommandPacket->rank]->ReceiveFromBus(inFlightCommandPacket);
         inFlightCommandPacket = NULL;

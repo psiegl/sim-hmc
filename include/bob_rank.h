@@ -43,28 +43,24 @@ namespace BOBSim
 class DRAMChannel;
 class Rank
 {
+private:
+    //Fields
+    //Rank ID in relation to the channel
+    unsigned id;
+    //Amount of time until data is returned from the DRAM & Storage for response data
+    vector< pair<unsigned, BusPacket*> > readReturn; /* Countdown & Queue */
+    //Callback for returning data
+    DRAMChannel *dramchannel;
+    //State of all banks in the DRAM channel
+    uint64_t banksNeedUpdate;
+    BankState *bankStates;
+    uint64_t currentClockCycle;
 public:
     //Functions
     Rank(unsigned id, DRAMChannel *_dramchannel);
     ~Rank(void);
     void Update(void);
     void ReceiveFromBus(BusPacket *busPacket);
-
-	//Fields
-	//Rank ID in relation to the channel
-	unsigned id;
-
-    //Amount of time until data is returned from the DRAM & Storage for response data
-    vector< pair<unsigned, BusPacket*> > readReturn; /* Countdown & Queue */
-
-    //Callback for returning data
-    DRAMChannel *dramchannel;
-	
-    //State of all banks in the DRAM channel
-    uint64_t banksNeedUpdate;
-	BankState *bankStates;
-
-    uint64_t currentClockCycle;
 };
 }
 
