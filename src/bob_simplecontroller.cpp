@@ -66,6 +66,7 @@ SimpleController::SimpleController(DRAMChannel *parent) :
     //Make the bank state objects
     memset(bankStates, 0, sizeof(BankState) * NUM_RANKS * NUM_BANKS);
 
+
 	for(unsigned i=0; i<NUM_RANKS; i++)
     {
         //init refresh counters
@@ -509,299 +510,299 @@ void SimpleController::AddTransaction(Transaction *trans)
 
 void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned *rank, unsigned *bank, unsigned *row, unsigned *col)
 {
-	uint64_t tempA, tempB;
+    uint64_t tempA, tempB;
 
-	if(DEBUG_CHANNEL)DEBUGN("     == Mapped 0x"<<hex<<physicalAddress);
+    if(DEBUG_CHANNEL)DEBUGN("     == Mapped 0x"<<hex<<physicalAddress);
 
     switch(MAPPINGSCHEME)
-	{
-	case BK_CLH_RW_RK_CH_CLL_BY://bank:col_high:row:rank:chan:col_low:by
-		//remove low order bits
-		//this includes:
-		// - byte offset
-		// - low order bits of column address (assumed to be 0 since it is cache aligned)
-		// - channel bits (already used)
-		//
-		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
+    {
+    case BK_CLH_RW_RK_CH_CLL_BY://bank:col_high:row:rank:chan:col_low:by
+        //remove low order bits
+        //this includes:
+        // - byte offset
+        // - low order bits of column address (assumed to be 0 since it is cache aligned)
+        // - channel bits (already used)
+        //
+        //log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
         physicalAddress >>= (channelBitWidth + cacheOffset);
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
         *col = tempA ^ tempB;
 
-		//account for low order column bits
+        //account for low order column bits
         *col = *col << (cacheOffset-busOffsetBitWidth);
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		break;
-	case CLH_RW_RK_BK_CH_CLL_BY://col_high:row:rank:bank:chan:col_low:by
-		//remove low order bits
-		//this includes:
-		// - byte offset
-		// - low order bits of column address (assumed to be 0 since it is cache aligned)
-		// - channel bits (already used)
-		//
-		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
+        break;
+    case CLH_RW_RK_BK_CH_CLL_BY://col_high:row:rank:bank:chan:col_low:by
+        //remove low order bits
+        //this includes:
+        // - byte offset
+        // - low order bits of column address (assumed to be 0 since it is cache aligned)
+        // - channel bits (already used)
+        //
+        //log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
         physicalAddress >>= (channelBitWidth + cacheOffset);
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
         *col = tempA ^ tempB;
 
-		//account for low order column bits
+        //account for low order column bits
         *col = *col << (cacheOffset-busOffsetBitWidth);
 
-		break;
-	case RK_BK_RW_CLH_CH_CLL_BY://rank:bank:row:colhigh:chan:collow:by
-		//remove low order bits
-		// - byte offset
-		// - low order bits of column address (assumed to be 0 since it is cache aligned)
-		// - channel bits (already used)
-		//
-		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
+        break;
+    case RK_BK_RW_CLH_CH_CLL_BY://rank:bank:row:colhigh:chan:collow:by
+        //remove low order bits
+        // - byte offset
+        // - low order bits of column address (assumed to be 0 since it is cache aligned)
+        // - channel bits (already used)
+        //
+        //log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
         physicalAddress >>= (channelBitWidth + cacheOffset);
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
         *col = tempA ^ tempB;
 
-		//account for low order column bits
+        //account for low order column bits
         *col = *col << (cacheOffset-busOffsetBitWidth);
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		break;
-	case RW_CH_BK_RK_CL_BY://row:chan:bank:rank:col:by
-		//remove low order bits which account for the amount of data received on the bus (8 bytes)
+        break;
+    case RW_CH_BK_RK_CL_BY://row:chan:bank:rank:col:by
+        //remove low order bits which account for the amount of data received on the bus (8 bytes)
         physicalAddress >>= busOffsetBitWidth;
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= colBitWidth;
-		tempB = physicalAddress << colBitWidth;
+        tempB = physicalAddress << colBitWidth;
         *col = tempA ^ tempB;
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		//channel has already been mapped so just shift off the bits
+        //channel has already been mapped so just shift off the bits
         physicalAddress >>= channelBitWidth;
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		break;
-	case RW_BK_RK_CH_CL_BY://row:bank:rank:chan:col:byte
-		//remove low order bits which account for the amount of data received on the bus (8 bytes)
+        break;
+    case RW_BK_RK_CH_CL_BY://row:bank:rank:chan:col:byte
+        //remove low order bits which account for the amount of data received on the bus (8 bytes)
         physicalAddress >>= busOffsetBitWidth;
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= colBitWidth;
-		tempB = physicalAddress << colBitWidth;
+        tempB = physicalAddress << colBitWidth;
         *col = tempA ^ tempB;
 
-		//channel has already been mapped so just shift off the bits
+        //channel has already been mapped so just shift off the bits
         physicalAddress >>= channelBitWidth;
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		break;
-	case RW_BK_RK_CLH_CH_CLL_BY://row:bank:rank:col_high:chan:col_low:byte
-		//remove low order bits
-		//this includes:
-		// - byte offset
-		// - low order bits of column address (assumed to be 0 since it is cache aligned)
-		// - channel bits (already used)
-		//
-		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
+        break;
+    case RW_BK_RK_CLH_CH_CLL_BY://row:bank:rank:col_high:chan:col_low:byte
+        //remove low order bits
+        //this includes:
+        // - byte offset
+        // - low order bits of column address (assumed to be 0 since it is cache aligned)
+        // - channel bits (already used)
+        //
+        //log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
         physicalAddress >>= (channelBitWidth + cacheOffset);
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
         *col = tempA ^ tempB;
 
-		//account for low order column bits
+        //account for low order column bits
         *col = *col << (cacheOffset-busOffsetBitWidth);
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		break;
-	case RW_CLH_BK_RK_CH_CLL_BY://row:col_high:bank:rank:chan:col_low:byte
-		//remove low order bits
-		//this includes:
-		// - byte offset
-		// - low order bits of column address (assumed to be 0 since it is cache aligned)
-		// - channel bits (already used)
-		//
-		//log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
+        break;
+    case RW_CLH_BK_RK_CH_CLL_BY://row:col_high:bank:rank:chan:col_low:byte
+        //remove low order bits
+        //this includes:
+        // - byte offset
+        // - low order bits of column address (assumed to be 0 since it is cache aligned)
+        // - channel bits (already used)
+        //
+        //log2(CACHE_LINE_SIZE) == (log2(Low order column bits) + log2(BUS_ALIGNMENT_SIZE))
         physicalAddress >>= (channelBitWidth + cacheOffset);
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= (colBitWidth - (cacheOffset-busOffsetBitWidth));
-		tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
+        tempB = physicalAddress << (colBitWidth - (cacheOffset-busOffsetBitWidth));
         *col = tempA ^ tempB;
 
-		//account for low order column bits
+        //account for low order column bits
         *col = *col << (cacheOffset-busOffsetBitWidth);
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		break;
-	case CH_RW_BK_RK_CL_BY:
-		//remove bits which would address the amount of data received on a request
+        break;
+    case CH_RW_BK_RK_CL_BY:
+        //remove bits which would address the amount of data received on a request
         physicalAddress >>= busOffsetBitWidth;
 
-		//column bits
-		tempA = physicalAddress;
+        //column bits
+        tempA = physicalAddress;
         physicalAddress >>= colBitWidth;
-		tempB = physicalAddress << colBitWidth;
+        tempB = physicalAddress << colBitWidth;
         *col = tempA ^ tempB;
 
-		//rank bits
-		tempA = physicalAddress;
+        //rank bits
+        tempA = physicalAddress;
         physicalAddress >>= rankBitWidth;
-		tempB = physicalAddress << rankBitWidth;
+        tempB = physicalAddress << rankBitWidth;
         *rank = tempA ^ tempB;
 
-		//bank bits
-		tempA = physicalAddress;
+        //bank bits
+        tempA = physicalAddress;
         physicalAddress >>= bankBitWidth;
-		tempB = physicalAddress << bankBitWidth;
+        tempB = physicalAddress << bankBitWidth;
         *bank = tempA ^ tempB;
 
-		//row bits
-		tempA = physicalAddress;
+        //row bits
+        tempA = physicalAddress;
         physicalAddress >>= rowBitWidth;
-		tempB = physicalAddress << rowBitWidth;
+        tempB = physicalAddress << rowBitWidth;
         *row = tempA ^ tempB;
 
-		break;
-	default:
-		ERROR("== ERROR - Unknown address mapping???");
-		exit(1);
-		break;
-	};
+        break;
+    default:
+        ERROR("== ERROR - Unknown address mapping???");
+        exit(1);
+        break;
+    };
 
     if(DEBUG_CHANNEL) DEBUG(" to RK:"<<hex<<*rank<<" BK:"<<*bank<<" RW:"<<*row<<" CL:"<<*col<<dec);
 }

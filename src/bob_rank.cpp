@@ -31,8 +31,8 @@
 //Rank source
 
 #include <cstring>
-#include "bob_rank.h"
-#include "bob_dramchannel.h"
+#include "../include/bob_rank.h"
+#include "../include/bob_dramchannel.h"
 
 using namespace std;
 using namespace BOBSim;
@@ -50,6 +50,10 @@ Rank::Rank(unsigned rankid, DRAMChannel *_channel):
 Rank::~Rank(void)
 {
     delete[] bankStates;
+    for(vector< pair<unsigned, BusPacket*> >::iterator it = this->readReturn.begin(); it != this->readReturn.end(); ++it)
+    {
+       delete (*it).second;
+    }
 }
 
 void Rank::Update(void)

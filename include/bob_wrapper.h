@@ -138,7 +138,6 @@ public:
     uint64_t currentClockCycle;
 
 #ifdef HMCSIM_SUPPORT
-    void * WillCallback(unsigned port);
     bool IsPortBusy(unsigned port);
     bool (*callback)(void *vault, void *packet);
     void *vault;

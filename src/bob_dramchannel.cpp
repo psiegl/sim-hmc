@@ -69,12 +69,12 @@ DRAMChannel::~DRAMChannel(void)
     {
       delete *it;
     }
-//    if(pendingLogicResponse)
-//      delete pendingLogicResponse;
-//    if(inFlightCommandPacket)
-//      delete inFlightCommandPacket;
-//    if(inFlightDataPacket)
-//      delete inFlightDataPacket;
+    if(pendingLogicResponse)
+      delete pendingLogicResponse;
+    if(inFlightCommandPacket)
+      delete inFlightCommandPacket;
+    if(inFlightDataPacket)
+      delete inFlightDataPacket;
     delete logicLayer;
 }
 
@@ -84,6 +84,7 @@ void DRAMChannel::Update(void)
     if(inFlightCommandCountdown>0 && !--inFlightCommandCountdown)
     {
         ranks[inFlightCommandPacket->rank]->ReceiveFromBus(inFlightCommandPacket);
+        inFlightCommandPacket = NULL;
     }
 
     if(!inFlightDataCountdown)
@@ -110,6 +111,7 @@ void DRAMChannel::Update(void)
                 simpleController.outstandingReads--;
 
                 bob->ReportCallback(inFlightDataPacket);
+                inFlightDataPacket = NULL;
 
                 //keep track of total number of entries in return queue
                 if(readReturnQueue.size()>readReturnQueueMax)

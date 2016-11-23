@@ -223,7 +223,7 @@ BOBWrapper::~BOBWrapper(void)
 inline bool BOBWrapper::isPortAvailable(unsigned port)
 {
     return inFlightRequest.Counter[port] == 0 &&
-	       bob->ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH;
+           bob->ports[port]->inputBuffer.size()<PORT_QUEUE_DEPTH;
 }
 
 
@@ -319,14 +319,14 @@ void BOBWrapper::RegisterCallbacks(
 bool BOBWrapper::IsPortBusy(unsigned port)
 {
   return ! (inFlightRequest.Counter[port]==0 &&
-       bob->ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH);
+       bob->ports[port]->inputBuffer.size()<PORT_QUEUE_DEPTH);
 }
 #endif
 
 bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 {
     if(inFlightRequest.Counter[port]==0 &&
-       bob->ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH)
+       bob->ports[port]->inputBuffer.size()<PORT_QUEUE_DEPTH)
 	{
 		trans->fullStartTime = currentClockCycle;
 		requestCounterPerPort[port]++;
@@ -372,32 +372,6 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 }
 
 
-#ifdef HMCSIM_SUPPORT
-void* BOBWrapper::WillCallback(unsigned port)
-{
-  if(inFlightResponse.Counter[port]>0)
-  {
-      if(!(inFlightResponse.Counter[port]-1))
-      {
-          switch(inFlightResponse.Cache[port]->transactionType) {
-          case RETURN_DATA:
-          case LOGIC_RESPONSE:
-            return inFlightResponse.Cache[port]->payload;
-          default:
-            break;
-          }
-      }
-  }
-  void *ret = this->bob->bob_will_issue_store_notify();
-  if(ret != 0)
-  {
-    std::cout << "writeback" << std::endl;
-    return ret;
-  }
-  return 0;
-}
-#endif
-
 //
 //Updates the state of the memory system
 //
@@ -414,7 +388,7 @@ void BOBWrapper::Update(void)
         if(inFlightRequest.HeaderCounter[i]>0 && !--inFlightRequest.HeaderCounter[i]) //done
         {
             if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
-            bob->ports[i].inputBuffer.push_back(inFlightRequest.Cache[i]);
+            bob->ports[i]->inputBuffer.push_back(inFlightRequest.Cache[i]);
         }
 
         if(inFlightRequest.Counter[i]>0)
@@ -473,7 +447,7 @@ void BOBWrapper::Update(void)
                     exit(0);
                 }
 
-                bob->ports[i].outputBuffer.erase(bob->ports[i].outputBuffer.begin());
+                bob->ports[i]->outputBuffer.erase(bob->ports[i]->outputBuffer.begin());
                 delete inFlightResponse.Cache[i];
             }
         }
@@ -487,10 +461,10 @@ void BOBWrapper::Update(void)
 	for(unsigned i=0; i<NUM_PORTS; i++)
 	{
 		//look for new stuff to return from bob controller
-		if(bob->ports[i].outputBuffer.size()>0 &&
+        if(bob->ports[i]->outputBuffer.size()>0 &&
                 inFlightResponse.Counter[i]==0)
 		{
-            inFlightResponse.Cache[i] = bob->ports[i].outputBuffer[0];
+            inFlightResponse.Cache[i] = bob->ports[i]->outputBuffer[0];
 
             switch(inFlightResponse.Cache[i]->transactionType) {
             case RETURN_DATA:

@@ -99,7 +99,7 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     //Make port objects
     for(unsigned i=0; i<NUM_PORTS; i++)
     {
-        ports.push_back(Port(i));
+        ports.push_back(new Port(i));
     }
 
     //Initialize fields for bookkeeping
@@ -149,10 +149,7 @@ BOB::~BOB(void)
 
     for(unsigned p=0; p<NUM_PORTS; p++)
     {
-      for(unsigned i=0; i<ports[p].inputBuffer.size(); i++)
-        delete ports[p].inputBuffer[i];
-      for(unsigned i=0; i<ports[p].outputBuffer.size(); i++)
-        delete ports[p].outputBuffer[i];
+      delete ports[p];
     }
     for(vector<Transaction*>::iterator it = pendingReads.begin(); it!=pendingReads.end(); ++it)
     {
@@ -198,17 +195,17 @@ void BOB::Update(void)
     //keep track of average entries in port in/out-buffers
     for(unsigned i=0; i<NUM_PORTS; i++)
     {
-        portInputBufferAvg[i] += ports[i].inputBuffer.size();
-        portOutputBufferAvg[i] += ports[i].outputBuffer.size();
+        portInputBufferAvg[i] += ports[i]->inputBuffer.size();
+        portOutputBufferAvg[i] += ports[i]->outputBuffer.size();
 
         //
         // UPDATE BUSES
         //
         //update each port's bookkeeping
 
-        if(ports[i].inputBusyCountdown>0)
+        if(ports[i]->inputBusyCountdown>0)
         {
-            ports[i].inputBusyCountdown--;
+            ports[i]->inputBusyCountdown--;
 
             //if the port input is done sending, erase that item
 //			if(ports[i].inputBusyCountdown==0)
@@ -217,7 +214,7 @@ void BOB::Update(void)
 //			}
         }
 
-        ports[i].outputBusyCountdown -= (ports[i].outputBusyCountdown>0);
+        ports[i]->outputBusyCountdown -= (ports[i]->outputBusyCountdown>0);
     }
 
     for(unsigned i=0; i<NUM_LINK_BUSES; i++)
@@ -341,7 +338,7 @@ void BOB::Update(void)
     //
     for(unsigned p=0; p<NUM_PORTS; p++)
     {
-        if(ports[p].outputBusyCountdown==0)
+        if(ports[p]->outputBusyCountdown==0)
         {
             //check to see if something has been received from a channel
             struct linkbus *i_respLinkBus = &respLinkBus[priorityLinkBus[p]];
@@ -350,14 +347,14 @@ void BOB::Update(void)
             {
                 i_respLinkBus->serDesBuffer->cyclesRspLink = currentClockCycle - i_respLinkBus->serDesBuffer->cyclesRspLink;
                 i_respLinkBus->serDesBuffer->cyclesRspPort = currentClockCycle;
-                ports[p].outputBuffer.push_back(i_respLinkBus->serDesBuffer);
+                ports[p]->outputBuffer.push_back(i_respLinkBus->serDesBuffer);
                 switch(i_respLinkBus->serDesBuffer->transactionType)
                 {
                 case RETURN_DATA:
-                    ports[p].outputBusyCountdown = i_respLinkBus->serDesBuffer->transactionSize / PORT_WIDTH; // serDesBufferResponse[priorityLinkBus[p]]->transactionSize == TRANSACTION_SIZE
+                    ports[p]->outputBusyCountdown = i_respLinkBus->serDesBuffer->transactionSize / PORT_WIDTH; // serDesBufferResponse[priorityLinkBus[p]]->transactionSize == TRANSACTION_SIZE
                     break;
                 case LOGIC_RESPONSE:
-                    ports[p].outputBusyCountdown = 1;
+                    ports[p]->outputBusyCountdown = 1;
                     break;
                 default:
                     ERROR("== ERROR - Trying to add wrong type of transaction to output port ");
@@ -380,13 +377,13 @@ void BOB::Update(void)
 
         //make sure the port isn't already sending something
         //  and that there is an item there to send
-        if(ports[p].inputBusyCountdown==0 &&
-           ports[p].inputBuffer.size()>0)
+        if(ports[p]->inputBusyCountdown==0 &&
+           ports[p]->inputBuffer.size()>0)
         {
             //search out-of-order
-            for(unsigned i=0; i<ports[p].inputBuffer.size(); i++)
+            for(unsigned i=0; i<ports[p]->inputBuffer.size(); i++)
             {
-                unsigned channelID = FindChannelID(ports[p].inputBuffer[i]);
+                unsigned channelID = FindChannelID(ports[p]->inputBuffer[i]);
                 unsigned linkBusID = channelID / CHANNELS_PER_LINK_BUS;
 
                 //make sure the serDe isn't busy and the queue isn't full
@@ -395,7 +392,7 @@ void BOB::Update(void)
                     channels[channelID]->simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
                 {
                     //put on channel bus
-                    i_reqLinkBus->serDesBuffer = ports[p].inputBuffer[i];
+                    i_reqLinkBus->serDesBuffer = ports[p]->inputBuffer[i];
                     i_reqLinkBus->serDesBuffer->cyclesReqLink = currentClockCycle;
                     i_reqLinkBus->serDesBuffer->cyclesReqPort = currentClockCycle - i_reqLinkBus->serDesBuffer->cyclesReqPort;
                     i_reqLinkBus->serDesBuffer->mappedChannel = channelID;
@@ -407,24 +404,24 @@ void BOB::Update(void)
                     case DATA_READ:
                         //put in pending queue
                         //  make it a RETURN_DATA type before we put it in pending queue
-                        pendingReads.push_back(ports[p].inputBuffer[i]);
+                        pendingReads.push_back(ports[p]->inputBuffer[i]);
 
                         readCounter++;
 
                         //set port busy time
-                        ports[p].inputBusyCountdown = 1;
+                        ports[p]->inputBusyCountdown = 1;
                         break;
                     case DATA_WRITE:
                         writeCounter++;
 
                         //set port busy time
-                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
+                        ports[p]->inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
                         break;
                     case LOGIC_OPERATION:
 //						logicOpCounter++;
 
                         //set port busy time
-                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
+                        ports[p]->inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
                         break;
                     default:
                         ERROR("== Error - unknown transaction type going to channel : ");
@@ -435,7 +432,7 @@ void BOB::Update(void)
                     if(priorityPort==NUM_PORTS) priorityPort = 0;
 
                     //remove from port input buffer
-                    ports[p].inputBuffer.erase(ports[p].inputBuffer.begin()+i);
+                    ports[p]->inputBuffer.erase(ports[p]->inputBuffer.begin()+i);
                     break;
                 }
             }
@@ -693,7 +690,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     PRINT(" == Ports");
     for(unsigned p=0; p<NUM_PORTS; p++)
     {
-        PRINT("  -- Port "<<p<<" - inputBufferAvg : "<<(float)portInputBufferAvg[p]/elapsedCycles<<" ("<<ports[p].inputBuffer.size()<<")   outputBufferAvg : "<<(float)portOutputBufferAvg[p]/elapsedCycles<<" ("<<ports[p].outputBuffer.size()<<")");
+        PRINT("  -- Port "<<p<<" - inputBufferAvg : "<<(float)portInputBufferAvg[p]/elapsedCycles<<" ("<<ports[p]->inputBuffer.size()<<")   outputBufferAvg : "<<(float)portOutputBufferAvg[p]/elapsedCycles<<" ("<<ports[p]->outputBuffer.size()<<")");
         portInputBufferAvg[p]=0;
         portOutputBufferAvg[p]=0;
     }

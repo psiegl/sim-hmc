@@ -47,6 +47,11 @@ class BOB;
 class LogicLayerInterface;
 class DRAMChannel
 {
+  //Command packet being sent on DRAM command bus
+  BusPacket *inFlightCommandPacket;
+  //Time to send DRAM command packet
+  unsigned inFlightCommandCountdown;
+
 public:
     //Functions
     DRAMChannel(unsigned id, BOB *_bob);
@@ -56,9 +61,9 @@ public:
     void ReceiveOnDataBus(BusPacket *busPacket);
     void ReceiveOnCmdBus(BusPacket *busPacket);
 
-	//Fields
-	//Controller used to operate ranks of DRAM
-	SimpleController simpleController;
+    //Fields
+    //Controller used to operate ranks of DRAM
+    SimpleController simpleController;
 	//Ranks of DRAM
     std::vector<Rank*> ranks;
 	//This channel's ID in relation to the entire system
@@ -68,17 +73,13 @@ public:
     // bob interface
     BOB *bob;
 	//Pending outgoing logic response
-	Transaction *pendingLogicResponse;
+    Transaction *pendingLogicResponse;
 
-	//Bookkeeping for maximum number of requests waiting in queue
-	unsigned readReturnQueueMax;
-	//Storage for pending response data
+    //Bookkeeping for maximum number of requests waiting in queue
+    unsigned readReturnQueueMax;
+    //Storage for pending response data
     deque<BusPacket*> readReturnQueue;
 
-	//Command packet being sent on DRAM command bus
-	BusPacket *inFlightCommandPacket;
-	//Time to send DRAM command packet
-	unsigned inFlightCommandCountdown;
     //Data packet being sent on the DRAM data bus
     BusPacket *inFlightDataPacket;
     //Time to send DRAM data packet

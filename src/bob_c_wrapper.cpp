@@ -42,11 +42,6 @@ void BobRegisterCallbacks(BobWrapper *bobwrapper,
   ((BOBSim::BOBWrapper*)bobwrapper)->RegisterCallbacks(readDone, writeDone, logicDone);
 }
 
-void* BobWillCallback(BobWrapper *bobwrapper, unsigned port)
-{
-  return ((BOBSim::BOBWrapper*)bobwrapper)->WillCallback(port);
-}
-
 void ActPeriodPrintStats(BobWrapper *bobwrapper)
 {
   ((BOBSim::BOBWrapper*)bobwrapper)->activatedPeriodPrintStates = true;

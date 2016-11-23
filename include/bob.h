@@ -67,7 +67,7 @@ public:
 
 	//Fields
 	//Ports used on main BOB controller to communicate with cache
-	vector<Port> ports;
+    vector<Port*> ports;
 	//All DRAM channel objects (which includes ranks of DRAM and the simple contorller)
     DRAMChannel* channels[NUM_CHANNELS];
 
@@ -122,27 +122,6 @@ public:
 
     uint64_t dram_channel_clk;
     uint64_t currentClockCycle;
-
-#ifdef HMCSIM_SUPPORT
-    void* bob_will_issue_store_notify(void)
-    {
-      for(unsigned i=0; i<NUM_CHANNELS; i++)
-      {
-        if(this->channels[i]->inFlightDataCountdown == 1) {
-          std::cout << "channel " << i << std::endl;
-          switch(this->channels[i]->inFlightDataPacket->busPacketType)
-          {
-            case WRITE_DATA:
-              std::cout << "truuuue" << std::endl;
-              return this->channels[i]->inFlightDataPacket->payload;
-            default:
-              break;
-          }
-        }
-      }
-      return 0;
-    }
-#endif
 };
 }
 #endif

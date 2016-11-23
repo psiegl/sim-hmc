@@ -60,7 +60,7 @@ public:
       burstLength(bl),
       busPacketType(packtype),
       transactionID(id),
-      column(col),
+//      column(col),
       row(rw),
       bank(bnk),
       rank(rnk),
@@ -75,7 +75,7 @@ public:
     unsigned burstLength;
     BusPacketType busPacketType;
     unsigned transactionID;
-    unsigned column;
+//    unsigned column;
     unsigned row;
     unsigned bank;
     unsigned rank;

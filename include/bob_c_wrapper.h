@@ -35,7 +35,6 @@ void BobPrintStats(BobWrapper *bobwrapper);
 BobTransaction* BobCreateTransaction(enum TransactionType type, unsigned sizeInBytes, unsigned long addr, void *payload);
 void BobDeleteTransaction(BobTransaction *bobtransaction);
 
-void* BobWillCallback(BobWrapper *bobwrapper, unsigned port);
 bool BobIsPortBusy(BobWrapper *bobwrapper, unsigned port);
 
 void BobAddHMCSIMCallback(BobWrapper *bobwrapper, void *vault, bool (*callback)(void *_vault, void *packet));

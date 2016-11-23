@@ -32,6 +32,7 @@
 #define PORT_H
 
 #include <vector>
+#include <iostream>
 #include "bob_transaction.h"
 
 using namespace std;
@@ -47,6 +48,12 @@ public:
       inputBusyCountdown(0),
       outputBusyCountdown(0)
     {}
+    ~Port(void) {
+      for(unsigned i=0; i<this->inputBuffer.size(); i++)
+        delete this->inputBuffer[i];
+      for(unsigned i=0; i<this->outputBuffer.size(); i++)
+        delete this->outputBuffer[i];
+    }
 
 	//Fields
 	//The port identifier in relation to the entire system
