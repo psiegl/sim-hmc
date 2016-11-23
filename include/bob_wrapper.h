@@ -33,13 +33,13 @@
 
 #include <deque>
 #include <cmath>
-#include "bob.h"
 #include "bob_transaction.h"
 
 using namespace std;
 
 namespace BOBSim
 {
+class BOB;
 class BOBWrapper
 {
 private:

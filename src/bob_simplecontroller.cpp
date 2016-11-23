@@ -35,6 +35,7 @@
 #include "../include/bob_simplecontroller.h"
 #include "../include/bob_dramchannel.h"
 #include "../include/bob_buspacket.h"
+#include "../include/bob_bankstate.h"
 
 using namespace std;
 using namespace BOBSim;
@@ -64,13 +65,19 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 
 {
     //Make the bank state objects
-    memset(bankStates, 0, sizeof(BankState) * NUM_RANKS * NUM_BANKS);
-
-
-	for(unsigned i=0; i<NUM_RANKS; i++)
+    this->bankStates = new BankState*[NUM_RANKS];
+    this->tFAWWindow = new vector<unsigned>[NUM_RANKS];
+    this->backgroundEnergy = new uint64_t[NUM_RANKS];
+    this->burstEnergy = new uint64_t[NUM_RANKS];
+    this->actpreEnergy = new uint64_t[NUM_RANKS];
+    this->refreshEnergy = new uint64_t[NUM_RANKS];
+    for(unsigned i=0; i<NUM_RANKS; i++)
     {
+        this->bankStates[i] = new BankState[NUM_BANKS];
+        memset(this->bankStates[i], 0, sizeof(BankState) * NUM_BANKS);
+
         //init refresh counters
-		refreshCounters[i] = ((7800/tCK)/NUM_RANKS)*(i+1);
+        refreshCounters.push_back(((7800/tCK)/NUM_RANKS)*(i+1));
 
         //init power fields
         backgroundEnergy[i] = 0;
@@ -82,6 +89,16 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 
 SimpleController::~SimpleController(void)
 {
+  for(unsigned i=0; i<NUM_RANKS; i++)
+  {
+    delete[] this->bankStates[i];
+  }
+  delete[] this->bankStates;
+  delete[] this->tFAWWindow;
+  delete[] backgroundEnergy;
+  delete[] burstEnergy;
+  delete[] actpreEnergy;
+  delete[] refreshEnergy;
   for(deque<BusPacket*>::iterator it = commandQueue.begin(); it != commandQueue.end(); ++it)
   {
     delete *it;

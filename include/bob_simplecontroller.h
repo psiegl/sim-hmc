@@ -36,7 +36,6 @@
 #include <deque>
 #include "bob_buspacket.h"
 #include "bob_transaction.h"
-#include "bob_bankstate.h"
 #include "bob_globals.h"
 
 using namespace std;
@@ -45,6 +44,7 @@ namespace BOBSim
 {
 //forward declaration
 class DRAMChannel;
+class BankState;
 class SimpleController
 {
 private:
@@ -66,16 +66,16 @@ private:
     uint64_t currentClockCycle;
 
     //Bank states for all banks in this channel
-    BankState bankStates[NUM_RANKS][NUM_BANKS];
+    BankState **bankStates;
 
     //Storage and counters to determine write bursts
     vector< pair<unsigned, BusPacket*> > writeBurst; /* Countdown & Queue */
 
     //Sliding window for each rank to determine tFAW adherence
-    vector<unsigned> tFAWWindow[NUM_RANKS];
+    vector<unsigned> *tFAWWindow;
 
     //Refresh counters
-    unsigned refreshCounters[NUM_RANKS];
+    vector<unsigned> refreshCounters;
 
     //More bookkeeping
     unsigned refreshCounter;
@@ -106,10 +106,10 @@ public:
     int waitingACTS;
 
     //Power fields
-    uint64_t backgroundEnergy[NUM_RANKS];
-    uint64_t burstEnergy[NUM_RANKS];
-    uint64_t actpreEnergy[NUM_RANKS];
-    uint64_t refreshEnergy[NUM_RANKS];
+    uint64_t *backgroundEnergy;
+    uint64_t *burstEnergy;
+    uint64_t *actpreEnergy;
+    uint64_t *refreshEnergy;
 };
 }
 

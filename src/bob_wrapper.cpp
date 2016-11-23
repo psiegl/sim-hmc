@@ -29,8 +29,9 @@
 *********************************************************************************/
 
 #include <cstring>
-#include "bob_wrapper.h"
-#include "bob_logicoperation.h"
+#include "../include/bob.h"
+#include "../include/bob_wrapper.h"
+#include "../include/bob_logicoperation.h"
 
 using namespace std;
 
