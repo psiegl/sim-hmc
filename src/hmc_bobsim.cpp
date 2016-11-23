@@ -7,6 +7,9 @@ bool callback(void *bobsim, void *packet)
   return ((hmc_bobsim*)bobsim)->bob_feedback(packet);
 }
 
+unsigned BOBSim::NUM_PORTS = 1;
+int BOBSim::SHOW_SIM_OUTPUT = 1;
+
 hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
                        hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
   hmc_notify_cl(),
@@ -19,10 +22,15 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
   bobnotify_ctr(0),
 #endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   bobnotify(id, notify, this),
-  bobsim(BobNewWrapper(num_ports, periodPrintStats))
+  bobsim(new BOBSim::BOBWrapper())
 {
+  BOBSim::NUM_PORTS = num_ports;
+  BOBSim::SHOW_SIM_OUTPUT = 0;
+  this->bobsim->activatedPeriodPrintStates = periodPrintStats;
+  this->bobsim->vault = this;
+  this->bobsim->callback = callback;
+
   this->link->set_ilink_notify(0, &linknotify);
-  BobAddHMCSIMCallback(this->bobsim, this, callback);
 #ifdef ALWAYS_NOTIFY_BOBSIM
   this->bobnotify.notify_add(0);
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
@@ -31,9 +39,9 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
 hmc_bobsim::~hmc_bobsim(void)
 {
   if (!this->id) {
-    BobPrintStats(this->bobsim);
+    this->bobsim->PrintStats(true);
   }
-  BobFreeWrapper(this->bobsim);
+  delete this->bobsim;
 }
 
 
@@ -59,7 +67,7 @@ void hmc_bobsim::clock(void)
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
   {
     if (this->feedback_cache.empty()) {
-      BobUpdate(this->bobsim);
+      this->bobsim->Update();
     }
     else {
       bool update = true;
@@ -70,12 +78,12 @@ void hmc_bobsim::clock(void)
         }
       }
       if (update) {
-        BobUpdate(this->bobsim);
+        this->bobsim->Update();
       }
     }
   }
 
-  if (this->linknotify.get_notification() && !BobIsPortBusy(this->bobsim, 0 /* port */)) {
+  if (this->linknotify.get_notification() && !this->bobsim->IsPortBusy(0 /* port */)) {
     unsigned packetleninbit;
     void *packet = this->link->get_ilink()->front(&packetleninbit);
     if (packet == nullptr)
@@ -84,20 +92,12 @@ void hmc_bobsim::clock(void)
     uint64_t header = HMC_PACKET_HEADER(packet);
     uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
     hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
-    unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr); // ToDo: bank + dram!
-
-    /*
-     *
-       enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
-       BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, bank, packet);
-       if (!BobSubmitTransaction(this->bobsim, (struct BobTransaction*)bobtrans, 0
-     */
+    unsigned long bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr); // ToDo: bank + dram!
 
     unsigned rqstlen;
     enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
-    //BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, bank, packet);
-    BobTransaction *bobtrans = BobCreateTransaction(type, rqstlen, bank, packet);
-    if (!BobSubmitTransaction(this->bobsim, (BobTransaction*)bobtrans, 0 /* port */)) {
+    BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, bank, packet);
+    if (!this->bobsim->AddTransaction(bobtrans, 0 /* port */)) {
       exit(0);
     }
 #ifndef ALWAYS_NOTIFY_BOBSIM
@@ -111,12 +111,12 @@ void hmc_bobsim::clock(void)
 
 void hmc_bobsim::bob_printStatsPeriodical(bool flag)
 {
-  ActPeriodPrintStats(this->bobsim);
+  this->bobsim->activatedPeriodPrintStates = flag;
 }
 
 void hmc_bobsim::bob_printStats(void)
 {
-  BobPrintStats(this->bobsim);
+  this->bobsim->PrintStats(true);
 }
 
 bool hmc_bobsim::notify_up(void)

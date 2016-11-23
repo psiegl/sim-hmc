@@ -34,6 +34,8 @@ endif
 
 ifneq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
 LIBS     += extern/bobsim/libbobsim.a
+CFLAGS   += -DHMCSIM_SUPPORT=1
+CXXFLAGS += -DHMCSIM_SUPPORT=1
 
 extern/bobsim/libbobsim.a:
 	@echo "-- BUILDING -- $@"; make -C extern/bobsim/ libbobsim.a

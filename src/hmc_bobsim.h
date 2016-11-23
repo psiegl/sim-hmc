@@ -5,8 +5,8 @@
 #include "hmc_notify.h"
 #include "hmc_macros.h"
 #include "hmc_vault.h"
-#include "../extern/bobsim/include/bob_c_wrapper.h"
 #include "../extern/bobsim/include/bob_transaction.h"
+#include "../extern/bobsim/include/bob_wrapper.h"
 
 class hmc_link;
 class hmc_cube;
@@ -25,7 +25,7 @@ private:
   unsigned bobnotify_ctr;
 #endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   hmc_notify bobnotify;
-  BobWrapper *bobsim;
+  BOBSim::BOBWrapper *bobsim;
 
   std::list<void*>feedback_cache;
 
