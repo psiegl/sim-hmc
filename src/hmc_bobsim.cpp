@@ -84,12 +84,20 @@ void hmc_bobsim::clock(void)
     uint64_t header = HMC_PACKET_HEADER(packet);
     uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
     hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
-    unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
+    unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr); // ToDo: bank + dram!
+
+    /*
+     *
+       enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
+       BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, bank, packet);
+       if (!BobSubmitTransaction(this->bobsim, (struct BobTransaction*)bobtrans, 0
+     */
 
     unsigned rqstlen;
-    enum TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
+    enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
+    //BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, bank, packet);
     BobTransaction *bobtrans = BobCreateTransaction(type, rqstlen, bank, packet);
-    if (!BobSubmitTransaction(this->bobsim, bobtrans, 0 /* port */)) {
+    if (!BobSubmitTransaction(this->bobsim, (BobTransaction*)bobtrans, 0 /* port */)) {
       exit(0);
     }
 #ifndef ALWAYS_NOTIFY_BOBSIM

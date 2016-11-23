@@ -139,8 +139,11 @@ class hmc_decode {
   unsigned bank_shift;
   uint32_t bank_mask;
 
-  unsigned dram_shift;
-  uint32_t dram_mask;
+  unsigned dram_shift_lo;
+  uint32_t dram_mask_lo;
+
+  unsigned dram_shift_hi;
+  uint32_t dram_mask_hi;
 
 public:
   hmc_decode(unsigned bsize, unsigned num_banks_per_vault);
@@ -175,6 +178,12 @@ public:
     return (uint64_t)(bank & this->bank_mask) << this->bank_shift;
   }
 
+  ALWAYS_INLINE unsigned HMC_UTIL_DECODE_DRAM( uint64_t addr )
+  {
+    uint64_t hi = (addr >> this->dram_shift_hi) & this->dram_mask_hi;
+    uint64_t lo = (addr >> this->dram_shift_lo) & this->dram_mask_lo;
+    return (uint64_t)(hi | lo);
+  }
 };
 
 #endif /* #ifndef _HMC_DECODE_H_ */

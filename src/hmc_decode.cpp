@@ -29,15 +29,15 @@ hmc_decode::~hmc_decode(void)
                     within a bank                       umn addresses, addressing 1Mb blocks of 16 bytes each
 
 
-   4GB:   32 BlockSize: dram [31:13], bank [12:10], quad [9:8],   vault [7:5]
-         64 BlockSize: dram [31:14], bank [13:11], quad [10:9],  vault [8:6]
-        128 BlockSize: dram [31:15], bank [14:12], quad [11:10], vault [9:7]
-        256 BlockSize: dram [31:16], bank [15:13], quad [12:11], vault [10:8]
+   4GB:  32 BlockSize: dram [31:13], bank [12:10], quad [9:8],   vault [7:5],  dram[4]
+         64 BlockSize: dram [31:14], bank [13:11], quad [10:9],  vault [8:6],  dram[5:4]
+        128 BlockSize: dram [31:15], bank [14:12], quad [11:10], vault [9:7],  dram[6:4]
+        256 BlockSize: dram [31:16], bank [15:13], quad [12:11], vault [10:8], dram[7:4]
 
-   8GB:   32 BlockSize: dram [31:14], bank [13:10], quad [9:8],   vault [7:5]
-         64 BlockSize: dram [31:15], bank [14:11], quad [10:9],  vault [8:6]
-        128 BlockSize: dram [31:16], bank [15:12], quad [11:10], vault [9:7]
-        256 BlockSize: dram [31:17], bank [16:13], quad [12:11], vault [10:8]
+   8GB:  32 BlockSize: dram [31:14], bank [13:10], quad [9:8],   vault [7:5],  dram[4]
+         64 BlockSize: dram [31:15], bank [14:11], quad [10:9],  vault [8:6],  dram[5:4]
+        128 BlockSize: dram [31:16], bank [15:12], quad [11:10], vault [9:7],  dram[6:4]
+        256 BlockSize: dram [31:17], bank [16:13], quad [12:11], vault [10:8], dram[7:4]
  */
 void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
 {
@@ -45,6 +45,7 @@ void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
   unsigned vault_mask_width = (unsigned)log2(HMC_NUM_VAULTS / HMC_NUM_QUADS);
   unsigned quad_mask_width = (unsigned)log2(HMC_NUM_QUADS);
   unsigned bank_mask_width = (unsigned)log2(num_banks_per_vault);
+  unsigned begin_bit_start = bit_start;
 
   this->vault_shift = bit_start;
   this->vault_mask = (1 << vault_mask_width) - 1;
@@ -61,8 +62,12 @@ void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
 
   bit_start += bank_mask_width;
 
-  this->dram_shift = bit_start;
-  unsigned dram_mask_width = 32 - this->dram_shift;
-  this->dram_mask = (1 << dram_mask_width) - 1;
+  this->dram_shift_lo = 4;
+  unsigned dram_mask_width_lo = begin_bit_start - this->dram_shift_lo;
+  this->dram_mask_lo = (1 << dram_mask_width_lo) - 1;
+
+  this->dram_shift_hi = bit_start - dram_mask_width_lo + 1;
+  unsigned dram_mask_width_hi = 31 - bit_start;
+  this->dram_mask_hi = ((1 << dram_mask_width_hi) - 1) << dram_mask_width_lo;
 }
 

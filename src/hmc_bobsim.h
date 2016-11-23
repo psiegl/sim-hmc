@@ -29,39 +29,39 @@ private:
 
   std::list<void*>feedback_cache;
 
-  enum TransactionType hmc_determineTransactionType(hmc_rqst_t cmd, unsigned *rqstlen)
+  enum BOBSim::TransactionType hmc_determineTransactionType(hmc_rqst_t cmd, unsigned *rqstlen)
   {
     switch (cmd) {
     case RD16:
       *rqstlen = 16;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD32:
       *rqstlen = 32;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD48:
       *rqstlen = 48;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD64:
       *rqstlen = 64;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD80:
       *rqstlen = 80;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD96:
       *rqstlen = 96;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD112:
       *rqstlen = 112;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD128:
       *rqstlen = 128;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case RD256:
       *rqstlen = 256;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case MD_RD:
       *rqstlen = 8;
-      return DATA_READ;
+      return BOBSim::DATA_READ;
     case FLOW_NULL:
     case PRET:
     case TRET:
@@ -69,14 +69,14 @@ private:
     case INC8:
     case P_INC8:
       *rqstlen = 8;
-      return LOGIC_OPERATION;
+      return BOBSim::LOGIC_OPERATION;
     case WR16:
       *rqstlen = 16;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case MD_WR:
     case BWR:
       *rqstlen = 8;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case TWOADD8:
     case ADD16:
     case TWOADDS8R:
@@ -94,56 +94,56 @@ private:
     case CASZERO16:
     case EQ8:
     case EQ16:
-      return LOGIC_OPERATION;
+      return BOBSim::LOGIC_OPERATION;
     case BWR8R:
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case SWAP16:
-      return LOGIC_OPERATION;
+      return BOBSim::LOGIC_OPERATION;
     case P_WR16:
     case P_BWR:
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case P_2ADD8:
     case P_ADD16:
-      return LOGIC_OPERATION;
+      return BOBSim::LOGIC_OPERATION;
     case WR32:
     case P_WR32:
       *rqstlen = 32;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case WR48:
     case P_WR48:
       *rqstlen = 48;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case WR64:
     case P_WR64:
       *rqstlen = 64;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case WR80:
     case P_WR80:
       *rqstlen = 80;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case WR96:
     case P_WR96:
       *rqstlen = 96;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case WR112:
     case P_WR112:
       *rqstlen = 112;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case WR128:
     case P_WR128:
       *rqstlen = 128;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
     case WR256:
     case P_WR256:
       *rqstlen = 256;
-      return DATA_WRITE;
+      return BOBSim::DATA_WRITE;
       break;
     default:
       // ToDo:  if CMC!
       // return LOGIC_OPERATION;
       break;
     }
-    return LOGIC_OPERATION;
+    return BOBSim::LOGIC_OPERATION;
   }
 
   void bob_printStatsPeriodical(bool flag);
