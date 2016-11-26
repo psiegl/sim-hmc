@@ -69,13 +69,13 @@ private:
     uint64_t currentClockCycle;
 
     //Bank states for all banks in this channel
-    BankState **bankStates;
+    vector< vector<BankState> > bankStates;
 
     //Storage and counters to determine write bursts
     vector< pair<unsigned, BusPacket*> > writeBurst; /* Countdown & Queue */
 
     //Sliding window for each rank to determine tFAW adherence
-    vector<unsigned> *tFAWWindow;
+    vector< vector<unsigned> > tFAWWindow;
 
     //Refresh counters
     vector<unsigned> refreshCounters;
@@ -109,10 +109,10 @@ public:
     int waitingACTS;
 
     //Power fields
-    uint64_t *backgroundEnergy;
-    uint64_t *burstEnergy;
-    uint64_t *actpreEnergy;
-    uint64_t *refreshEnergy;
+    vector<uint64_t> backgroundEnergy;
+    vector<uint64_t> burstEnergy;
+    vector<uint64_t> actpreEnergy;
+    vector<uint64_t> refreshEnergy;
 };
 }
 

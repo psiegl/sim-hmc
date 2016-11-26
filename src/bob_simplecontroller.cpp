@@ -43,66 +43,54 @@ using namespace std;
 using namespace BOBSim;
 
 SimpleController::SimpleController(DRAMChannel *parent) :
+    channel(parent), //Registers the parent channel object
+
+#ifndef HMCSIM_SUPPORT
+    rankBitWidth(log2(NUM_RANKS)),
+    bankBitWidth(log2(NUM_BANKS)),
+    rowBitWidth(log2(NUM_ROWS)),
+    colBitWidth(log2(NUM_COLS)),
+    busOffsetBitWidth(log2(BUS_ALIGNMENT_SIZE)),
+    channelBitWidth(log2(NUM_CHANNELS)),
+    cacheOffset(log2(CACHE_LINE_SIZE)),
+#endif
+
+    currentClockCycle(0),
+
+    bankStates(NUM_RANKS, vector<BankState>(NUM_BANKS, BankState())),
+    tFAWWindow(NUM_RANKS, vector<unsigned>(0) ),
+
     refreshCounter(0),
 	readCounter(0),
 	writeCounter(0),
+
 	commandQueueMax(0),
 	commandQueueAverage(0),
 	numIdleBanksAverage(0),
 	numActBanksAverage(0),
 	numPreBanksAverage(0),
 	numRefBanksAverage(0),
-	RRQFull(0),
-    waitingACTS(0),
-    channel(parent), //Registers the parent channel object    
-#ifndef HMCSIM_SUPPORT
-	rankBitWidth(log2(NUM_RANKS)),
-	bankBitWidth(log2(NUM_BANKS)),
-	rowBitWidth(log2(NUM_ROWS)),
-	colBitWidth(log2(NUM_COLS)),
-	busOffsetBitWidth(log2(BUS_ALIGNMENT_SIZE)),
-	channelBitWidth(log2(NUM_CHANNELS)),
-	cacheOffset(log2(CACHE_LINE_SIZE)),
-#endif
-    outstandingReads(0),
-    currentClockCycle(0)
 
+	RRQFull(0),
+    outstandingReads(0),
+    waitingACTS(0),
+
+    //init power fields
+    backgroundEnergy(NUM_RANKS, 0),
+    burstEnergy(NUM_RANKS, 0),
+    actpreEnergy(NUM_RANKS, 0),
+    refreshEnergy(NUM_RANKS, 0)
 {
     //Make the bank state objects
-    this->bankStates = new BankState*[NUM_RANKS];
-    this->tFAWWindow = new vector<unsigned>[NUM_RANKS];
-    this->backgroundEnergy = new uint64_t[NUM_RANKS];
-    this->burstEnergy = new uint64_t[NUM_RANKS];
-    this->actpreEnergy = new uint64_t[NUM_RANKS];
-    this->refreshEnergy = new uint64_t[NUM_RANKS];
     for(unsigned i=0; i<NUM_RANKS; i++)
     {
-        this->bankStates[i] = new BankState[NUM_BANKS];
-        memset(this->bankStates[i], 0, sizeof(BankState) * NUM_BANKS);
-
         //init refresh counters
         refreshCounters.push_back(((7800/tCK)/NUM_RANKS)*(i+1));
-
-        //init power fields
-        backgroundEnergy[i] = 0;
-        burstEnergy[i] = 0;
-        actpreEnergy[i] = 0;
-        refreshEnergy[i] = 0;
     }
 }
 
 SimpleController::~SimpleController(void)
 {
-  for(unsigned i=0; i<NUM_RANKS; i++)
-  {
-    delete[] this->bankStates[i];
-  }
-  delete[] this->bankStates;
-  delete[] this->tFAWWindow;
-  delete[] backgroundEnergy;
-  delete[] burstEnergy;
-  delete[] actpreEnergy;
-  delete[] refreshEnergy;
   for(deque<BusPacket*>::iterator it = commandQueue.begin(); it != commandQueue.end(); ++it)
   {
     delete *it;
