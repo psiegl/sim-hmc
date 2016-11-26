@@ -214,11 +214,10 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    *
    */
   uint64_t header = HMC_PACKET_HEADER(packet);
-  unsigned length = HMCSIM_PACKET_REQUEST_GET_LNG(header);
+  uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
+//  unsigned length = HMCSIM_PACKET_REQUEST_GET_LNG(header);
   hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
 
-  /* -- decide where the tail is */
-  uint64_t tail = ((uint64_t*)packet)[ (length << 1) - 1 ];
 
   /*
    * Step 2: decode it

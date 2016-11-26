@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdint>
 #include <math.h>
 #include "hmc_decode.h"
@@ -34,11 +35,12 @@ hmc_decode::~hmc_decode(void)
         128 BlockSize: dram [31:15], bank [14:12], quad [11:10], vault [9:7],  dram[6:4]
         256 BlockSize: dram [31:16], bank [15:13], quad [12:11], vault [10:8], dram[7:4]
 
-   8GB:  32 BlockSize: dram [31:14], bank [13:10], quad [9:8],   vault [7:5],  dram[4]
-         64 BlockSize: dram [31:15], bank [14:11], quad [10:9],  vault [8:6],  dram[5:4]
-        128 BlockSize: dram [31:16], bank [15:12], quad [11:10], vault [9:7],  dram[6:4]
-        256 BlockSize: dram [31:17], bank [16:13], quad [12:11], vault [10:8], dram[7:4]
+   8GB:  32 BlockSize: dram [32:14], bank [13:10], quad [9:8],   vault [7:5],  dram[4]
+         64 BlockSize: dram [32:15], bank [14:11], quad [10:9],  vault [8:6],  dram[5:4]
+        128 BlockSize: dram [32:16], bank [15:12], quad [11:10], vault [9:7],  dram[6:4]
+        256 BlockSize: dram [32:17], bank [16:13], quad [12:11], vault [10:8], dram[7:4]
  */
+#include <iostream>
 void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
 {
   unsigned bit_start = (unsigned)log2(bsize);
@@ -62,12 +64,26 @@ void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
 
   bit_start += bank_mask_width;
 
-  this->dram_shift_lo = 4;
+  this->dram_shift_lo = (unsigned)log2(HMC_DEVICE_WIDTH);
   unsigned dram_mask_width_lo = begin_bit_start - this->dram_shift_lo;
   this->dram_mask_lo = (1 << dram_mask_width_lo) - 1;
 
   this->dram_shift_hi = bit_start - dram_mask_width_lo + 1;
-  unsigned dram_mask_width_hi = 31 - bit_start;
+  unsigned dram_mask_width_hi = 31 - bit_start + 1;
   this->dram_mask_hi = ((1 << dram_mask_width_hi) - 1) << dram_mask_width_lo;
+  assert((dram_mask_width_lo + dram_mask_width_hi) == 20);
+
+// alignment [4:0] already removed from dram_mask, col and row need the same (according to bobsim only column!)
+  unsigned col_mask_width = (unsigned)log2(HMC_NUM_COLS_PER_BANK) - (unsigned)log2(HMC_DEVICE_WIDTH);
+  unsigned row_mask_width = (unsigned)log2(HMC_NUM_ROWS_PER_BANK);
+  assert((dram_mask_width_lo + dram_mask_width_hi) == (col_mask_width + row_mask_width));
+
+  // we first shuffle with DRAM, therewith we receive on junk of addr ... and then with ROW and COL
+  // ToDo: col above, then row, or interleaved ..
+  this->row_shift = 0;
+  this->row_mask = (1 << row_mask_width) - 1;
+
+  this->col_shift = row_mask_width;
+  this->col_mask = (1 << col_mask_width) - 1;
 }
 

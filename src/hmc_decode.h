@@ -128,6 +128,12 @@
 #define HMCSIM_PACKET_RESPONSE_GET_CRC(P)       (((P) >> 32) & 0xFFFFFFFFull)
 #define HMCSIM_PACKET_RESPONSE_SET_CRC(P)       (((uint64_t)((P) & 0xFFFFFFFFull)) << 32)
 
+/* ----------------------------------------- */
+
+#define HMC_PACKET_HEADER( x )    (((uint64_t*)(x))[0])
+#define HMC_PACKET_REQ_TAIL( x )  (((uint64_t*)(x))[(HMCSIM_PACKET_REQUEST_GET_LNG(HMC_PACKET_HEADER(x)) << 1)-1])
+
+/* ----------------------------------------- */
 
 class hmc_decode {
   unsigned vault_shift;
@@ -145,6 +151,12 @@ class hmc_decode {
   unsigned dram_shift_hi;
   uint32_t dram_mask_hi;
 
+  unsigned row_shift;
+  uint32_t row_mask;
+
+  unsigned col_shift;
+  uint32_t col_mask;
+
 public:
   hmc_decode(unsigned bsize, unsigned num_banks_per_vault);
   ~hmc_decode(void);
@@ -155,34 +167,41 @@ public:
   {
     return (addr >> this->quad_shift) & this->quad_mask;
   }
-  ALWAYS_INLINE uint64_t HMCSIM_UTIL_ENCODE_QUAD( unsigned quad )
-  {
-    return (uint64_t)(quad & this->quad_mask) << this->quad_shift;
-  }
+//  ALWAYS_INLINE uint64_t HMCSIM_UTIL_ENCODE_QUAD( unsigned quad )
+//  {
+//    return (uint64_t)(quad & this->quad_mask) << this->quad_shift;
+//  }
 
   ALWAYS_INLINE unsigned HMCSIM_UTIL_DECODE_VAULT( uint64_t addr )
   {
     return (addr >> this->vault_shift) & this->vault_mask;
   }
-  ALWAYS_INLINE uint64_t HMCSIM_UTIL_ENCODE_VAULT( unsigned vault )
-  {
-    return (uint64_t)(vault & this->vault_mask) << this->vault_shift;
-  }
+//  ALWAYS_INLINE uint64_t HMCSIM_UTIL_ENCODE_VAULT( unsigned vault )
+//  {
+//    return (uint64_t)(vault & this->vault_mask) << this->vault_shift;
+//  }
 
   ALWAYS_INLINE unsigned HMCSIM_UTIL_DECODE_BANK( uint64_t addr )
   {
     return (addr >> this->bank_shift) & this->bank_mask;
   }
-  ALWAYS_INLINE uint64_t HMCSIM_UTIL_ENCODE_BANK( unsigned bank )
-  {
-    return (uint64_t)(bank & this->bank_mask) << this->bank_shift;
-  }
+//  ALWAYS_INLINE uint64_t HMCSIM_UTIL_ENCODE_BANK( unsigned bank )
+//  {
+//    return (uint64_t)(bank & this->bank_mask) << this->bank_shift;
+//  }
 
-  ALWAYS_INLINE unsigned HMC_UTIL_DECODE_DRAM( uint64_t addr )
+  ALWAYS_INLINE uint64_t HMC_UTIL_DECODE_DRAM( uint64_t addr )
   {
     uint64_t hi = (addr >> this->dram_shift_hi) & this->dram_mask_hi;
     uint64_t lo = (addr >> this->dram_shift_lo) & this->dram_mask_lo;
     return (uint64_t)(hi | lo);
+  }
+
+  ALWAYS_INLINE void HMC_UTIL_DECODE_COL_AND_ROW(uint64_t addr, unsigned *col, unsigned *row)
+  {
+    uint64_t dram_addr = this->HMC_UTIL_DECODE_DRAM(addr);
+    *col = (dram_addr >> this->col_shift) & this->col_mask;
+    *row = (dram_addr >> this->row_shift) & this->row_mask;
   }
 };
 

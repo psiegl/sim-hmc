@@ -30,11 +30,10 @@ unsigned hmc_route::ext_routing(unsigned destCubId, unsigned curQuadId)
   hmc_route_t *ext_route = this->tbl[destCubId];
   assert(ext_route); // should really not happen!
 
-  unsigned i, links, mask = 0x1;
+  unsigned i, mask = 0x1;
   for (; ext_route != nullptr; ext_route = ext_route->next) {
-    links = *ext_route->links;
     for (i = 0; i < 4; i++, mask <<= 1) { // max 4 links
-      if (links & mask) {
+      if ((*ext_route->links) & mask) {
         if (i == curQuadId)  // Mapping: each quad has its own single link (as of HMC2.1)
           return HMC_JTL_EXT_LINK;
         else

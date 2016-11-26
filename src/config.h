@@ -77,9 +77,10 @@ umn addresses, addressing 1Mb blocks of 16 bytes each
 #define   HMC_MIN_BANKS         256 // BANKS in sum (needs to be divided per VAULTs!)  --> 4 GB HMC
 
 // The vault controller breaks the DRAM address into row and column addresses, addressing 1Mb blocks of 16 bytes each
-#define   HMC_NUM_COLS_PER_BANK 4096 // ToDo: check!
-#define   HMC_NUM_ROWS_PER_BANK 256  // ToDo: check!
+#define   HMC_NUM_COLS_PER_BANK 16384 // ToDo: check!
+#define   HMC_NUM_ROWS_PER_BANK 1024 // ToDo: check!
 #define   HMC_DEVICE_WIDTH      16  // 16 bytes each!
+#define   HMC_NUM_BANKS_PER_RANK 2
 
 #define   HMC_MAX_QUEUE_DEPTH   65536
 #define   HMC_MAX_FLITS_PER_PACKET 17

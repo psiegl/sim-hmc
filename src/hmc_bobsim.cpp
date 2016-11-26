@@ -1,13 +1,13 @@
 #include "hmc_bobsim.h"
 #include "hmc_link.h"
 #include "hmc_cube.h"
+#include "config.h"
 
 bool callback(void *bobsim, void *packet)
 {
   return ((hmc_bobsim*)bobsim)->bob_feedback(packet);
 }
 
-unsigned BOBSim::NUM_PORTS = 1;
 int BOBSim::SHOW_SIM_OUTPUT = 1;
 
 hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
@@ -22,18 +22,14 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
   bobnotify_ctr(0),
 #endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   bobnotify(id, notify, this),
-  bobsim(new BOBSim::BOBWrapper())
+  bobsim(new BOBSim::BOBWrapper(num_ports))
 {
-  BOBSim::NUM_PORTS = num_ports;
   BOBSim::SHOW_SIM_OUTPUT = 0;
   this->bobsim->activatedPeriodPrintStates = periodPrintStats;
   this->bobsim->vault = this;
   this->bobsim->callback = callback;
 
   this->link->set_ilink_notify(0, &linknotify);
-#ifdef ALWAYS_NOTIFY_BOBSIM
-  this->bobnotify.notify_add(0);
-#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
 }
 
 hmc_bobsim::~hmc_bobsim(void)
@@ -90,16 +86,28 @@ void hmc_bobsim::clock(void)
       return;
 
     uint64_t header = HMC_PACKET_HEADER(packet);
+    uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
     uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
     hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
-    unsigned long bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr); // ToDo: bank + dram!
 
     unsigned rqstlen;
     enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
-    BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, bank, packet);
+    BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, 0, packet);
+    unsigned long gl_bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
+    bobtrans->bank = gl_bank % HMC_NUM_BANKS_PER_RANK;
+    bobtrans->rank = (gl_bank - bobtrans->bank) / HMC_NUM_BANKS_PER_RANK;
+    this->cube->HMC_UTIL_DECODE_COL_AND_ROW(addr, &bobtrans->col, &bobtrans->row);
+    bobtrans->transactionID = HMCSIM_PACKET_REQUEST_GET_SEQ(tail);
+
     if (!this->bobsim->AddTransaction(bobtrans, 0 /* port */)) {
       exit(0);
     }
+#ifdef ALWAYS_NOTIFY_BOBSIM
+    else if (!this->bobnotify.get_notification()) {
+      // only add forever, if there is something in it
+      this->bobnotify.notify_add(0);
+    }
+#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
 #ifndef ALWAYS_NOTIFY_BOBSIM
     if (!(this->bobnotify_ctr++)) {
       this->bobnotify.notify_add(0);
