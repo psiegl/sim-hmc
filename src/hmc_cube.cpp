@@ -1,5 +1,6 @@
 #include "hmc_cube.h"
 #include "hmc_quad.h"
+#include "hmc_link.h"
 
 hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
                    enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth,
@@ -26,6 +27,7 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
     links[0].re_adjust_links(ringbuswidth, 1);
     quad0->set_ring_link(neighbour, &links[0]);
     quad1->set_ring_link(i, &links[1]);
+    this->link_garbage.push_back(links);
   }
 }
 
@@ -33,6 +35,8 @@ hmc_cube::~hmc_cube(void)
 {
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
     delete this->quads[i];
+  for (auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
+    delete[] *it;
 }
 
 void hmc_cube::clock(void)

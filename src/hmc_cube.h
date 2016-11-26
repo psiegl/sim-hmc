@@ -9,6 +9,7 @@
 #include "hmc_register.h"
 
 class hmc_quad;
+class hmc_link;
 
 class hmc_cube : public hmc_route, private hmc_notify_cl,
                  public hmc_register, public hmc_decode {
@@ -17,6 +18,8 @@ private:
 
   hmc_notify quad_notify;
   std::map<unsigned, hmc_quad*> quads;
+
+  std::list<hmc_link*> link_garbage;
 
   bool notify_up(void);
 
