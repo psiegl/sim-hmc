@@ -32,9 +32,10 @@
 
 #include "../include/bob.h"
 #include "../include/bob_dramchannel.h"
-#include "../include/bob_logiclayerinterface.h"
+#include "../include/bob_rank.h"
+#include "../include/bob_transaction.h"
 #ifdef HMCSIM_SUPPORT
-#include "bob_wrapper.h"
+#include "../include/bob_wrapper.h"
 #endif
 
 using namespace std;
@@ -48,7 +49,7 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob):
     inFlightCommandPacket(NULL),
     inFlightDataPacket(NULL),
     readReturnQueueMax(0),
-    logicLayer(new LogicLayerInterface(id, this)),
+    logicLayer(LogicLayerInterface(id, this)),
     bob(_bob),
     pendingLogicResponse(NULL),
     DRAMBusIdleCount(0)
@@ -75,7 +76,6 @@ DRAMChannel::~DRAMChannel(void)
       delete inFlightCommandPacket;
     if(inFlightDataPacket)
       delete inFlightDataPacket;
-    delete logicLayer;
 }
 
 void DRAMChannel::Update(void)
@@ -101,7 +101,7 @@ void DRAMChannel::Update(void)
             //if the bus packet was from a request originating from a logic operation, send it back to logic layer
             if(inFlightDataPacket->fromLogicOp)
             {
-                logicLayer->ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address));
+                logicLayer.ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address));
             }
             //if it was a regular request, add to return queue
             else
@@ -135,7 +135,7 @@ void DRAMChannel::Update(void)
     }
 
 	//updates
-    logicLayer->Update();
+    logicLayer.Update();
 
 	simpleController.Update();
 	for(unsigned i=0; i<NUM_RANKS; i++)
@@ -151,7 +151,7 @@ bool DRAMChannel::AddTransaction(Transaction *trans)
     switch(trans->transactionType)
     {
     case LOGIC_OPERATION:
-        logicLayer->ReceiveLogicOperation(trans);
+        logicLayer.ReceiveLogicOperation(trans);
         break;
     case LOGIC_RESPONSE:
         if(pendingLogicResponse==NULL)

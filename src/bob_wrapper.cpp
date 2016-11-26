@@ -29,7 +29,7 @@
 *********************************************************************************/
 
 #include <cstring>
-#include "../include/bob.h"
+#include "../include/bob_transaction.h"
 #include "../include/bob_wrapper.h"
 #include "../include/bob_logicoperation.h"
 
@@ -38,6 +38,20 @@ using namespace std;
 namespace BOBSim
 {
 BOBWrapper::BOBWrapper(unsigned num_ports) :
+    //Create BOB object and register callbacks
+    bob(this, num_ports),
+
+    inFlightRequest(),
+    inFlightResponse(),
+
+    //For statistics & bookkeeping
+    requestPortEmptyCount(num_ports, 0),
+    responsePortEmptyCount(num_ports, 0),
+    requestCounterPerPort(num_ports, 0),
+    readsPerPort(num_ports, 0),
+    writesPerPort(num_ports, 0),
+    returnsPerPort(num_ports, 0),
+
     returnedReads(0),
     returnedReadSize(0),
     totalReturnedReads(0),
@@ -46,7 +60,6 @@ BOBWrapper::BOBWrapper(unsigned num_ports) :
     totalIssuedWrites(0),
     num_ports(num_ports),
     activatedPeriodPrintStates(true),
-    bob(new BOB(this, num_ports)), //Create BOB object and register callbacks
 #if 0
 	readDoneCallback(NULL),
 	writeDoneCallback(NULL),
@@ -81,37 +94,16 @@ BOBWrapper::BOBWrapper(unsigned num_ports) :
 		powerOut.open(tmp_str);
     }
 
-	//Incoming request packet fields (to be added to ports)
-    inFlightRequest.Cache = new Transaction*[num_ports];
     for(unsigned i=0; i<num_ports; i++) {
-        inFlightRequest.Cache[i] = NULL;
-    }
-    inFlightRequest.Counter = new unsigned[num_ports];
-    memset(inFlightRequest.Counter, 0, sizeof(unsigned)*num_ports);
-    inFlightRequest.HeaderCounter = new unsigned[num_ports];
-    memset(inFlightRequest.HeaderCounter, 0, sizeof(unsigned)*num_ports);
+        //Incoming request packet fields (to be added to ports)
+        inFlightRequest.Cache.push_back(NULL);
+        inFlightRequest.Counter.push_back(0);
+        inFlightRequest.HeaderCounter.push_back(0);
 
-	//Outgoing response packet fields (being sent back to cache)
-    inFlightResponse.Cache = new Transaction*[num_ports];
-    for(unsigned i=0; i<num_ports; i++) {
-        inFlightResponse.Cache[i] = NULL;
+        //Outgoing response packet fields (being sent back to cache)
+        inFlightResponse.Cache.push_back(NULL);
+        inFlightResponse.Counter.push_back(0);
     }
-    inFlightResponse.Counter = new unsigned[num_ports];
-    memset(inFlightResponse.Counter, 0, sizeof(unsigned)*num_ports);
-
-	//For statistics & bookkeeping
-    requestPortEmptyCount = new unsigned[num_ports];
-    responsePortEmptyCount = new unsigned[num_ports];
-    requestCounterPerPort = new unsigned[num_ports];
-    readsPerPort = new unsigned[num_ports];
-    writesPerPort = new unsigned[num_ports];
-    returnsPerPort = new unsigned[num_ports];
-    memset(requestPortEmptyCount, 0, sizeof(unsigned)*num_ports);
-    memset(responsePortEmptyCount, 0, sizeof(unsigned)*num_ports);
-    memset(requestCounterPerPort, 0, sizeof(unsigned)*num_ports);
-    memset(readsPerPort, 0, sizeof(unsigned)*num_ports);
-    memset(writesPerPort, 0, sizeof(unsigned)*num_ports);
-    memset(returnsPerPort, 0, sizeof(unsigned)*num_ports);
 
     for(unsigned i=0; i<NUM_CHANNELS; i++) {
       perChan[i].ReqPort = 0;
@@ -201,35 +193,23 @@ BOBWrapper::BOBWrapper(unsigned num_ports) :
 
 BOBWrapper::~BOBWrapper(void)
 {
-  delete[] requestPortEmptyCount;
-  delete[] responsePortEmptyCount;
-  delete[] requestCounterPerPort;
-  delete[] readsPerPort;
-  delete[] writesPerPort;
-  delete[] returnsPerPort;
 //  for(unsigned i=0; i<this->num_ports; i++) {
 //      if(inFlightRequest.Cache[i])
 //        delete inFlightRequest.Cache[i];
 //  }
-  delete[] inFlightRequest.Cache;
-  delete[] inFlightRequest.Counter;
-  delete[] inFlightRequest.HeaderCounter;
 //  for(unsigned i=0; i<this->num_ports; i++) {
 //      if(inFlightResponse.Cache[i])
 //        delete inFlightResponse.Cache[i];
 //  }
-  delete[] inFlightResponse.Cache;
-  delete[] inFlightResponse.Counter;
   powerOut.close();
   statsOut.close();
-  delete bob;
 }
 
 #if 0
 inline bool BOBWrapper::isPortAvailable(unsigned port)
 {
     return inFlightRequest.Counter[port] == 0 &&
-           bob->ports[port]->inputBuffer.size()<PORT_QUEUE_DEPTH;
+           bob.ports[port]->inputBuffer.size()<PORT_QUEUE_DEPTH;
 }
 
 
@@ -325,14 +305,14 @@ void BOBWrapper::RegisterCallbacks(
 bool BOBWrapper::IsPortBusy(unsigned port)
 {
   return ! (inFlightRequest.Counter[port]==0 &&
-       bob->ports[port]->inputBuffer.size()<PORT_QUEUE_DEPTH);
+       bob.ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH);
 }
 #endif
 
 bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 {
     if(inFlightRequest.Counter[port]==0 &&
-       bob->ports[port]->inputBuffer.size()<PORT_QUEUE_DEPTH)
+       bob.ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH)
 	{
 		trans->fullStartTime = currentClockCycle;
 		requestCounterPerPort[port]++;
@@ -383,7 +363,7 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 //
 void BOBWrapper::Update(void)
 {
-    bob->Update();
+    bob.Update();
 
 	//BOOK-KEEPING
     for(unsigned i=0; i<this->num_ports; i++)
@@ -394,7 +374,7 @@ void BOBWrapper::Update(void)
         if(inFlightRequest.HeaderCounter[i] && !--inFlightRequest.HeaderCounter[i]) //done
         {
             if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
-            bob->ports[i]->inputBuffer.push_back(inFlightRequest.Cache[i]);
+            bob.ports[i].inputBuffer.push_back(inFlightRequest.Cache[i]);
         }
 
         if(inFlightRequest.Counter[i])
@@ -455,7 +435,7 @@ void BOBWrapper::Update(void)
                     exit(0);
                 }
 
-                bob->ports[i]->outputBuffer.erase(bob->ports[i]->outputBuffer.begin());
+                bob.ports[i].outputBuffer.erase(bob.ports[i].outputBuffer.begin());
                 delete inFlightResponse.Cache[i];
             }
         }
@@ -469,10 +449,10 @@ void BOBWrapper::Update(void)
     for(unsigned i=0; i<this->num_ports; i++)
 	{
 		//look for new stuff to return from bob controller
-        if(bob->ports[i]->outputBuffer.size()>0 &&
+        if(bob.ports[i].outputBuffer.size()>0 &&
                 inFlightResponse.Counter[i]==0)
 		{
-            inFlightResponse.Cache[i] = bob->ports[i]->outputBuffer[0];
+            inFlightResponse.Cache[i] = bob.ports[i].outputBuffer[0];
 
             switch(inFlightResponse.Cache[i]->transactionType) {
             case RETURN_DATA:
@@ -716,7 +696,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	fullLatencies.clear();
 	dramLatencies.clear();
 	chanLatencies.clear();
-	bob->PrintStats(statsOut, powerOut, finalPrint, elapsedCycles);
+    bob.PrintStats(statsOut, powerOut, finalPrint, elapsedCycles);
 }
 
 void BOBWrapper::WriteIssuedCallback(unsigned port, uint64_t address)

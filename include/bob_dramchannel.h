@@ -33,23 +33,24 @@
 
 //DRAM Channel header
 
-#include "bob_transaction.h"
 #include "bob_simplecontroller.h"
-#include "bob_rank.h"
+#include "bob_logiclayerinterface.h"
 #include <deque>
 #include <vector>
 
 namespace BOBSim
 {
 class BOB;
-class LogicLayerInterface;
+class Rank;
+class Transaction;
+
 class DRAMChannel
 {
 private:
     //Ranks of DRAM
     std::vector<Rank*> ranks;
     //Logic chip
-    LogicLayerInterface *logicLayer;
+    LogicLayerInterface logicLayer;
     // bob interface
     BOB *bob;
     //Command packet being sent on DRAM command bus

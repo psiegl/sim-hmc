@@ -31,8 +31,6 @@
 #ifndef LOGICLAYERINTERFACE_H
 #define LOGICLAYERINTERFACE_H
 
-#include "bob_transaction.h"
-#include "bob_dramchannel.h"
 #include "bob_logicoperation.h"
 #include <deque>
 
@@ -40,6 +38,8 @@ using namespace std;
 
 namespace BOBSim
 {
+class DRAMChannel;
+class Transaction;
 class LogicLayerInterface
 {
 public:

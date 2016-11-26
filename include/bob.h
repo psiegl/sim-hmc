@@ -33,15 +33,18 @@
 
 //BOB header
 
-#include "bob_transaction.h"
-#include "bob_dramchannel.h"
-#include "bob_simplecontroller.h"
+#include <vector>
 #include "bob_port.h"
 
 using namespace std;
 
 namespace BOBSim
 {
+class Transaction;
+class BOBWrapper;
+class DRAMChannel;
+class BusPacket;
+
 struct linkbus {
   //SerDes buffer for holding incoming request packet
   Transaction* serDesBuffer;
@@ -53,7 +56,6 @@ struct linkbus {
   unsigned linkIdle;
 };
 
-class BOBWrapper;
 class BOB
 {
 private:
@@ -68,8 +70,8 @@ private:
     vector<Transaction*> pendingReads;
 
     //Bookkeeping for port statistics
-    unsigned* portInputBufferAvg;
-    unsigned* portOutputBufferAvg;
+    vector<unsigned> portInputBufferAvg;
+    vector<unsigned> portOutputBufferAvg;
 
     //
     //Request Link Bus
@@ -86,7 +88,7 @@ private:
 
     //Used for round-robin
     unsigned priorityPort;
-    unsigned* priorityLinkBus;
+    vector<unsigned> priorityLinkBus;
 
     //Bookkeeping
     unsigned readCounter;
@@ -120,7 +122,7 @@ public:
     void ReportCallback(BusPacket *bp);
 
     //Ports used on main BOB controller to communicate with cache
-    vector<Port*> ports;
+    vector<Port> ports;
 
     //Callback
     BOBWrapper *bobwrapper;

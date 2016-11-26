@@ -41,13 +41,9 @@ namespace BOBSim
 {
 class Port
 {
-    //Fields
-    //The port identifier in relation to the entire system
-    unsigned portID;
 public:
     //Functions
-    Port(unsigned id):
-      portID(id),
+    Port(void):
       inputBusyCountdown(0),
       outputBusyCountdown(0)
     {}

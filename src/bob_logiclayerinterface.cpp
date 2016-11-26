@@ -28,7 +28,9 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************************/
 
-#include "bob_logiclayerinterface.h"
+#include "../include/bob_dramchannel.h"
+#include "../include/bob_logiclayerinterface.h"
+#include "../include/bob_transaction.h"
 
 using namespace BOBSim;
 using namespace std;

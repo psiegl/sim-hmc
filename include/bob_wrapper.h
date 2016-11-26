@@ -33,27 +33,35 @@
 
 #include <deque>
 #include <cmath>
-#include "bob_transaction.h"
+#include "bob.h"
 
 using namespace std;
 
 namespace BOBSim
 {
-class BOB;
+class Transaction;
 class BOBWrapper
 {
 private:
     //Fields
     //BOB object
-    BOB *bob;
+    BOB bob;
 
-#if 0
-    //Round-robin counter
-    uint portRoundRobin;
+    struct __attribute__ ((packed)) {
+      //Incoming transactions being sent to each port
+      vector<Transaction*> Cache;
+      //Counters for determining how long packet should be sent
+      vector<unsigned> Counter;
+      vector<unsigned> HeaderCounter;
+    } inFlightRequest;
 
-    int FindOpenPort(uint coreID);
-    bool isPortAvailable(unsigned port);
-#endif
+    struct __attribute__ ((packed)) {
+      //Outgoing transactiong being sent to cache
+      vector<Transaction*> Cache;
+      //Counters for determining how long packet should be sent
+      vector<unsigned> Counter;
+    } inFlightResponse;
+
     unsigned returnedReads;
     uint64_t returnedReadSize;
     unsigned totalReturnedReads;
@@ -62,8 +70,52 @@ private:
     uint64_t issuedWritesSize;
     unsigned totalIssuedWrites;
 
+    //Bookkeeping and statistics
+    vector<unsigned> requestPortEmptyCount;
+    vector<unsigned> responsePortEmptyCount;
+    vector<unsigned> requestCounterPerPort;
+    vector<unsigned> readsPerPort;
+    vector<unsigned> writesPerPort;
+    vector<unsigned> returnsPerPort;
+
+    //More bookkeeping and statistics
+    struct  __attribute__ ((packed)) {
+      vector<unsigned> FullLatencies;
+      double ReqPort;
+      double RspPort;
+      double ReqLink;
+      double RspLink;
+      double Access;
+      double RRQ;
+      double WorkQTimes;
+    } perChan [NUM_CHANNELS];
+
+    vector<unsigned> fullLatencies;
+    vector<unsigned> dramLatencies;
+    vector<unsigned> chanLatencies;
+
+    unsigned issuedLogicOperations;
+    unsigned committedWrites;
+    unsigned totalTransactionsServiced;
+    unsigned totalLogicResponses;
+
+    //Output files
+    ofstream statsOut;
+    ofstream powerOut;
+
+    uint64_t currentClockCycle;
+
     unsigned num_ports;
+
     void UpdateLatencyStats(Transaction *trans);
+
+#if 0
+    //Round-robin counter
+    uint portRoundRobin;
+
+    int FindOpenPort(uint coreID);
+    bool isPortAvailable(unsigned port);
+#endif
 
 public:
 	//Functions
@@ -82,63 +134,13 @@ public:
 
     bool activatedPeriodPrintStates;
 
-    struct __attribute__ ((packed)) {
-      //Incoming transactions being sent to each port
-      Transaction** Cache;
-      //Counters for determining how long packet should be sent
-      unsigned* Counter;
-      unsigned* HeaderCounter;
-    } inFlightRequest;
-
-    struct __attribute__ ((packed)) {
-      //Outgoing transactiong being sent to cache
-      Transaction** Cache;
-      //Counters for determining how long packet should be sent
-      unsigned* Counter;
-    } inFlightResponse;
-
-	//Bookkeeping and statistics
-    unsigned* requestPortEmptyCount;
-    unsigned* responsePortEmptyCount;
-    unsigned* requestCounterPerPort;
-    unsigned* readsPerPort;
-    unsigned* writesPerPort;
-    unsigned* returnsPerPort;
-
-	//Callback functions
+    //Callback functions
 #if 0
     void (*readDoneCallback)(unsigned, uint64_t);
     void (*writeDoneCallback)(unsigned, uint64_t);
     void (*logicDoneCallback)(unsigned, uint64_t);
 #endif
-private:
-	//More bookkeeping and statistics
-    struct  __attribute__ ((packed)) {
-      vector<unsigned> FullLatencies;
-      double ReqPort;
-      double RspPort;
-      double ReqLink;
-      double RspLink;
-      double Access;
-      double RRQ;
-      double WorkQTimes;
-    } perChan [NUM_CHANNELS];
 
-    vector<unsigned> fullLatencies;
-    vector<unsigned> dramLatencies;
-    vector<unsigned> chanLatencies;
-
-    unsigned issuedLogicOperations;
-    unsigned committedWrites;
-	unsigned totalTransactionsServiced;
-	unsigned totalLogicResponses;
-
-	//Output files
-	ofstream statsOut;
-	ofstream powerOut;
-
-    uint64_t currentClockCycle;
-public:
 	//Callback
     void WriteIssuedCallback(unsigned port, uint64_t address);
 
