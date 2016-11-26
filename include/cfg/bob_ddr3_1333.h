@@ -4,7 +4,7 @@
 
 //DDR3-1333 Micron Part : MT41J1G4-15E
 //Clock Rate : 666MHz
-#define NUM_RANKS  4
+#define NUM_RANKS  4 // per bank!
 #define NUM_BANKS  8
 #define NUM_ROWS  65536
 #define NUM_COLS  2048

@@ -39,7 +39,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
-#include <stdint.h>
+#include <inttypes.h>
 
 //Flag for quiet mode (-q)
 #if defined(LOG_OUTPUT)
@@ -203,8 +203,11 @@ extern uint DRAM_CPU_CLK_RATIO;
 #elif defined(DDR3_1066)
 #include "cfg/bob_ddr3_1066.h"
 #endif
+#ifdef HMCSIM_SUPPORT
 
-uint inline log2(unsigned value)
+#endif
+
+uint inline log2(unsigned value) // ToDo get rid of
 {
 	uint logbase2 = 0;
 	unsigned orig = value;

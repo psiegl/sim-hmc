@@ -108,11 +108,12 @@ private:
 
     uint64_t dram_channel_clk;
     uint64_t currentClockCycle;
+    unsigned num_ports;
 
     unsigned FindChannelID(Transaction* trans);
 public:
 	//Functions
-    BOB(BOBWrapper *_bobwrapper);
+    BOB(BOBWrapper *_bobwrapper, unsigned num_ports);
     ~BOB(void);
     void Update(void);
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);

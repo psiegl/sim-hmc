@@ -60,7 +60,6 @@
 using namespace BOBSim;
 using namespace std;
 
-unsigned BOBSim::NUM_PORTS =1;
 int BOBSim::SHOW_SIM_OUTPUT=1;
 
 vector<unsigned> waitCounters;
@@ -112,6 +111,7 @@ int main(int argc, char **argv)
 {
     long numCycles=30l;
     srand(SEED_CONSTANT);
+    unsigned num_ports = 1;
 	while (1)
 	{
 		static struct option long_options[] =
@@ -138,31 +138,31 @@ int main(int argc, char **argv)
 			numCycles = atol(optarg);
 			break;
 		case 'n':
-            BOBSim::NUM_PORTS = atoi(optarg);
+            num_ports = atoi(optarg);
 		case 'q':
 			BOBSim::SHOW_SIM_OUTPUT=0;
 			break;
 		}
     }
 
-	transactionBuffer = vector< vector<Transaction *> >(NUM_PORTS,vector<Transaction *>());
+    transactionBuffer = vector< vector<Transaction *> >(num_ports,vector<Transaction *>());
 
-	waitCounters = vector<unsigned>(NUM_PORTS,0);
-	useCounters = vector<unsigned>(NUM_PORTS,0);
+    waitCounters = vector<unsigned>(num_ports,0);
+    useCounters = vector<unsigned>(num_ports,0);
 
 
 	//iterate over total number of cycles
 	//  "main loop"
 	//   numCycles is the number of CPU cycles to simulate
-    BOBWrapper bobWrapper;
+    BOBWrapper *bobWrapper = new BOBWrapper(num_ports);
 	for (int cpuCycle=0; cpuCycle<numCycles; cpuCycle++)
 	{
         //adding new stuff
-		for(unsigned l=0; l<NUM_PORTS; l++)
+        for(unsigned l=0; l<num_ports; l++)
 		{
 			if(transactionBuffer[l].size()>0)
 			{
-                if(bobWrapper.AddTransaction(*transactionBuffer[l].begin(),l))
+                if(bobWrapper->AddTransaction(*transactionBuffer[l].begin(),l))
                 {
 					transactionBuffer[l].erase(transactionBuffer[l].begin());
 				}
@@ -182,11 +182,11 @@ int main(int argc, char **argv)
 		//
 		//Update bobWrapper
 		//
-        bobWrapper.Update();
+        bobWrapper->Update();
 	}
 
     // remove not required transactions
-    for(unsigned l=0; l<NUM_PORTS; l++)
+    for(unsigned l=0; l<num_ports; l++)
     {
       for(vector<Transaction *>::iterator it = transactionBuffer[l].begin(); it != transactionBuffer[l].end(); ++it)
       {
@@ -196,5 +196,6 @@ int main(int argc, char **argv)
 	//
 	//Debug output
 	//
-	bobWrapper.PrintStats(true);
+    bobWrapper->PrintStats(true);
+    delete bobWrapper;
 }

@@ -36,6 +36,8 @@
 #include "../include/bob_dramchannel.h"
 #include "../include/bob_buspacket.h"
 #include "../include/bob_bankstate.h"
+#include "../include/bob_buspacket.h"
+#include "../include/bob_transaction.h"
 
 using namespace std;
 using namespace BOBSim;
@@ -52,7 +54,8 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	numRefBanksAverage(0),
 	RRQFull(0),
     waitingACTS(0),
-    channel(parent), //Registers the parent channel object
+    channel(parent), //Registers the parent channel object    
+#ifndef HMCSIM_SUPPORT
 	rankBitWidth(log2(NUM_RANKS)),
 	bankBitWidth(log2(NUM_BANKS)),
 	rowBitWidth(log2(NUM_ROWS)),
@@ -60,6 +63,7 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 	busOffsetBitWidth(log2(BUS_ALIGNMENT_SIZE)),
 	channelBitWidth(log2(NUM_CHANNELS)),
 	cacheOffset(log2(CACHE_LINE_SIZE)),
+#endif
     outstandingReads(0),
     currentClockCycle(0)
 
@@ -477,7 +481,15 @@ void SimpleController::AddTransaction(Transaction *trans)
 {
 	//map physical address to rank/bank/row/col
     unsigned mappedRank, mappedBank, mappedRow, mappedCol;
+#ifdef HMCSIM_SUPPORT
+    mappedRank = trans->rank;
+    mappedBank = trans->bank;
+    mappedRow = trans->row;
+    mappedCol = trans->col;
+//    std::cout << "rank: " << mappedRank << " mappedBank " << mappedBank << " Row " << mappedRow << " Col " << mappedCol << std::endl;
+#else
     AddressMapping(trans->address, &mappedRank, &mappedBank, &mappedRow, &mappedCol);
+#endif
 
     bool originatedFromLogicOp = trans->originatedFromLogicOp;;
     BusPacket *action, *activate = new BusPacket(ACTIVATE,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
@@ -525,6 +537,7 @@ void SimpleController::AddTransaction(Transaction *trans)
 	waitingACTS++;
 }
 
+#ifndef HMCSIM_SUPPORT
 void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned *rank, unsigned *bank, unsigned *row, unsigned *col)
 {
     uint64_t tempA, tempB;
@@ -823,3 +836,4 @@ void SimpleController::AddressMapping(uint64_t physicalAddress, unsigned *rank, 
 
     if(DEBUG_CHANNEL) DEBUG(" to RK:"<<hex<<*rank<<" BK:"<<*bank<<" RW:"<<*row<<" CL:"<<*col<<dec);
 }
+#endif

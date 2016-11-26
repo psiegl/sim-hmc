@@ -37,18 +37,21 @@ using namespace std;
 
 namespace BOBSim
 {
-BOBWrapper::BOBWrapper(void) :
+BOBWrapper::BOBWrapper(unsigned num_ports) :
     returnedReads(0),
     returnedReadSize(0),
     totalReturnedReads(0),
     issuedWrites(0),
     issuedWritesSize(0),
     totalIssuedWrites(0),
+    num_ports(num_ports),
     activatedPeriodPrintStates(true),
-    bob(new BOB(this)), //Create BOB object and register callbacks
+    bob(new BOB(this, num_ports)), //Create BOB object and register callbacks
+#if 0
 	readDoneCallback(NULL),
 	writeDoneCallback(NULL),
     logicDoneCallback(NULL),
+#endif
     committedWrites(0),
     issuedLogicOperations(0),
     totalLogicResponses(0),
@@ -79,44 +82,46 @@ BOBWrapper::BOBWrapper(void) :
     }
 
 	//Incoming request packet fields (to be added to ports)
-    inFlightRequest.Cache = new Transaction*[NUM_PORTS];
-    for(unsigned i=0; i<NUM_PORTS; i++) {
+    inFlightRequest.Cache = new Transaction*[num_ports];
+    for(unsigned i=0; i<num_ports; i++) {
         inFlightRequest.Cache[i] = NULL;
     }
-    inFlightRequest.Counter = new unsigned[NUM_PORTS];
-    memset(inFlightRequest.Counter, 0, sizeof(unsigned)*NUM_PORTS);
-    inFlightRequest.HeaderCounter = new unsigned[NUM_PORTS];
-    memset(inFlightRequest.HeaderCounter, 0, sizeof(unsigned)*NUM_PORTS);
+    inFlightRequest.Counter = new unsigned[num_ports];
+    memset(inFlightRequest.Counter, 0, sizeof(unsigned)*num_ports);
+    inFlightRequest.HeaderCounter = new unsigned[num_ports];
+    memset(inFlightRequest.HeaderCounter, 0, sizeof(unsigned)*num_ports);
 
 	//Outgoing response packet fields (being sent back to cache)
-    inFlightResponse.Cache = new Transaction*[NUM_PORTS];
-    for(unsigned i=0; i<NUM_PORTS; i++) {
+    inFlightResponse.Cache = new Transaction*[num_ports];
+    for(unsigned i=0; i<num_ports; i++) {
         inFlightResponse.Cache[i] = NULL;
     }
-    inFlightResponse.Counter = new unsigned[NUM_PORTS];
-    memset(inFlightResponse.Counter, 0, sizeof(unsigned)*NUM_PORTS);
+    inFlightResponse.Counter = new unsigned[num_ports];
+    memset(inFlightResponse.Counter, 0, sizeof(unsigned)*num_ports);
 
 	//For statistics & bookkeeping
-    requestPortEmptyCount = new unsigned[NUM_PORTS];
-    responsePortEmptyCount = new unsigned[NUM_PORTS];
-    requestCounterPerPort = new unsigned[NUM_PORTS];
-    readsPerPort = new unsigned[NUM_PORTS];
-    writesPerPort = new unsigned[NUM_PORTS];
-    returnsPerPort = new unsigned[NUM_PORTS];
-    memset(requestPortEmptyCount, 0, sizeof(unsigned)*NUM_PORTS);
-    memset(responsePortEmptyCount, 0, sizeof(unsigned)*NUM_PORTS);
-    memset(requestCounterPerPort, 0, sizeof(unsigned)*NUM_PORTS);
-    memset(readsPerPort, 0, sizeof(unsigned)*NUM_PORTS);
-    memset(writesPerPort, 0, sizeof(unsigned)*NUM_PORTS);
-    memset(returnsPerPort, 0, sizeof(unsigned)*NUM_PORTS);
+    requestPortEmptyCount = new unsigned[num_ports];
+    responsePortEmptyCount = new unsigned[num_ports];
+    requestCounterPerPort = new unsigned[num_ports];
+    readsPerPort = new unsigned[num_ports];
+    writesPerPort = new unsigned[num_ports];
+    returnsPerPort = new unsigned[num_ports];
+    memset(requestPortEmptyCount, 0, sizeof(unsigned)*num_ports);
+    memset(responsePortEmptyCount, 0, sizeof(unsigned)*num_ports);
+    memset(requestCounterPerPort, 0, sizeof(unsigned)*num_ports);
+    memset(readsPerPort, 0, sizeof(unsigned)*num_ports);
+    memset(writesPerPort, 0, sizeof(unsigned)*num_ports);
+    memset(returnsPerPort, 0, sizeof(unsigned)*num_ports);
 
-    memset(perChanReqPort, 0, sizeof(perChanReqPort));
-    memset(perChanReqLink, 0, sizeof(perChanReqLink));
-    memset(perChanRspPort, 0, sizeof(perChanRspPort));
-    memset(perChanRspLink, 0, sizeof(perChanRspLink));
-    memset(perChanAccess, 0, sizeof(perChanAccess));
-    memset(perChanRRQ, 0, sizeof(perChanRRQ));
-    memset(perChanWorkQTimes, 0, sizeof(perChanWorkQTimes));
+    for(unsigned i=0; i<NUM_CHANNELS; i++) {
+      perChan[i].ReqPort = 0;
+      perChan[i].ReqLink = 0;
+      perChan[i].RspPort = 0;
+      perChan[i].RspLink = 0;
+      perChan[i].Access = 0;
+      perChan[i].RRQ = 0;
+      perChan[i].WorkQTimes = 0;
+    }
 
 	//Write configuration stuff to output file
 	//
@@ -202,14 +207,14 @@ BOBWrapper::~BOBWrapper(void)
   delete[] readsPerPort;
   delete[] writesPerPort;
   delete[] returnsPerPort;
-//  for(unsigned i=0; i<NUM_PORTS; i++) {
+//  for(unsigned i=0; i<this->num_ports; i++) {
 //      if(inFlightRequest.Cache[i])
 //        delete inFlightRequest.Cache[i];
 //  }
   delete[] inFlightRequest.Cache;
   delete[] inFlightRequest.Counter;
   delete[] inFlightRequest.HeaderCounter;
-//  for(unsigned i=0; i<NUM_PORTS; i++) {
+//  for(unsigned i=0; i<this->num_ports; i++) {
 //      if(inFlightResponse.Cache[i])
 //        delete inFlightResponse.Cache[i];
 //  }
@@ -234,7 +239,7 @@ inline int BOBWrapper::FindOpenPort(uint coreID)
     switch(PORT_HEURISTIC)
 	{
 	case FIRST_AVAILABLE:
-		for (unsigned i=0; i<NUM_PORTS; i++)
+        for (unsigned i=0; i<this->num_ports; i++)
 		{
 			if (isPortAvailable(i))
 			{
@@ -243,9 +248,9 @@ inline int BOBWrapper::FindOpenPort(uint coreID)
 		}
 		break;
 	case PER_CORE:
-		if(isPortAvailable(coreID%NUM_PORTS))
+        if(isPortAvailable(coreID%this->num_ports))
 		{
-			return coreID%NUM_PORTS;
+            return coreID%this->num_ports;
 		}
 		break;
 	case ROUND_ROBIN:
@@ -255,12 +260,12 @@ inline int BOBWrapper::FindOpenPort(uint coreID)
 			if(isPortAvailable(portRoundRobin))
 			{
 				int i=portRoundRobin;
-				portRoundRobin=(portRoundRobin+1)%NUM_PORTS;
+                portRoundRobin=(portRoundRobin+1)%this->num_ports;
 				return i;
 			}
 			else
 			{
-				portRoundRobin=(portRoundRobin+1)%NUM_PORTS;
+                portRoundRobin=(portRoundRobin+1)%this->num_ports;
 			}
 		}
 		while(startIndex!=portRoundRobin);
@@ -304,17 +309,17 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 
 	return true;
 }
-#endif
 
 void BOBWrapper::RegisterCallbacks(
     void (*_readDone)(unsigned, uint64_t),
     void (*_writeDone)(unsigned, uint64_t),
     void (*_logicDone)(unsigned, uint64_t))
 {
-	readDoneCallback = _readDone;
+     = _readDone;
 	writeDoneCallback = _writeDone;
 	logicDoneCallback = _logicDone;
 }
+#endif
 
 #ifdef HMCSIM_SUPPORT
 bool BOBWrapper::IsPortBusy(unsigned port)
@@ -381,18 +386,18 @@ void BOBWrapper::Update(void)
     bob->Update();
 
 	//BOOK-KEEPING
-	for(unsigned i=0; i<NUM_PORTS; i++)
+    for(unsigned i=0; i<this->num_ports; i++)
     {
 		//
 		//Requests
 		//
-        if(inFlightRequest.HeaderCounter[i]>0 && !--inFlightRequest.HeaderCounter[i]) //done
+        if(inFlightRequest.HeaderCounter[i] && !--inFlightRequest.HeaderCounter[i]) //done
         {
             if(DEBUG_PORTS)DEBUG("== Header done - Adding to port "<<i);
             bob->ports[i]->inputBuffer.push_back(inFlightRequest.Cache[i]);
         }
 
-        if(inFlightRequest.Counter[i]>0)
+        if(inFlightRequest.Counter[i])
         {
             if(!--inFlightRequest.Counter[i])
             {
@@ -404,7 +409,7 @@ void BOBWrapper::Update(void)
             requestPortEmptyCount[i]++;
         }
 
-        if(inFlightResponse.Counter[i]>0)
+        if(inFlightResponse.Counter[i])
         {
             if(!--inFlightResponse.Counter[i])
             {
@@ -416,11 +421,12 @@ void BOBWrapper::Update(void)
                       (*callback)(vault, inFlightResponse.Cache[i]->payload);
                     }
 #endif
+#if 0
                     if (readDoneCallback)
                     {
                         (*readDoneCallback)(i, inFlightResponse.Cache[i]->address);
                     }
-
+#endif
                     UpdateLatencyStats(inFlightResponse.Cache[i]);
 
                     returnsPerPort[i]++;
@@ -433,11 +439,12 @@ void BOBWrapper::Update(void)
                       (*callback)(vault, inFlightResponse.Cache[i]->payload);
                     }
 #endif
+#if 0
                     if(logicDoneCallback)
                     {
                         (*logicDoneCallback)(inFlightResponse.Cache[i]->mappedChannel, inFlightResponse.Cache[i]->address);
                     }
-
+#endif
                     UpdateLatencyStats(inFlightResponse.Cache[i]);
 
                     totalLogicResponses++;
@@ -459,7 +466,7 @@ void BOBWrapper::Update(void)
 	}
 
 	//NEW STUFF
-	for(unsigned i=0; i<NUM_PORTS; i++)
+    for(unsigned i=0; i<this->num_ports; i++)
 	{
 		//look for new stuff to return from bob controller
         if(bob->ports[i]->outputBuffer.size()>0 &&
@@ -481,11 +488,12 @@ void BOBWrapper::Update(void)
 		}
     }
 
-    if(activatedPeriodPrintStates)
-      if(currentClockCycle%EPOCH_LENGTH==0 && currentClockCycle>0)
-      {
-         PrintStats(false);
-      }
+    if(activatedPeriodPrintStates
+       && currentClockCycle%EPOCH_LENGTH==0
+       && currentClockCycle>0)
+    {
+       PrintStats(false);
+    }
 
 
 	currentClockCycle++;
@@ -509,14 +517,14 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 		unsigned chanID = returnedRead->mappedChannel;
 
 		//add latencies to lists
-		perChanFullLatencies[chanID].push_back(returnedRead->fullTimeTotal);
-        perChanReqPort[chanID] += returnedRead->cyclesReqPort;
-        perChanRspPort[chanID] += returnedRead->cyclesRspPort;
-        perChanReqLink[chanID] += returnedRead->cyclesReqLink;
-        perChanRspLink[chanID] += returnedRead->cyclesRspLink;
-        perChanAccess[chanID] += returnedRead->dramTimeTotal;
-        perChanRRQ[chanID] += returnedRead->cyclesInReadReturnQ;
-        perChanWorkQTimes[chanID] += returnedRead->cyclesInWorkQueue;
+        perChan[chanID].FullLatencies.push_back(returnedRead->fullTimeTotal);
+        perChan[chanID].ReqPort += returnedRead->cyclesReqPort;
+        perChan[chanID].RspPort += returnedRead->cyclesRspPort;
+        perChan[chanID].ReqLink += returnedRead->cyclesReqLink;
+        perChan[chanID].RspLink += returnedRead->cyclesRspLink;
+        perChan[chanID].Access += returnedRead->dramTimeTotal;
+        perChan[chanID].RRQ += returnedRead->cyclesInReadReturnQ;
+        perChan[chanID].WorkQTimes += returnedRead->cyclesInWorkQueue;
 		/*
 			DEBUGN("== Read Returned");
 			DEBUGN(" full: "<< returnedRead->fullTimeTotal * CPU_CLK_PERIOD<<"ns");
@@ -636,22 +644,22 @@ void BOBWrapper::PrintStats(bool finalPrint)
 		double stdsum=0;
         double mean=0;
 
-		for(unsigned j=0; j<perChanFullLatencies[i].size(); j++)
+        for(unsigned j=0; j<perChan[i].FullLatencies.size(); j++)
 		{
-			if(perChanFullLatencies[i][j]>tempMax) tempMax = perChanFullLatencies[i][j];
-			if(perChanFullLatencies[i][j]<tempMin) tempMin = perChanFullLatencies[i][j];
+            if(perChan[i].FullLatencies[j]>tempMax) tempMax = perChan[i].FullLatencies[j];
+            if(perChan[i].FullLatencies[j]<tempMin) tempMin = perChan[i].FullLatencies[j];
 
-            tempSum+=perChanFullLatencies[i][j];
+            tempSum+=perChan[i].FullLatencies[j];
 		}
 
-		mean=tempSum/(float)perChanFullLatencies[i].size();
+        mean=tempSum/(float)perChan[i].FullLatencies.size();
 
 		//write per channel latency to stats file
 		statsOut<<CPU_CLK_PERIOD*mean<<",";
 
-		for(unsigned j=0; j<perChanFullLatencies[i].size(); j++)
+        for(unsigned j=0; j<perChan[i].FullLatencies.size(); j++)
 		{
-			stdsum+=pow(perChanFullLatencies[i][j]-mean,2);
+            stdsum+=pow(perChan[i].FullLatencies[j]-mean,2);
 		}
 
 #define MAX_STR 512
@@ -659,29 +667,29 @@ void BOBWrapper::PrintStats(bool finalPrint)
 
         snprintf(tmp_str,MAX_STR,"%u]%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f%10.4f\n",
 		         i,
-                 CPU_CLK_PERIOD*(perChanReqPort[i]/perChanFullLatencies[i].size()),
-                 CPU_CLK_PERIOD*(perChanReqLink[i]/perChanFullLatencies[i].size()),
-                 CPU_CLK_PERIOD*(perChanWorkQTimes[i]/perChanFullLatencies[i].size()),
-                 CPU_CLK_PERIOD*(perChanAccess[i]/perChanFullLatencies[i].size()),
-                 CPU_CLK_PERIOD*(perChanRRQ[i]/perChanFullLatencies[i].size()),
-                 CPU_CLK_PERIOD*(perChanRspLink[i]/perChanFullLatencies[i].size()),
-                 CPU_CLK_PERIOD*(perChanRspPort[i]/perChanFullLatencies[i].size()),
+                 CPU_CLK_PERIOD*(perChan[i].ReqPort/perChan[i].FullLatencies.size()),
+                 CPU_CLK_PERIOD*(perChan[i].ReqLink/perChan[i].FullLatencies.size()),
+                 CPU_CLK_PERIOD*(perChan[i].WorkQTimes/perChan[i].FullLatencies.size()),
+                 CPU_CLK_PERIOD*(perChan[i].Access/perChan[i].FullLatencies.size()),
+                 CPU_CLK_PERIOD*(perChan[i].RRQ/perChan[i].FullLatencies.size()),
+                 CPU_CLK_PERIOD*(perChan[i].RspLink/perChan[i].FullLatencies.size()),
+                 CPU_CLK_PERIOD*(perChan[i].RspPort/perChan[i].FullLatencies.size()),
 		         CPU_CLK_PERIOD*(mean));
 
 		PRINTN(tmp_str);
 		//clear
-        perChanWorkQTimes[i] = 0;
-        perChanFullLatencies[i].clear();
-        perChanReqLink[i] = 0;
-        perChanRspLink[i] = 0;
-        perChanReqPort[i] = 0;
-        perChanRspPort[i] = 0;
-        perChanAccess[i] = 0;
-        perChanRRQ[i] = 0;
+        perChan[i].WorkQTimes = 0;
+        perChan[i].FullLatencies.clear();
+        perChan[i].ReqLink = 0;
+        perChan[i].RspLink = 0;
+        perChan[i].ReqPort = 0;
+        perChan[i].RspPort = 0;
+        perChan[i].Access = 0;
+        perChan[i].RRQ = 0;
 	}
 
 	PRINT(" ---  Port stats (per epoch) : ");
-	for(unsigned i=0; i<NUM_PORTS; i++)
+    for(unsigned i=0; i<this->num_ports; i++)
 	{
 		PRINTN(" "<<i<<"] ");
 		PRINTN(" request: "<<(float)requestPortEmptyCount[i]/(elapsedCycles)*100.0<<"\% idle ");
@@ -714,10 +722,12 @@ void BOBWrapper::PrintStats(bool finalPrint)
 void BOBWrapper::WriteIssuedCallback(unsigned port, uint64_t address)
 {
 	committedWrites++;
+#if 0
 	if (writeDoneCallback)
 	{
 		(*writeDoneCallback)(port,address);
 	}
+#endif
 }
 
 

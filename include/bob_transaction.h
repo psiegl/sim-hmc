@@ -63,6 +63,10 @@ public:
       originatedFromLogicOp(false),
 #ifdef HMCSIM_SUPPORT
       payload(_payload),
+      row(0),
+      col(0),
+      bank(0),
+      rank(0),
 #endif
       cyclesReqPort(0),
       cyclesRspPort(0),
@@ -100,6 +104,10 @@ public:
 
 #ifdef HMCSIM_SUPPORT
     void *payload;
+    unsigned row;
+    unsigned col;
+    unsigned bank;
+    unsigned rank;
 #endif
 
 	//Latency break-up

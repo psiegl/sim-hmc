@@ -45,7 +45,7 @@ ofstream logOutput;
 
 unsigned DRAM_CPU_CLK_RATIO;
 unsigned DRAM_CPU_CLK_ADJUSTMENT;
-BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
+BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports) : priorityPort(0),
     readCounter(0),
     writeCounter(0),
     committedWrites(0),
@@ -57,7 +57,8 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     colBitWidth(log2(NUM_COLS)),
     busOffsetBitWidth(log2(BUS_ALIGNMENT_SIZE)),
     channelBitWidth(log2(NUM_CHANNELS)),
-    cacheOffset(log2(CACHE_LINE_SIZE))
+    cacheOffset(log2(CACHE_LINE_SIZE)),
+    num_ports(num_ports)
 {
     dram_channel_clk = 0;
     currentClockCycle = 0;
@@ -97,7 +98,7 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     }
 
     //Make port objects
-    for(unsigned i=0; i<NUM_PORTS; i++)
+    for(unsigned i=0; i<this->num_ports; i++)
     {
         ports.push_back(new Port(i));
     }
@@ -120,10 +121,10 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     memset(channelCounters, 0, sizeof(unsigned) * NUM_CHANNELS);
     memset(channelCountersLifetime, 0, sizeof(uint64_t) * NUM_CHANNELS);
 
-    portInputBufferAvg = new unsigned[NUM_PORTS];
-    memset(portInputBufferAvg, 0, sizeof(unsigned)*NUM_PORTS);
-    portOutputBufferAvg = new unsigned[NUM_PORTS];
-    memset(portOutputBufferAvg, 0, sizeof(unsigned)*NUM_PORTS);
+    portInputBufferAvg = new unsigned[this->num_ports];
+    memset(portInputBufferAvg, 0, sizeof(unsigned)*this->num_ports);
+    portOutputBufferAvg = new unsigned[this->num_ports];
+    memset(portOutputBufferAvg, 0, sizeof(unsigned)*this->num_ports);
 
     //Create channels
     for(unsigned i=0; i<NUM_CHANNELS; i++)
@@ -132,8 +133,8 @@ BOB::BOB(BOBWrapper *_bobwrapper) : priorityPort(0),
     }
 
     //Used for round-robin
-    priorityLinkBus = new unsigned[NUM_PORTS];
-    memset(priorityLinkBus, 0, sizeof(unsigned)*NUM_PORTS);
+    priorityLinkBus = new unsigned[this->num_ports];
+    memset(priorityLinkBus, 0, sizeof(unsigned)*this->num_ports);
 }
 
 BOB::~BOB(void)
@@ -147,7 +148,7 @@ BOB::~BOB(void)
         delete channels[i];
     }
 
-    for(unsigned p=0; p<NUM_PORTS; p++)
+    for(unsigned p=0; p<this->num_ports; p++)
     {
       delete ports[p];
     }
@@ -193,7 +194,7 @@ void BOB::Update(void)
     }
 
     //keep track of average entries in port in/out-buffers
-    for(unsigned i=0; i<NUM_PORTS; i++)
+    for(unsigned i=0; i<this->num_ports; i++)
     {
         portInputBufferAvg[i] += ports[i]->inputBuffer.size();
         portOutputBufferAvg[i] += ports[i]->outputBuffer.size();
@@ -336,7 +337,7 @@ void BOB::Update(void)
     //
     //Responses
     //
-    for(unsigned p=0; p<NUM_PORTS; p++)
+    for(unsigned p=0; p<this->num_ports; p++)
     {
         if(ports[p]->outputBusyCountdown==0)
         {
@@ -371,7 +372,7 @@ void BOB::Update(void)
     //
     //Move from input ports to serdes
     //
-    for(unsigned port=0; port<NUM_PORTS; port++)
+    for(unsigned port=0; port<this->num_ports; port++)
     {
         unsigned p = priorityPort;
 
@@ -429,7 +430,7 @@ void BOB::Update(void)
                     }
 
                     priorityPort++;
-                    if(priorityPort==NUM_PORTS) priorityPort = 0;
+                    if(priorityPort==this->num_ports) priorityPort = 0;
 
                     //remove from port input buffer
                     ports[p]->inputBuffer.erase(ports[p]->inputBuffer.begin()+i);
@@ -439,10 +440,10 @@ void BOB::Update(void)
         }
 
         priorityPort++;
-        if(priorityPort==NUM_PORTS) priorityPort = 0;
+        if(priorityPort==this->num_ports) priorityPort = 0;
     }
     priorityPort++;
-    if(priorityPort==NUM_PORTS) priorityPort = 0;
+    if(priorityPort==this->num_ports) priorityPort = 0;
 
     for(unsigned link=0; link<NUM_LINK_BUSES; link++)
     {
@@ -688,7 +689,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     PRINT(" === BOB Print === ");
     unsigned long totalRequestsAtChannels = 0L;
     PRINT(" == Ports");
-    for(unsigned p=0; p<NUM_PORTS; p++)
+    for(unsigned p=0; p<this->num_ports; p++)
     {
         PRINT("  -- Port "<<p<<" - inputBufferAvg : "<<(float)portInputBufferAvg[p]/elapsedCycles<<" ("<<ports[p]->inputBuffer.size()<<")   outputBufferAvg : "<<(float)portOutputBufferAvg[p]/elapsedCycles<<" ("<<ports[p]->outputBuffer.size()<<")");
         portInputBufferAvg[p]=0;

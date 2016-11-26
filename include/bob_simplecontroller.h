@@ -34,15 +34,14 @@
 //Simple Controller header
 
 #include <deque>
-#include "bob_buspacket.h"
-#include "bob_transaction.h"
 #include "bob_globals.h"
 
 using namespace std;
 
 namespace BOBSim
 {
-//forward declaration
+class Transaction;
+class BusPacket;
 class DRAMChannel;
 class BankState;
 class SimpleController
@@ -50,11 +49,14 @@ class SimpleController
 private:
     //Functions
     bool IsIssuable(BusPacket *busPacket);
+#ifndef HMCSIM_SUPPORT
     void AddressMapping(uint64_t physicalAddress, unsigned *rank, unsigned *bank, unsigned *row, unsigned *col);
+#endif
 
     //Fields
     DRAMChannel *channel;
 
+#ifndef HMCSIM_SUPPORT
     unsigned rankBitWidth;
     unsigned bankBitWidth;
     unsigned rowBitWidth;
@@ -62,6 +64,7 @@ private:
     unsigned busOffsetBitWidth;
     unsigned channelBitWidth;
     unsigned cacheOffset;
+#endif
 
     uint64_t currentClockCycle;
 

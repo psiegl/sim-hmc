@@ -43,6 +43,10 @@ class BOB;
 class BOBWrapper
 {
 private:
+    //Fields
+    //BOB object
+    BOB *bob;
+
 #if 0
     //Round-robin counter
     uint portRoundRobin;
@@ -58,30 +62,27 @@ private:
     uint64_t issuedWritesSize;
     unsigned totalIssuedWrites;
 
+    unsigned num_ports;
     void UpdateLatencyStats(Transaction *trans);
 
 public:
 	//Functions
-    BOBWrapper(void);
+    BOBWrapper(unsigned num_ports);
     ~BOBWrapper(void);
     void Update(void);
     bool AddTransaction(Transaction* trans, unsigned port);
 #if 0
 	bool AddTransaction(uint64_t addr, bool isWrite, int coreID, void *logicOp);
-#endif
 	void RegisterCallbacks(
         void (*readDone)(unsigned, uint64_t),
         void (*writeDone)(unsigned, uint64_t),
         void (*logicDone)(unsigned, uint64_t));
+#endif
     void PrintStats(bool finalPrint);
 
     bool activatedPeriodPrintStates;
 
-	//Fields
-	//BOB object
-	BOB *bob;
-
-    struct {
+    struct __attribute__ ((packed)) {
       //Incoming transactions being sent to each port
       Transaction** Cache;
       //Counters for determining how long packet should be sent
@@ -89,7 +90,7 @@ public:
       unsigned* HeaderCounter;
     } inFlightRequest;
 
-    struct {
+    struct __attribute__ ((packed)) {
       //Outgoing transactiong being sent to cache
       Transaction** Cache;
       //Counters for determining how long packet should be sent
@@ -105,19 +106,23 @@ public:
     unsigned* returnsPerPort;
 
 	//Callback functions
+#if 0
     void (*readDoneCallback)(unsigned, uint64_t);
     void (*writeDoneCallback)(unsigned, uint64_t);
     void (*logicDoneCallback)(unsigned, uint64_t);
-
+#endif
+private:
 	//More bookkeeping and statistics
-    vector<unsigned> perChanFullLatencies[NUM_CHANNELS];
-    double perChanReqPort[NUM_CHANNELS];
-    double perChanRspPort[NUM_CHANNELS];
-    double perChanReqLink[NUM_CHANNELS];
-    double perChanRspLink[NUM_CHANNELS];
-    double perChanAccess[NUM_CHANNELS];
-    double perChanRRQ[NUM_CHANNELS];
-    double perChanWorkQTimes[NUM_CHANNELS];
+    struct  __attribute__ ((packed)) {
+      vector<unsigned> FullLatencies;
+      double ReqPort;
+      double RspPort;
+      double ReqLink;
+      double RspLink;
+      double Access;
+      double RRQ;
+      double WorkQTimes;
+    } perChan [NUM_CHANNELS];
 
     vector<unsigned> fullLatencies;
     vector<unsigned> dramLatencies;
@@ -132,10 +137,10 @@ public:
 	ofstream statsOut;
 	ofstream powerOut;
 
-	//Callback
-	void WriteIssuedCallback(unsigned port, uint64_t address);
-
     uint64_t currentClockCycle;
+public:
+	//Callback
+    void WriteIssuedCallback(unsigned port, uint64_t address);
 
 #ifdef HMCSIM_SUPPORT
     bool IsPortBusy(unsigned port);
