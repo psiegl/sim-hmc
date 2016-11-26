@@ -72,5 +72,5 @@ $(TARGET): $(BUILDDIR) $(OBJ) $(LIBS) $(BOBOBJ)
 	@-$(RM) -f $(TARGET).ar
 
 all:
-	make clean -C extern/bobsim/ && make && g++ main.cpp libhmcsim.a -lz -g && ./a.out
+	make clean -C extern/bobsim/ && rm $(OBJ) && make && g++ main.cpp libhmcsim.a -lz -g && ./a.out
 

@@ -136,6 +136,10 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, void *pkt)
 
   unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
   unsigned len64bit = flits << 1;
+  hmc_queue *slid = this->slids[slidId]->get_olink();
+  if (!slid->has_space(flits * FLIT_WIDTH)) // check if we have space!
+    return false;
+
   uint64_t *packet = new uint64_t[len64bit];
   memcpy(packet, pkt, len64bit * sizeof(uint64_t));
   packet[0] |= HMCSIM_PACKET_SET_REQUEST();
@@ -143,7 +147,7 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, void *pkt)
   packet[len64bit - 1] &= ~(uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(~0x0); // mask out whatever is set for slid
   packet[len64bit - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slidId); // set slidId
 
-  return this->slids[slidId]->get_olink()->push_back(packet, flits * FLIT_WIDTH);
+  return slid->push_back(packet, flits * FLIT_WIDTH);
 }
 
 bool hmc_sim::hmc_recv_pkt(unsigned slidId, void *pkt)
@@ -152,13 +156,13 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, void *pkt)
   assert(pkt != nullptr);
 
   unsigned recvpacketleninbit;
-  void *packet = this->slids[slidId]->get_ilink()->front(&recvpacketleninbit);
+  uint64_t *packet = (uint64_t*)this->slids[slidId]->get_ilink()->front(&recvpacketleninbit);
   if (packet == nullptr)
     return false;
 
   this->slids[slidId]->get_ilink()->pop_front();
   memcpy(pkt, packet, recvpacketleninbit / 64);
-  delete[] (uint64_t*)packet;
+  delete[] packet;
   return true;
 }
 

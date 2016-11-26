@@ -33,6 +33,7 @@ bool hmc_queue::has_space(unsigned packetleninbit)
   return (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax);
 }
 
+#include <iostream>
 bool hmc_queue::push_back(void *packet, unsigned packetleninbit)
 {
   if (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax) {
