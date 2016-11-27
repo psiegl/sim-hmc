@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
   }
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
-  char packet[sendpacketleninbit];
+  char packet[sendpacketleninbit / 8];
 
   unsigned issue = 2002;
   unsigned send_ctr = 0;
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
   unsigned clks = 0;
   unsigned *track = new unsigned[issue];
 
-  char retpacket[16*FLIT_WIDTH];
+  char retpacket[16*FLIT_WIDTH / 8];
   bool next_available = false;
   do
   {

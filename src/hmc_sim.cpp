@@ -112,9 +112,8 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   link[1].set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
 
   // notify all!
-  for (unsigned i = 0; i < this->cubes.size(); i++) {
+  for (unsigned i = 0; i < this->cubes.size(); i++)
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
-  }
 
   if (quad->set_ext_link(&link[0])) {
     this->link_garbage.push_back(link);
@@ -135,15 +134,16 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
   assert(this->slids.find(slidId) != this->slids.end());
 
   unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
-  unsigned len64bit = flits << 1;
+  unsigned flitwidthInBit = flits * FLIT_WIDTH;
   hmc_queue *slid = this->slids[slidId]->get_olink();
-  if (!slid->has_space(flits * FLIT_WIDTH)) // check if we have space!
+  if (!slid->has_space(flitwidthInBit)) // check if we have space!
     return false;
 
-  char *packet = new char[flits * FLIT_WIDTH / 8];
-  memcpy(packet, pkt, flits * FLIT_WIDTH / 8);
+  char *packet = new char[flitwidthInBit / 8];
+  memcpy(packet, pkt, flitwidthInBit / 8);
   packet[0] |= HMCSIM_PACKET_SET_REQUEST();
 
+  unsigned len64bit = flits << 1;
   ((uint64_t*)packet)[len64bit - 1] &= ~(uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(~0x0); // mask out whatever is set for slid
   ((uint64_t*)packet)[len64bit - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slidId); // set slidId
 
