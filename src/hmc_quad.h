@@ -30,7 +30,7 @@ class hmc_quad : private hmc_notify_cl {
   bool notify_up(void);
 
 public:
-  hmc_quad(unsigned id, hmc_notify *notify,
+  hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
            hmc_cube *cube, enum link_width_t vaultbuswidth);
   virtual ~hmc_quad(void);
 

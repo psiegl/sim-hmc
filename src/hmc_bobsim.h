@@ -152,7 +152,7 @@ private:
   bool notify_up(void);
 
 public:
-  hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
+  hmc_bobsim(unsigned id, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
              hmc_cube *cube, hmc_notify *notify, hmc_link *link);
   virtual ~hmc_bobsim(void);
 

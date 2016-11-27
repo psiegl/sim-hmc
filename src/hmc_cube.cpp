@@ -12,8 +12,9 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
   id(id),
   quad_notify(id, notify, this)
 {
+  unsigned num_ranks = capacity; // 8GB -> 8 layer, 4GB -> 4layer
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
-    this->quads[i] = new hmc_quad(i, &this->quad_notify, this, vaultbuswidth);
+    this->quads[i] = new hmc_quad(i, num_ranks, &this->quad_notify, this, vaultbuswidth);
   }
 
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {

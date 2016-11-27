@@ -10,7 +10,7 @@ bool callback(void *bobsim, void *packet)
 
 int BOBSim::SHOW_SIM_OUTPUT = 1;
 
-hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
+hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
                        hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
   hmc_notify_cl(),
   hmc_vault(id, cube, &linknotify, link),
@@ -22,7 +22,7 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, bool periodPrintStats,
   bobnotify_ctr(0),
 #endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   bobnotify(id, notify, this),
-  bobsim(new BOBSim::BOBWrapper(num_ports))
+  bobsim(new BOBSim::BOBWrapper(num_ports, num_ranks))
 {
   BOBSim::SHOW_SIM_OUTPUT = 0;
   this->bobsim->activatedPeriodPrintStates = periodPrintStats;

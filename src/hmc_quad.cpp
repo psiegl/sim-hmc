@@ -9,7 +9,7 @@
 #include "hmc_link.h"
 #include "hmc_ring.h"
 
-hmc_quad::hmc_quad(unsigned id, hmc_notify *notify,
+hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
                    hmc_cube *cube, enum link_width_t vaultbuswidth) :
   hmc_notify_cl(),
   ring_notify(id, notify, this),
@@ -23,7 +23,7 @@ hmc_quad::hmc_quad(unsigned id, hmc_notify *notify,
     this->link_garbage.push_back(link);
 
 #ifdef HMC_USES_BOBSIM
-    this->vaults[i] = new hmc_bobsim(i, 1, false, cube, &this->vault_notify, &link[1]);
+    this->vaults[i] = new hmc_bobsim(i, 1, num_ranks, false, cube, &this->vault_notify, &link[1]);
 #else
     this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify, &link[1]);
 #endif /* #ifdef HMC_USES_BOBSIM */

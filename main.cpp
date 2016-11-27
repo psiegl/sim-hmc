@@ -6,7 +6,7 @@
 int main(int argc, char* argv[])
 {
   unsigned cubes = 2;
-  unsigned capacity = 8;
+  unsigned capacity = 4;
   hmc_sim sim(cubes, 2, 4, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
   unsigned slidId = 0;
   unsigned destcub = 1;
