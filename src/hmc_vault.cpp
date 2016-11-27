@@ -23,7 +23,7 @@ hmc_vault::~hmc_vault(void)
 void hmc_vault::clock(void)
 {
   unsigned packetleninbit;
-  void *packet = this->link->get_ilink()->front(&packetleninbit);
+  char *packet = this->link->get_ilink()->front(&packetleninbit);
   if (packet == nullptr)
     return;
 
@@ -863,11 +863,11 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     uint64_t rsp_frp = HMCSIM_PACKET_REQUEST_GET_FRP(tail);
     uint64_t rsp_rrp = HMCSIM_PACKET_REQUEST_GET_RRP(tail);
 
-    uint64_t *response_packet = new uint64_t[rsp_flits << 1];
+    char *response_packet = new char[rsp_flits * FLIT_WIDTH / 8];
     if (rsp_flits > 1)
       memcpy(&response_packet[1], rsp_payload, ((rsp_flits - 1) * FLIT_WIDTH) / 8);
-    uint64_t *r_head = response_packet;
-    uint64_t *r_tail = &response_packet[(rsp_flits << 1) - 1];
+    uint64_t *r_head = ((uint64_t*)response_packet);
+    uint64_t *r_tail = &((uint64_t*)response_packet)[(rsp_flits << 1) - 1];
 
     /* -- packet head */
     *r_head = 0x0ull;

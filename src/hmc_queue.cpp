@@ -33,8 +33,7 @@ bool hmc_queue::has_space(unsigned packetleninbit)
   return (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax);
 }
 
-#include <iostream>
-bool hmc_queue::push_back(void *packet, unsigned packetleninbit)
+bool hmc_queue::push_back(char *packet, unsigned packetleninbit)
 {
   if (this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax) {
     if (this->notify != NULL && !this->bitoccupation)
@@ -50,7 +49,7 @@ bool hmc_queue::push_back(void *packet, unsigned packetleninbit)
   return false;
 }
 
-void* hmc_queue::front(unsigned *packetleninbit)
+char* hmc_queue::front(unsigned *packetleninbit)
 {
   assert(!this->list.empty());
   auto *q = &this->list;
@@ -65,10 +64,10 @@ void* hmc_queue::front(unsigned *packetleninbit)
   return (!cyclestowait) ? std::get<0>(q->front()) : nullptr;
 }
 
-void* hmc_queue::pop_front(void)
+char* hmc_queue::pop_front(void)
 {
-  std::list< std::tuple<void*, unsigned, unsigned> > *q = &this->list;
-  void *front = std::get<0>(q->front());
+  std::list< std::tuple<char*, unsigned, unsigned> > *q = &this->list;
+  char *front = std::get<0>(q->front());
   this->bitoccupation -= std::get<2>(q->front());
   q->pop_front();
   if (this->notify != NULL && !this->bitoccupation) {

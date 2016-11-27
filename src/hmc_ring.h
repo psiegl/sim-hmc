@@ -24,7 +24,7 @@ private:
   hmc_notify links_notify;
   std::map<unsigned, hmc_link*> links;
 
-  unsigned decode_link_of_packet(void* packet);
+  unsigned decode_link_of_packet(char* packet);
   bool set_link(unsigned lid, hmc_link *link);
 
   ALWAYS_INLINE unsigned routing(unsigned nextquad)

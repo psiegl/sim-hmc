@@ -92,15 +92,15 @@ public:
   hmc_notify* hmc_define_slid(unsigned slidId, unsigned hmcId,
                             unsigned linkId, enum link_width_t bitwidth);
 
-  bool hmc_send_pkt(unsigned slidId, void *pkt);
-  bool hmc_recv_pkt(unsigned slidId, void *pkt);
+  bool hmc_send_pkt(unsigned slidId, char *pkt);
+  bool hmc_recv_pkt(unsigned slidId, char *pkt);
 
-  void hmc_decode_pkt(void *packet, uint64_t *header, uint64_t *tail,
+  void hmc_decode_pkt(char *packet, uint64_t *header, uint64_t *tail,
                       hmc_response_t *type, unsigned *flits, uint16_t *tag,
                       uint8_t *slid, uint8_t *rrp, uint8_t *frp, uint8_t *seq,
                       uint8_t *dinv, uint8_t *errstat, uint8_t *rtc, uint32_t *crc);
   void hmc_encode_pkt(unsigned cub, uint64_t addr,
-                      uint16_t tag, hmc_rqst_t cmd, void *packet);
+                      uint16_t tag, hmc_rqst_t cmd, char *packet);
 
   void clock(void);
 };

@@ -33,7 +33,7 @@ private:
   unsigned bitoccupationmax;
   enum link_width_t linkwidth;
 
-  std::list< std::tuple<void*, unsigned, unsigned> > list;
+  std::list< std::tuple<char*, unsigned, unsigned> > list;
 
 public:
   hmc_queue(void);
@@ -44,9 +44,9 @@ public:
   void re_adjust(enum link_width_t linkwidth, unsigned queuedepth);
 
   bool has_space(unsigned packetleninbit);
-  bool push_back(void *packet, unsigned packetleninbit);
-  void* front(unsigned *packetleninbit);
-  void* pop_front(void);
+  bool push_back(char *packet, unsigned packetleninbit);
+  char* front(unsigned *packetleninbit);
+  char* pop_front(void);
 };
 
 #endif /* #ifndef _HMC_QUEUE_H_ */

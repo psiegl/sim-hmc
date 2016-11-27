@@ -27,7 +27,7 @@ private:
   hmc_notify bobnotify;
   BOBSim::BOBWrapper *bobsim;
 
-  std::list<void*>feedback_cache;
+  std::list<char*>feedback_cache;
 
   enum BOBSim::TransactionType hmc_determineTransactionType(hmc_rqst_t cmd, unsigned *rqstlen)
   {
@@ -157,7 +157,7 @@ public:
   virtual ~hmc_bobsim(void);
 
   void clock(void);
-  bool bob_feedback(void *packet);
+  bool bob_feedback(char *packet);
 };
 
 #endif /* #ifndef _HMC_BOBSIM_H_ */

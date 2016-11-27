@@ -127,7 +127,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   }
 }
 
-bool hmc_sim::hmc_send_pkt(unsigned slidId, void *pkt)
+bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
 {
   uint64_t header = HMC_PACKET_HEADER(pkt);
 
@@ -140,17 +140,17 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, void *pkt)
   if (!slid->has_space(flits * FLIT_WIDTH)) // check if we have space!
     return false;
 
-  uint64_t *packet = new uint64_t[len64bit];
-  memcpy(packet, pkt, len64bit * sizeof(uint64_t));
+  char *packet = new char[flits * FLIT_WIDTH / 8];
+  memcpy(packet, pkt, flits * FLIT_WIDTH / 8);
   packet[0] |= HMCSIM_PACKET_SET_REQUEST();
 
-  packet[len64bit - 1] &= ~(uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(~0x0); // mask out whatever is set for slid
-  packet[len64bit - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slidId); // set slidId
+  ((uint64_t*)packet)[len64bit - 1] &= ~(uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(~0x0); // mask out whatever is set for slid
+  ((uint64_t*)packet)[len64bit - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slidId); // set slidId
 
   return slid->push_back(packet, flits * FLIT_WIDTH);
 }
 
-bool hmc_sim::hmc_recv_pkt(unsigned slidId, void *pkt)
+bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
 {
   assert(this->slids.find(slidId) != this->slids.end());
   assert(pkt != nullptr);
@@ -166,7 +166,7 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, void *pkt)
   return true;
 }
 
-void hmc_sim::hmc_decode_pkt(void *packet, uint64_t *response_head, uint64_t *response_tail,
+void hmc_sim::hmc_decode_pkt(char *packet, uint64_t *response_head, uint64_t *response_tail,
                              hmc_response_t *type, unsigned *rtn_flits, uint16_t *tag,
                              uint8_t *slid, uint8_t *rrp, uint8_t *frp, uint8_t *seq,
                              uint8_t *dinv, uint8_t *errstat, uint8_t *rtc, uint32_t *crc)
@@ -207,7 +207,7 @@ void hmc_sim::hmc_decode_pkt(void *packet, uint64_t *response_head, uint64_t *re
 }
 
 void hmc_sim::hmc_encode_pkt(unsigned cub, uint64_t addr,
-                             uint16_t tag, hmc_rqst_t cmd, void *packet)
+                             uint16_t tag, hmc_rqst_t cmd, char *packet)
 {
   unsigned flits = 0;
   switch (cmd) { // ToDo: would be nice, if their would be something common -> see hmc_process_packet.h

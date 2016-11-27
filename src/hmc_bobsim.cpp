@@ -5,7 +5,7 @@
 
 bool callback(void *bobsim, void *packet)
 {
-  return ((hmc_bobsim*)bobsim)->bob_feedback(packet);
+  return ((hmc_bobsim*)bobsim)->bob_feedback((char*)packet);
 }
 
 int BOBSim::SHOW_SIM_OUTPUT = 1;
@@ -41,7 +41,7 @@ hmc_bobsim::~hmc_bobsim(void)
 }
 
 
-bool hmc_bobsim::bob_feedback(void *packet)
+bool hmc_bobsim::bob_feedback(char *packet)
 {
   if (this->hmcsim_process_rqst(packet)) {
 #ifndef ALWAYS_NOTIFY_BOBSIM
@@ -81,7 +81,7 @@ void hmc_bobsim::clock(void)
 
   if (this->linknotify.get_notification() && !this->bobsim->IsPortBusy(0 /* port */)) {
     unsigned packetleninbit;
-    void *packet = this->link->get_ilink()->front(&packetleninbit);
+    char *packet = this->link->get_ilink()->front(&packetleninbit);
     if (packet == nullptr)
       return;
 

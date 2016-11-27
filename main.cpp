@@ -30,10 +30,10 @@ int main(int argc, char* argv[])
   unsigned *track = new unsigned[issue];
 
   char retpacket[16*FLIT_WIDTH];
-  bool send_next = false;
+  bool next_available = false;
   do
   {
-    if(issue > send_ctr && send_next == false)
+    if(issue > send_ctr && next_available == false)
     {
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
 
@@ -44,13 +44,13 @@ int main(int argc, char* argv[])
       }
       else
         sim.hmc_encode_pkt(destcub, addr, 0, WR64, packet);
-      send_next = true;
+      next_available = true;
 
     }
-    if(send_next == true && sim.hmc_send_pkt(slidId, packet)) {
+    if(next_available == true && sim.hmc_send_pkt(slidId, packet)) {
       track[send_ctr] = clks;
       send_ctr++;
-      send_next = false;
+      next_available = false;
     }
     if(slidnotify->get_notification() && sim.hmc_recv_pkt(slidId, retpacket))
     {
@@ -67,10 +67,8 @@ int main(int argc, char* argv[])
   } while(true);
 
   unsigned long long avg = 0;
-  for(unsigned i=0; i<issue; i++) {
+  for(unsigned i=0; i<issue; i++)
     avg += track[i];
-//    std::cout << "pkt " << i << ". -> clks " << track[i] << std::endl;
-  }
   avg /= issue;
 
   delete[] track;

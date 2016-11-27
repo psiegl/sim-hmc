@@ -35,7 +35,7 @@ bool hmc_ring::set_link(unsigned lid, hmc_link *link)
   return false;
 }
 
-unsigned hmc_ring::decode_link_of_packet(void *packet)
+unsigned hmc_ring::decode_link_of_packet(char *packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
   unsigned p_cubId;
@@ -84,7 +84,7 @@ void hmc_ring::clock(void)
     if ((0x1 << i) & notifymap) {
       hmc_queue *queue = this->links[i]->get_ilink();
       unsigned packetleninbit;
-      void *packet = queue->front(&packetleninbit);
+      char *packet = queue->front(&packetleninbit);
       if (packet == nullptr)
         continue;
 
