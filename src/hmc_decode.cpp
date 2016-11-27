@@ -5,9 +5,22 @@
 #include "config.h"
 
 
-hmc_decode::hmc_decode(unsigned bsize, unsigned num_banks_per_vault)
+hmc_decode::hmc_decode(void) :
+  vault_shift(0),
+  vault_mask(0),
+  quad_shift(0),
+  quad_mask(0),
+  bank_shift(0),
+  bank_mask(0),
+  dram_shift_lo(0),
+  dram_mask_lo(0),
+  dram_shift_hi(0),
+  dram_mask_hi(0),
+  row_shift(0),
+  row_mask(0),
+  col_shift(0),
+  col_mask(0)
 {
-  this->set_decoding(bsize, num_banks_per_vault);
 }
 
 hmc_decode::~hmc_decode(void)
@@ -40,7 +53,6 @@ hmc_decode::~hmc_decode(void)
         128 BlockSize: dram [32:16], bank [15:12], quad [11:10], vault [9:7],  dram[6:4]
         256 BlockSize: dram [32:17], bank [16:13], quad [12:11], vault [10:8], dram[7:4]
  */
-#include <iostream>
 void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
 {
   unsigned bit_start = (unsigned)log2(bsize);
@@ -68,10 +80,9 @@ void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
   unsigned dram_mask_width_lo = begin_bit_start - this->dram_shift_lo;
   this->dram_mask_lo = (1 << dram_mask_width_lo) - 1;
 
-  this->dram_shift_hi = bit_start - dram_mask_width_lo + 1;
-  unsigned dram_mask_width_hi = 31 - bit_start + 1;
+  this->dram_shift_hi = bit_start - (dram_mask_width_lo - 1);
+  unsigned dram_mask_width_hi = 20 - dram_mask_width_lo;
   this->dram_mask_hi = ((1 << dram_mask_width_hi) - 1) << dram_mask_width_lo;
-  assert((dram_mask_width_lo + dram_mask_width_hi) == 20);
 
 // alignment [4:0] already removed from dram_mask, col and row need the same (according to bobsim only column!)
   unsigned col_mask_width = (unsigned)log2(HMC_NUM_COLS_PER_BANK) - (unsigned)log2(HMC_DEVICE_WIDTH);

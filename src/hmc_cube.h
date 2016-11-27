@@ -2,8 +2,8 @@
 #define _HMC_CUBE_H_
 
 #include <map>
+#include <list>
 #include "hmc_macros.h"
-#include "hmc_decode.h"
 #include "hmc_route.h"
 #include "hmc_notify.h"
 #include "hmc_register.h"
@@ -12,7 +12,7 @@ class hmc_quad;
 class hmc_link;
 
 class hmc_cube : public hmc_route, private hmc_notify_cl,
-                 public hmc_register, public hmc_decode {
+                 public hmc_register {
 private:
   unsigned id;
 
@@ -26,6 +26,7 @@ private:
 public:
   hmc_cube(unsigned id, hmc_notify *notify,
            enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth,
+           unsigned capacity,
            std::map<unsigned, hmc_cube*>* cubes, unsigned numcubes);
   virtual ~hmc_cube(void);
 

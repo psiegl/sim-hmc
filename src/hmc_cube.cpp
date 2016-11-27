@@ -4,11 +4,11 @@
 
 hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
                    enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth,
+                   unsigned capacity,
                    std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes) :
   hmc_route(cubes, numcubes),
   hmc_notify_cl(),
-  hmc_register(this), // register needs to be before decode!
-  hmc_decode(this->hmcsim_util_get_bsize(), this->hmcsim_util_get_num_banks_per_vault()),
+  hmc_register(this, capacity),
   id(id),
   quad_notify(id, notify, this)
 {

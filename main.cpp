@@ -7,7 +7,8 @@
 int main(int argc, char* argv[])
 {
   unsigned cubes = 2;
-  hmc_sim sim(cubes, 2, 4, 8, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
+  unsigned capacity = 8;
+  hmc_sim sim(cubes, 2, 4, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
   unsigned slidId = 0;
   unsigned destcub = 1;
   unsigned addr = 0b110000000000; // quad 3
@@ -19,10 +20,10 @@ int main(int argc, char* argv[])
     std::cerr << "link setup was not successful" << std::endl;
   }
 
-
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
+  uint64_t packet[(sendpacketleninbit/FLIT_WIDTH) << 1];
 
-  unsigned issue = 102;
+  unsigned issue = 2002;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 
@@ -30,22 +31,29 @@ int main(int argc, char* argv[])
   unsigned *track = new unsigned[issue];
 
   uint64_t retpacket[16];
+  bool send_next = false;
   do
   {
-    if(issue > send_ctr)
+    if(issue > send_ctr && send_next == false)
     {
-      uint64_t packet[(sendpacketleninbit/FLIT_WIDTH) << 1];
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
 
-      if(send_ctr < (issue - 2))
-        sim.hmc_encode_pkt(destcub, addr, 0, RD256, packet);
+      if(send_ctr < (issue - 2)) {
+        unsigned dram_hi = (send_ctr & 0b111) << 4;
+        unsigned dram_lo = (send_ctr >> 3) << (capacity == 8 ? 16 : 15);
+        std::cout << "--> hi: " << std::hex << dram_hi << ", lo: " << dram_lo << std::dec << std::endl;
+        //std::cout << "addr: " << std::hex << (addr+dram_hi+dram_lo) << std::dec << std::endl;
+        sim.hmc_encode_pkt(destcub, addr+dram_hi+dram_lo, 0, RD256, packet);
+      }
       else
         sim.hmc_encode_pkt(destcub, addr, 0, WR64, packet);
+      send_next = true;
 
-      if(sim.hmc_send_pkt(slidId, packet)) {
-        track[send_ctr] = clks;
-        send_ctr++;
-      }
+    }
+    if(send_next == true && sim.hmc_send_pkt(slidId, packet)) {
+      track[send_ctr] = clks;
+      send_ctr++;
+      send_next = false;
     }
     if(slidnotify->get_notification() && sim.hmc_recv_pkt(slidId, retpacket))
     {

@@ -134,7 +134,6 @@
 #define HMC_PACKET_REQ_TAIL( x )  (((uint64_t*)(x))[(HMCSIM_PACKET_REQUEST_GET_LNG(HMC_PACKET_HEADER(x)) << 1)-1])
 
 /* ----------------------------------------- */
-
 class hmc_decode {
   unsigned vault_shift;
   uint32_t vault_mask;
@@ -158,10 +157,9 @@ class hmc_decode {
   uint32_t col_mask;
 
 public:
-  hmc_decode(unsigned bsize, unsigned num_banks_per_vault);
+  hmc_decode(void);
   ~hmc_decode(void);
   void set_decoding(unsigned bsize, unsigned num_banks_per_vault);
-
 
   ALWAYS_INLINE unsigned HMCSIM_UTIL_DECODE_QUAD( uint64_t addr )
   {

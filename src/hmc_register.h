@@ -4,6 +4,7 @@
 #include <cstdint>
 #include "config.h"
 #include "hmc_macros.h"
+#include "hmc_decode.h"
 
 class hmc_cube;
 
@@ -103,7 +104,7 @@ struct hmcsim_reg_decode_fields_t {
   unsigned reset_value;
 };
 
-class hmc_register {
+class hmc_register : public hmc_decode {
 private:
   struct hmcsim_reg_decode_fields_t hmcsim_decode_fields[47] = {
   /* table 32: External Request Register */
@@ -338,7 +339,7 @@ private:
   int hmcsim_util_decode_bsize(unsigned value);
 
 public:
-  hmc_register(hmc_cube *cube);
+  hmc_register(hmc_cube *cube, unsigned capacity);
   ~hmc_register(void);
 
   ALWAYS_INLINE int hmcsim_reg_value_reset(unsigned reg, hmc_regslots_e slot, uint64_t value)

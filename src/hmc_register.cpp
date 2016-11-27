@@ -5,22 +5,29 @@
 #include "hmc_cube.h"
 
 
-hmc_register::hmc_register(hmc_cube *cube) :
+hmc_register::hmc_register(hmc_cube *cube, unsigned capacity) :
+  hmc_decode(),
   cube(cube)
 {
   for (unsigned i = 0; i < HMC_NUM_REGS; i++) {
     this->regs[i] = 0x0;
   }
 
+  // reset all the registers
   for (unsigned i = 0; i < (unsigned)elemsof(this->hmcsim_decode); i++) {
     struct hmcsim_reg_decode_fields_t *field;
     if (!this->hmcsim_get_decode_field(this->hmcsim_decode[i].name, &field)) {
       std::cerr << "ERROR: No mapping found!" << std::endl;
       continue;
     }
-
     this->hmcsim_reg_value_reset(this->hmcsim_decode[i].reg, this->hmcsim_decode[i].name, field->reset_value);
   }
+
+  // set specific registers as of supplied configuration
+  this->hmcsim_reg_value_reset(HMC_REG_FEAT, HMC_REG_FEAT__CUBE_SIZE, (unsigned)log2(capacity) - 1);
+  unsigned num_banks = 2 * capacity;
+  this->hmcsim_reg_value_reset(HMC_REG_FEAT, HMC_REG_FEAT__NUMBER_OF_BANKS_PER_VAULT, (unsigned)log2(num_banks) - 3);
+  this->set_decoding(this->hmcsim_util_get_bsize(), num_banks); // initialize decoding!
 }
 
 hmc_register::~hmc_register(void)
@@ -46,74 +53,12 @@ bool hmc_register::hmcsim_get_decode_field(hmc_regslots_e name, struct hmcsim_re
 
 int hmc_register::hmcsim_get_decode_idx(unsigned reg)
 {
-  switch (reg) {
-  case HMC_REG_EDR(0):
-  case HMC_REG_EDR(1):
-  case HMC_REG_EDR(2):
-  case HMC_REG_EDR(3): {
-    unsigned id = (reg - HMC_REG_EDR__BASE) / HMC_REG_EDR__OFFSET;
-    assert(id <= 3);
-    return HMC_REG_EDR_IDX + id;
+  for (unsigned i = 0; i < elemsof(hmcsim_decode); i++) {
+    if (reg == hmcsim_decode[i].reg)
+      return hmcsim_decode[i].idx;
   }
-
-  case HMC_REG_ERR:
-    return HMC_REG_ERR_IDX;
-
-  case HMC_REG_GC:
-    return HMC_REG_GC_IDX;
-
-  case HMC_REG_LC(0):
-  case HMC_REG_LC(1):
-  case HMC_REG_LC(2):
-  case HMC_REG_LC(3): {
-    unsigned id = (reg - HMC_REG_LC__BASE) / HMC_REG_LC__OFFSET;
-    assert(id <= 3);
-    return HMC_REG_LC_IDX + id;
-  }
-
-  case HMC_REG_LRLL(0):
-  case HMC_REG_LRLL(1):
-  case HMC_REG_LRLL(2):
-  case HMC_REG_LRLL(3): {
-    unsigned id = (reg - HMC_REG_LRLL__BASE) / HMC_REG_LRLL__OFFSET;
-    assert(id <= 3);
-    return HMC_REG_LRLL_IDX + id;
-  }
-
-  case HMC_REG_LR(0):
-  case HMC_REG_LR(1):
-  case HMC_REG_LR(2):
-  case HMC_REG_LR(3): {
-    unsigned id = (reg - HMC_REG_LR__BASE) / HMC_REG_LR__OFFSET;
-    assert(id <= 3);
-    return HMC_REG_LR_IDX + id;
-  }
-
-  case HMC_REG_IBTC(0):
-  case HMC_REG_IBTC(1):
-  case HMC_REG_IBTC(2):
-  case HMC_REG_IBTC(3): {
-    unsigned id = (reg - HMC_REG_IBTC__BASE) / HMC_REG_IBTC__OFFSET;
-    assert(id <= 3);
-    return HMC_REG_IBTC_IDX + id;
-  }
-
-  case HMC_REG_AC:
-    return HMC_REG_AC_IDX;
-
-  case HMC_REG_VCR:
-    return HMC_REG_VCR_IDX;
-
-  case HMC_REG_FEAT:
-    return HMC_REG_FEAT_IDX;
-
-  case HMC_REG_RVID:
-    return HMC_REG_RVID_IDX;
-
-  default:
-    std::cerr << "ERROR: reg not defined " << reg << std::endl;
-    return -1;
-  }
+  std::cerr << "ERROR: reg not defined " << reg << std::endl;
+  return -1;
 }
 
 int hmc_register::hmcsim_reg_value_set_internal(unsigned reg_addr, hmc_regslots_e slot,

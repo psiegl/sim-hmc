@@ -47,7 +47,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
   for (unsigned i = 0; i < num_hmcs; i++) {
-    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, vaultbuswidth, &this->cubes, num_hmcs);
+    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, vaultbuswidth, capacity, &this->cubes, num_hmcs);
     this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 }
