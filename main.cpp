@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstring>
-#include <cstdint>
 #include "src/hmc_sim.h"
 
 
@@ -21,7 +20,7 @@ int main(int argc, char* argv[])
   }
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
-  uint64_t packet[(sendpacketleninbit/FLIT_WIDTH) << 1];
+  char packet[sendpacketleninbit];
 
   unsigned issue = 2002;
   unsigned send_ctr = 0;
@@ -30,7 +29,7 @@ int main(int argc, char* argv[])
   unsigned clks = 0;
   unsigned *track = new unsigned[issue];
 
-  uint64_t retpacket[16];
+  char retpacket[16*FLIT_WIDTH];
   bool send_next = false;
   do
   {
@@ -41,8 +40,6 @@ int main(int argc, char* argv[])
       if(send_ctr < (issue - 2)) {
         unsigned dram_hi = (send_ctr & 0b111) << 4;
         unsigned dram_lo = (send_ctr >> 3) << (capacity == 8 ? 16 : 15);
-        std::cout << "--> hi: " << std::hex << dram_hi << ", lo: " << dram_lo << std::dec << std::endl;
-        //std::cout << "addr: " << std::hex << (addr+dram_hi+dram_lo) << std::dec << std::endl;
         sim.hmc_encode_pkt(destcub, addr+dram_hi+dram_lo, 0, RD256, packet);
       }
       else
@@ -69,7 +66,7 @@ int main(int argc, char* argv[])
     sim.clock();
   } while(true);
 
-  uint64_t avg = 0;
+  unsigned long long avg = 0;
   for(unsigned i=0; i<issue; i++) {
     avg += track[i];
 //    std::cout << "pkt " << i << ". -> clks " << track[i] << std::endl;

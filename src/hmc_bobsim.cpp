@@ -107,8 +107,7 @@ void hmc_bobsim::clock(void)
       // only add forever, if there is something in it
       this->bobnotify.notify_add(0);
     }
-#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
-#ifndef ALWAYS_NOTIFY_BOBSIM
+#else
     if (!(this->bobnotify_ctr++)) {
       this->bobnotify.notify_add(0);
     }
