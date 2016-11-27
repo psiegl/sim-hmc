@@ -109,7 +109,7 @@ enum AddressMappingScheme
 //CPU
 //
 //CPU clock frequency in nanoseconds
-#define CPU_CLK_PERIOD                0.8f //1.25 GHz  0.3125f // ns - 3.2 GHz
+#define CPU_CLK_PERIOD                0.8f //1.25 GHz  orig.: 0.3125f // ns - 3.2 GHz
 
 //
 //BOB Architecture Config
@@ -125,11 +125,11 @@ enum AddressMappingScheme
 #define CHANNELS_PER_LINK_BUS         (NUM_CHANNELS / NUM_LINK_BUSES)
 
 //Number of lanes for both request and response link bus
-#define REQUEST_LINK_BUS_WIDTH       32 //calc. for HMC (psiegl)   default: 8 //Bit Lanes
-#define RESPONSE_LINK_BUS_WIDTH      32 //calc. for HMC (psiegl)   default: 12 //Bit Lanes
+#define REQUEST_LINK_BUS_WIDTH       32 //calc. for HMC (psiegl)   orig.: 8 //Bit Lanes
+#define RESPONSE_LINK_BUS_WIDTH      32 //calc. for HMC (psiegl)   orig.: 12 //Bit Lanes
 
 //Clock frequency for link buses
-#define LINK_BUS_CLK_PERIOD           0.8f //1.25 GHz  0.3125f // ns - 3.2 GHz
+#define LINK_BUS_CLK_PERIOD           0.8f //1.25 GHz  orig.: 0.3125f // ns - 3.2 GHz
 //Ratio between CPU and link bus clocks - computed at runtime
 #define LINK_CPU_CLK_RATIO           (unsigned)(CPU_CLK_PERIOD / LINK_BUS_CLK_PERIOD)
 //Flag to turn on/off double-data rate transfer on link bus
@@ -141,7 +141,6 @@ enum AddressMappingScheme
 #define DRAM_BUS_WIDTH               16 //bytes - DOUBLE TO ACCOUNT FOR DDR - 64-bits wide JEDEC bus
 
 //Number of ports on main BOB controller
-extern uint NUM_PORTS;
 //Number of bytes each port can transfer in a CPU cycle
 #define PORT_WIDTH                   16
 //Number of transaction packets that each port buffer may hold
@@ -183,57 +182,31 @@ extern uint NUM_PORTS;
 //
 //Alignment to determine width of DRAM bus, used in mapping
 #define BUS_ALIGNMENT_SIZE           8
+#ifndef HMCSIM_SUPPORT
 //Cache line size in bytes 
 #define CACHE_LINE_SIZE             64
 //Offset of channel ID
 #define CHANNEL_ID_OFFSET            0
-//Ratio of clock speeds between DRAM and CPU - computed at runtime
-extern uint DRAM_CPU_CLK_RATIO;
 //Address mapping scheme - defined at the top of this file
 #define MAPPINGSCHEME RW_CLH_BK_RK_CH_CLL_BY
-
+#endif
+//Ratio of clock speeds between DRAM and CPU - computed at runtime
+extern uint DRAM_CPU_CLK_RATIO;
 
 //
 //DRAM Timing
 //
-#if defined(DDR3_1333)
-#include "cfg/bob_ddr3_1333.h"
-#elif defined(DDR3_1600)
-#include "cfg/bob_ddr3_1600.h"
-#elif defined(DDR3_1066)
-#include "cfg/bob_ddr3_1066.h"
-#endif
 #ifdef HMCSIM_SUPPORT
-
+ #include "cfg/hmcsim.h"
+#else
+ #if defined(DDR3_1333)
+  #include "cfg/bob_ddr3_1333.h"
+ #elif defined(DDR3_1600)
+  #include "cfg/bob_ddr3_1600.h"
+ #elif defined(DDR3_1066)
+  #include "cfg/bob_ddr3_1066.h"
+ #endif
 #endif
-
-uint inline log2(unsigned value) // ToDo get rid of
-{
-	uint logbase2 = 0;
-	unsigned orig = value;
-	value>>=1;
-	while(value>0)
-	{
-		value >>= 1;
-		logbase2++;
-	}
-	if(1<<logbase2<orig)logbase2++;
-	return logbase2;
-}
-
-uint inline log2_64(uint64_t value)
-{
-	uint logbase2 = 0;
-	uint64_t orig = value;
-	value>>=1;
-	while(value>0)
-	{
-		value>>=1;
-		logbase2++;
-	}
-	if(1<<logbase2<orig)logbase2++;
-	return logbase2;
-}
 }
 
 #endif

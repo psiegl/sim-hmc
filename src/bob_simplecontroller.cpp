@@ -42,11 +42,12 @@
 using namespace std;
 using namespace BOBSim;
 
-SimpleController::SimpleController(DRAMChannel *parent) :
+SimpleController::SimpleController(DRAMChannel *parent, unsigned ranks) :
     channel(parent), //Registers the parent channel object
+    ranks(ranks),
 
 #ifndef HMCSIM_SUPPORT
-    rankBitWidth(log2(NUM_RANKS)),
+    rankBitWidth(log2(ranks)),
     bankBitWidth(log2(NUM_BANKS)),
     rowBitWidth(log2(NUM_ROWS)),
     colBitWidth(log2(NUM_COLS)),
@@ -57,8 +58,8 @@ SimpleController::SimpleController(DRAMChannel *parent) :
 
     currentClockCycle(0),
 
-    bankStates(NUM_RANKS, vector<BankState>(NUM_BANKS, BankState())),
-    tFAWWindow(NUM_RANKS, vector<unsigned>(0) ),
+    bankStates(ranks, vector<BankState>(NUM_BANKS, BankState())),
+    tFAWWindow(ranks, vector<unsigned>(0) ),
 
     refreshCounter(0),
 	readCounter(0),
@@ -76,16 +77,16 @@ SimpleController::SimpleController(DRAMChannel *parent) :
     waitingACTS(0),
 
     //init power fields
-    backgroundEnergy(NUM_RANKS, 0),
-    burstEnergy(NUM_RANKS, 0),
-    actpreEnergy(NUM_RANKS, 0),
-    refreshEnergy(NUM_RANKS, 0)
+    backgroundEnergy(ranks, 0),
+    burstEnergy(ranks, 0),
+    actpreEnergy(ranks, 0),
+    refreshEnergy(ranks, 0)
 {
     //Make the bank state objects
-    for(unsigned i=0; i<NUM_RANKS; i++)
+    for(unsigned i=0; i<ranks; i++)
     {
         //init refresh counters
-        refreshCounters.push_back(((7800/tCK)/NUM_RANKS)*(i+1));
+        refreshCounters.push_back(((7800/tCK)/ranks)*(i+1));
     }
 }
 
@@ -118,7 +119,7 @@ void SimpleController::Update(void)
 	//cumulative rolling average
 	commandQueueAverage += currentCount;
 
-	for(unsigned r=0; r<NUM_RANKS; r++)
+    for(unsigned r=0; r<this->ranks; r++)
     {
 		for(unsigned b=0; b<NUM_BANKS; b++)
         {
@@ -195,7 +196,7 @@ void SimpleController::Update(void)
     bool issuingRefresh = false;
 
     //Figure out if everyone who needs a refresh can actually receive one
-	for(unsigned r=0; r<NUM_RANKS; r++)
+    for(unsigned r=0; r<this->ranks; r++)
 	{
         if( ! refreshCounters[r])
 		{
@@ -237,7 +238,7 @@ void SimpleController::Update(void)
 				}
 
 				//reset refresh counters
-				for(unsigned i=0; i<NUM_RANKS; i++)
+                for(unsigned i=0; i<this->ranks; i++)
 				{
                     if( ! refreshCounters[r])
 					{
@@ -291,7 +292,7 @@ void SimpleController::Update(void)
                     bankstate->nextActivate = max(bankstate->nextActivate, currentClockCycle + tRTP + tRP);
 //					bankstate->nextRefresh = currentClockCycle + tRTP + tRP;
 
-					for(unsigned r=0; r<NUM_RANKS; r++)
+                    for(unsigned r=0; r<this->ranks; r++)
                     {
                         uint64_t read_offset;
                         if(r==rank)
@@ -335,7 +336,7 @@ void SimpleController::Update(void)
                     bankstate->nextActivate = currentClockCycle + stateChangeCountdown + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 //					bankstate->nextRefresh = bankstate->nextActivate; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
 
-					for(unsigned r=0; r<NUM_RANKS; r++)
+                    for(unsigned r=0; r<this->ranks; r++)
 					{
 						if(r==rank)
 						{

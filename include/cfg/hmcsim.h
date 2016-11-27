@@ -2,20 +2,30 @@
 //DRAM Timing
 //
 
-//DDR3-1333 Micron Part : MT41J1G4-15E
-//Clock Rate : 666MHz
-#define NUM_RANKS  4 // per bank!
-#define NUM_BANKS  8
-#define NUM_ROWS  65536
-#define NUM_COLS  2048
+#define NUM_RANKS     4        // depends on capacity!
+#define NUM_BANKS     2
+#define NUM_ROWS      16384
+#define NUM_COLS      1024
 
-#define DEVICE_WIDTH  4
-#define BL      8 //only used in power calculation, burst length
+#define DEVICE_WIDTH  4 //wide is the xX X = 4, 8, 16 ToDo
+#define BL            8 //only used in power calculation, burst length
 
-#define Vdd     1.5f
+
+/*
+ * V_DD           Logic supply              0.9V+-0.027V
+ * V_DDPLL        Filtered PLL supplies     1.2V+-0.06V
+ * V_TT           Link transmit & receive   1.2V+-0.06V
+ * V_DDM          Memory supply             1.2V+-0.06V
+ * V_CCP          DRAM worldline boost      2.5V+-0.125V
+ * V_DDK          NVM,I2C,JTAG, PWR manage. 1.5V (-0.05V/+0.20V)
+ */
+
+#define Vdd           1.2f // V_ddm
+
+// ----- keep the DDR3-1333 spec below ...
 
 //CLOCK PERIOD
-#define tCK     1.5f //ns
+#define tCK     1.5f //ns 666MHz
 
 //in clock ticks
 //ACT to READ or WRITE

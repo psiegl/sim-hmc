@@ -41,8 +41,8 @@
 using namespace std;
 using namespace BOBSim;
 
-DRAMChannel::DRAMChannel(unsigned id, BOB *_bob):
-    simpleController(this),
+DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, unsigned num_ranks):
+    simpleController(this, num_ranks),
     inFlightCommandCountdown(0),
     inFlightDataCountdown(0),
     channelID(id),
@@ -54,7 +54,7 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob):
     pendingLogicResponse(NULL),
     DRAMBusIdleCount(0)
 {
-    for(unsigned i=0; i<NUM_RANKS; i++)
+    for(unsigned i=0; i<num_ranks; i++)
     {
         ranks.push_back(new Rank(i, this));
     }
@@ -62,9 +62,9 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob):
 
 DRAMChannel::~DRAMChannel(void)
 {
-    for(unsigned i=0; i<NUM_RANKS; i++)
+    for(std::vector<Rank*>::iterator it=this->ranks.begin(); it<this->ranks.end(); ++it)
     {
-        delete ranks[i];
+      delete *it;
     }
     for(deque<BusPacket*>::iterator it = readReturnQueue.begin(); it !=readReturnQueue.end(); ++it)
     {
@@ -137,10 +137,10 @@ void DRAMChannel::Update(void)
 	//updates
     logicLayer.Update();
 
-	simpleController.Update();
-	for(unsigned i=0; i<NUM_RANKS; i++)
+    simpleController.Update();
+    for(std::vector<Rank*>::iterator it=this->ranks.begin(); it<this->ranks.end(); ++it)
 	{
-        ranks[i]->Update();
+        (*it)->Update();
     }
 }
 

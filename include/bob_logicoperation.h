@@ -168,7 +168,7 @@ public:
 
     for(int i=0; i<sizeToCopy; i++)
     {
-        Transaction *trans = new Transaction(DATA_READ, 64, sourceAddress + i*(1<<(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))));
+        Transaction *trans = new Transaction(DATA_READ, 64, sourceAddress + i*(1<<(unsigned)(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))));
         trans->originatedFromLogicOp = true;
 
 //        if(DEBUG_LOGIC) DEBUG("      == Logic Op created");

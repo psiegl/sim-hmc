@@ -119,7 +119,7 @@ private:
 
 public:
 	//Functions
-    BOBWrapper(unsigned num_ports);
+    BOBWrapper(unsigned num_ports, unsigned num_ranks = NUM_RANKS);
     ~BOBWrapper(void);
     void Update(void);
     bool AddTransaction(Transaction* trans, unsigned port);

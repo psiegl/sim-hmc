@@ -61,6 +61,7 @@ class BOB
 private:
     //All DRAM channel objects (which includes ranks of DRAM and the simple contorller)
     DRAMChannel* channels[NUM_CHANNELS];
+    unsigned num_ranks;
 
     //Bookkeeping for the number of requests to each channel
     unsigned channelCounters[NUM_CHANNELS];
@@ -97,6 +98,7 @@ private:
 //	unsigned logicOpCounter;
 
     //Address mapping widths
+#ifndef HMCSIM_SUPPORT
     unsigned rankBitWidth;
     unsigned bankBitWidth;
     unsigned rowBitWidth;
@@ -104,6 +106,7 @@ private:
     unsigned busOffsetBitWidth;
     unsigned channelBitWidth;
     unsigned cacheOffset;
+#endif
 
     //Used to adjust for uneven clock frequencies
     unsigned clockCycleAdjustmentCounter;
@@ -115,7 +118,7 @@ private:
     unsigned FindChannelID(Transaction* trans);
 public:
 	//Functions
-    BOB(BOBWrapper *_bobwrapper, unsigned num_ports);
+    BOB(BOBWrapper *_bobwrapper, unsigned num_ports, unsigned ranks);
     ~BOB(void);
     void Update(void);
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);

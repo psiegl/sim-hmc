@@ -49,7 +49,8 @@ ofstream logOutput;
 
 unsigned DRAM_CPU_CLK_RATIO;
 unsigned DRAM_CPU_CLK_ADJUSTMENT;
-BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports) :
+BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports, unsigned ranks) :
+    num_ranks(ranks),
     portInputBufferAvg(num_ports, 0),
     portOutputBufferAvg(num_ports, 0),
 
@@ -60,13 +61,16 @@ BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports) :
     writeCounter(0),
     committedWrites(0),
     clockCycleAdjustmentCounter(0),
-    rankBitWidth(log2(NUM_RANKS)),
+#ifndef HMCSIM_SUPPORT
+    rankBitWidth(log2(ranks)),
     bankBitWidth(log2(NUM_BANKS)),
     rowBitWidth(log2(NUM_ROWS)),
     colBitWidth(log2(NUM_COLS)),
     busOffsetBitWidth(log2(BUS_ALIGNMENT_SIZE)),
     channelBitWidth(log2(NUM_CHANNELS)),
     cacheOffset(log2(CACHE_LINE_SIZE)),
+#endif
+
     num_ports(num_ports),
     ports(num_ports, Port()), //Make port objects
     bobwrapper(_bobwrapper)
@@ -81,8 +85,9 @@ BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports) :
     output_filename += ".log";
     logOutput.open(output_filename.c_str());
 #endif
+#ifndef HMCSIM_SUPPORT
     DEBUG("busoff:"<<busOffsetBitWidth<<" col:"<<colBitWidth<<" row:"<<rowBitWidth<<" rank:"<<rankBitWidth<<" bank:"<<bankBitWidth<<" chan:"<<channelBitWidth);
-
+#endif
 
     //Compute ratios of various clock frequencies
     if(fmod(CPU_CLK_PERIOD,LINK_BUS_CLK_PERIOD)>0.00001)
@@ -120,7 +125,7 @@ BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports) :
     //Create channels
     for(unsigned i=0; i<NUM_CHANNELS; i++)
     {
-        channels[i] = new DRAMChannel(i, this);
+        channels[i] = new DRAMChannel(i, this, num_ranks);
     }
 }
 
@@ -594,6 +599,7 @@ void BOB::Update(void)
 
 unsigned BOB::FindChannelID(Transaction* trans)
 {
+#ifndef HMCSIM_SUPPORT
     if(NUM_CHANNELS == 1)
        return 0;
 
@@ -633,6 +639,9 @@ unsigned BOB::FindChannelID(Transaction* trans)
     //build channel id mask
     uint64_t channelMask = ((1 << ((unsigned)log2(NUM_CHANNELS)))-1) << channelIDOffset;
     return ((trans->address & channelMask) >> channelIDOffset);
+#else
+    return 0;
+#endif
 }
 
 //This is also kind of kludgey, but essentially this function always prints the power
@@ -680,9 +689,8 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     float bw = (1/dataperiod)*64/8;//64-bit bus, 8 bits/byte
 
 #ifndef NO_OUTPUT
-    unsigned numDevices = 64 / DEVICE_WIDTH;
-    unsigned long totalBytesPerDevice = ((unsigned long)NUM_COLS * (unsigned long)NUM_ROWS * (unsigned long)NUM_BANKS * (unsigned long)DEVICE_WIDTH) / 8L; //in bytes
-    unsigned long gigabytesPerRank = (numDevices * totalBytesPerDevice)>>30;
+    unsigned long long totalBytesPerDevice = (unsigned long long)NUM_COLS * (unsigned long long)NUM_ROWS * (unsigned long long)NUM_BANKS; //in bytes
+    unsigned long long gigabytesPerRank = totalBytesPerDevice>>20;
 #endif
 
     //calculate peak bandwidth for link bus
@@ -708,12 +716,12 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
         respLinkBus[l].linkIdle=0;
     }
 
-
+#if NUM_LINK_BUSES > 1
     PRINT("     -----------");
     PRINT("      "<<reqtotal/NUM_LINK_BUSES<<"          "<<rsptotal/NUM_LINK_BUSES<<" (avgs)");
+#endif
 
-
-    PRINT(" == Channel Usage and Stats ("<<(NUM_RANKS * gigabytesPerRank)<<"GB/Chan == "<<NUM_RANKS * gigabytesPerRank * NUM_CHANNELS<<" GB total)");
+    PRINT(" == Channel Usage and Stats ("<<(this->num_ranks * gigabytesPerRank)<<"MB/Chan == "<<this->num_ranks * gigabytesPerRank * NUM_CHANNELS<<" MB total)");
     PRINT("     reqs   workQAvg  workQMax idleBanks   actBanks  preBanks  refBanks  (totalBanks) BusIdle  BW("<<bw<<")  RRQMax("<<CHANNEL_RETURN_Q_MAX/TRANSACTION_SIZE<<")   RRQFull lifetimeRequests");
     float totalDRAMbw = 0;
     for(unsigned i=0; i<NUM_CHANNELS; i++)
@@ -749,7 +757,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
                  (unsigned long long)channelCountersLifetime[i]
                 );
 
-//        for(int r=0; r<NUM_RANKS; r++)
+//        for(int r=0; r<this->num_ranks; r++)
 //        {
 //            for(int b=0; b<NUM_BANKS; b++)
 //            {
@@ -775,7 +783,9 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     //separates bandwidth numbers and power numbers
     statsOut<<";";
 
+#if NUM_CHANNELS > 1
     PRINT("                                                                                          AVG : "<<totalDRAMbw/NUM_CHANNELS);
+#endif
     PRINT(" == Requests seen at Channels");
     PRINT("  -- Reads  : "<<readCounter);
     PRINT("  -- Writes : "<<writeCounter);
@@ -791,16 +801,17 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     PRINT(" == Channel Power");
     powerOut<<currentClockCycle * CPU_CLK_PERIOD / 1000000<<",";
 
-    bool detailedOutput = false;
-    bool shortOutput = true;
+    bool detailedOutput = true;
+    bool shortOutput = false;
     float allChanAveragePower = 0;
     for(unsigned c=0; c<NUM_CHANNELS; c++)
     {
         float totalChannelPower = 0;
+#ifndef HMCSIM_SUPPORT
         PRINTN("    -- Channel "<<c);
-        for(unsigned r=0; r<NUM_RANKS; r++)
+#endif
+        for(unsigned r=0; r<this->num_ranks; r++)
         {
-
             float averagePower = ((float)(channels[c]->simpleController.actpreEnergy[r] +
                                           channels[c]->simpleController.backgroundEnergy[r] +
                                           channels[c]->simpleController.burstEnergy[r] +
@@ -809,7 +820,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 
             if(!shortOutput)
             {
-                PRINTN("     -- Rank "<<r<<" : ");
+                PRINTN("    -- Rank "<<r<<": ");
                 if(detailedOutput)
                 {
 #ifndef NO_OUTPUT
@@ -819,11 +830,11 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
                     float refreshPower = ((float)channels[c]->simpleController.refreshEnergy[r] / (float) dramCyclesElapsed) * Vdd / 1000;
 #endif
 
-                    PRINT(setprecision(4)<<"TOT :"<<averagePower<<"  bkg:"<<backgroundPower<<" brst:"<<burstPower<<" ap:"<<actprePower<<" ref:"<<refreshPower);
+                    PRINT(setprecision(4)<<"TOT :"<<averagePower<<"  bkg:"<<backgroundPower<<" brst:"<<burstPower<<" ap:"<<actprePower<<" ref:"<<refreshPower << setprecision(6));
                 }
                 else
                 {
-                    PRINTN(setprecision(4)<<averagePower<<"w ");
+                    PRINTN(setprecision(4)<<averagePower<<"w " << setprecision(6));
                 }
             }
 
@@ -838,10 +849,12 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
         statsOut<<totalChannelPower<<",";
         powerOut<<totalChannelPower<<",";
 
-        PRINT(" -- DRAM Power : "<<totalChannelPower<<" w");
+        PRINT("    -- DRAM Power : "<<totalChannelPower<<" w");
     }
 
+#if NUM_CHANNELS > 1
     PRINT("   Average Power  : "<<allChanAveragePower/NUM_CHANNELS<<" w");
+#endif
     PRINT("   Total Power    : "<<allChanAveragePower<<" w");
     PRINT("   SimpCont BG Power : "<<NUM_LINK_BUSES * SIMP_CONT_BACKGROUND_POWER<<" w");
     PRINT("   SimpCont Core Power : "<<NUM_CHANNELS * SIMP_CONT_CORE_POWER<<" w");

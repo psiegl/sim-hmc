@@ -37,9 +37,9 @@ using namespace std;
 
 namespace BOBSim
 {
-BOBWrapper::BOBWrapper(unsigned num_ports) :
+BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks) :
     //Create BOB object and register callbacks
-    bob(this, num_ports),
+    bob(this, num_ports, num_ranks),
 
     inFlightRequest(),
     inFlightResponse(),
@@ -120,7 +120,7 @@ BOBWrapper::BOBWrapper(unsigned num_ports) :
 	//System Parameters
     //
 	statsOut<<"!!SYSTEM_INI"<<endl;
-	statsOut<<"NUM_RANKS="<<NUM_RANKS<<endl;
+    statsOut<<"NUM_RANKS="<<num_ranks<<endl;
 	statsOut<<"NUM_CHANS="<<NUM_CHANNELS<<endl;
 	statsOut<<"BUS_ALIGNMENT_SIZE="<<BUS_ALIGNMENT_SIZE<<endl;
 	statsOut<<"JEDEC_DATA_BUS_WIDTH="<<DRAM_BUS_WIDTH<<endl;
@@ -130,7 +130,9 @@ BOBWrapper::BOBWrapper(unsigned num_ports) :
 	statsOut<<"EPOCH_COUNT="<<EPOCH_LENGTH<<endl;
 	statsOut<<"ROW_BUFFER_POLICY=close_page"<<endl;
 	statsOut<<"SCHEDULING_POLICY=N/A"<<endl;
+#ifndef HMCSIM_SUPPORT
     statsOut<<"ADDRESS_MAPPING_SCHEME=scheme"<<MAPPINGSCHEME<<endl;
+#endif
 	statsOut<<"QUEUING_STRUCTURE=N/A"<<endl;
 	statsOut<<"DEBUG_TRANS_Q=false"<<endl;
 	statsOut<<"DEBUG_CMD_Q=false"<<endl;

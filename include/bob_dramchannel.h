@@ -65,7 +65,7 @@ private:
 
 public:
     //Functions
-    DRAMChannel(unsigned id, BOB *_bob);
+    DRAMChannel(unsigned id, BOB *_bob, unsigned ranks);
     ~DRAMChannel(void);
     bool AddTransaction(Transaction *trans);
     void Update(void);
