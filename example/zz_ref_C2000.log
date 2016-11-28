@@ -1,5 +1,6 @@
 busoff:3 col:11 row:16 rank:2 bank:3 chan:0
 DRAM_CPU_CLK_ADJUSTMENT : 2
+
 ==================Epoch [0]=======================
 per epoch] reads   : 123 writes : 70 (63.7306% Reads) : 193
 lifetime ] reads   : 123 writes : 70 total : 193
@@ -30,20 +31,19 @@ dram time mean  : 50.9919 ns
  == Link Bandwidth (!! Includes packet overhead and request packets !!)
     Req Link(10 GB/s peak)  Rsp Link(10 GB/s peak)
       4.815 GB/s             6.19 GB/s
-     -----------
-      4.815          6.19 (avgs)
- == Channel Usage and Stats (32GB/Chan == 32 GB total)
+ == Channel Usage and Stats (4096MB/Chan == 4096 MB total)
      reqs   workQAvg  workQMax idleBanks   actBanks  preBanks  refBanks  (totalBanks) BusIdle  BW(10.6667)  RRQMax(16)   RRQFull lifetimeRequests
 0]      206    5.7289        12   18.1820   10.2486    1.5882    0.0000   30.0188     23.26     7.623         3(2)         0       206
-                                                                                          AVG : 7.62298
  == Requests seen at Channels
   -- Reads  : 137
   -- Writes : 69
             = 206
  == Channel Power
-    -- Channel 0 -- DRAM Power : 10.469 w
-   Average Power  : 10.469 w
-   Total Power    : 10.469 w
+    -- Channel 0    -- Rank 0: TOT :2.402  bkg:1.005 brst:0.3949 ap:1.002 ref:0
+    -- Rank 1: TOT :2.711  bkg:1.011 brst:0.489 ap:1.212 ref:0
+    -- Rank 2: TOT :2.64  bkg:1.01 brst:0.4422 ap:1.188 ref:0
+    -- Rank 3: TOT :2.715  bkg:1.004 brst:0.4989 ap:1.212 ref:0
+    -- DRAM Power : 10.469 w
    SimpCont BG Power : 7 w
    SimpCont Core Power : 3.5 w
    System Power   : 20.969 w

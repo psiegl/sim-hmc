@@ -122,6 +122,7 @@ void SimpleController::Update(void)
 
     for(unsigned r=0; r<this->ranks; r++)
     {
+        bool bankOpen = false;
 		for(unsigned b=0; b<NUM_BANKS; b++)
         {
             switch(bankStates[r][b].currentBankState)
@@ -134,6 +135,7 @@ void SimpleController::Update(void)
             //count the number of active banks
             case ROW_ACTIVE:
               numActBanksAverage++;
+              bankOpen = true;
               break;
 
             //count the number of precharging banks
@@ -144,21 +146,17 @@ void SimpleController::Update(void)
             //count the number of refreshing banks
             case REFRESHING:
               numRefBanksAverage++;
+              bankOpen = true;
               break;
             }
+
+            //Updates the bank states for each rank
+            bankStates[r][b].UpdateStateChange();
         }
 
         //
         //Power
         //
-        bool bankOpen = false;
-        for(unsigned b=0; b<NUM_BANKS; b++)
-		{
-          if( (bankOpen = (bankStates[r][b].currentBankState == ROW_ACTIVE ||
-                           bankStates[r][b].currentBankState == REFRESHING)) )
-            break;
-        }
-
         //DRAM_BUS_WIDTH/2 because value accounts for DDR
         backgroundEnergy[r] += (bankOpen ? IDD3N : IDD2N) * ((DRAM_BUS_WIDTH/2 * 8) / this->deviceWidth);
 
@@ -170,12 +168,6 @@ void SimpleController::Update(void)
         {
             if(!--tFAWWindow[r][i])
                 tFAWWindow[r].erase(tFAWWindow[r].begin());
-		}
-
-        //Updates the bank states for each rank
-		for(unsigned b=0; b<NUM_BANKS; b++)
-        {
-            bankStates[r][b].UpdateStateChange();
         }
 
         //Handle refresh counters
@@ -410,6 +402,7 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 {
 	unsigned rank = busPacket->rank;
 	unsigned bank = busPacket->bank;
+    BankState *bankState = &bankStates[rank][bank];
 
 	//if((channel->readReturnQueue.size()+outstandingReads) * TRANSACTION_SIZE >= CHANNEL_RETURN_Q_MAX)
 	//if((channel->readReturnQueue.size()) * TRANSACTION_SIZE >= CHANNEL_RETURN_Q_MAX)
@@ -422,43 +415,37 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 	switch(busPacket->busPacketType)
 	{
     case READ_P:
-		if(bankStates[rank][bank].currentBankState == ROW_ACTIVE &&
-           bankStates[rank][bank].openRowAddress == busPacket->row &&
-           currentClockCycle >= bankStates[rank][bank].nextRead &&
+        if(bankState->currentBankState == ROW_ACTIVE &&
+           bankState->openRowAddress == busPacket->row &&
+           currentClockCycle >= bankState->nextRead &&
            (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
         {
 			return true;
 		}
 		else
 		{
-            if((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
-			{
-				RRQFull++;
-			}
+            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX); // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
 			return false;
         }
 
         break;
     case WRITE_P:
-		if(bankStates[rank][bank].currentBankState == ROW_ACTIVE &&
-           bankStates[rank][bank].openRowAddress == busPacket->row &&
-           currentClockCycle >= bankStates[rank][bank].nextWrite &&
+        if(bankState->currentBankState == ROW_ACTIVE &&
+           bankState->openRowAddress == busPacket->row &&
+           currentClockCycle >= bankState->nextWrite &&
            (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
         {
 			return true;
 		}
 		else
 		{
-            if((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
-			{
-				RRQFull++;
-			}
+            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX); // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
 			return false;
         }
 		break;
     case ACTIVATE:
-        return (bankStates[rank][bank].currentBankState == IDLE &&
-                currentClockCycle >= bankStates[rank][bank].nextActivate &&
+        return (bankState->currentBankState == IDLE &&
+                currentClockCycle >= bankState->nextActivate &&
 		        refreshCounters[rank]>0 &&
                 tFAWWindow[rank].size()<4);
 	default:
@@ -476,7 +463,6 @@ void SimpleController::AddTransaction(Transaction *trans)
     mappedBank = trans->bank;
     mappedRow = trans->row;
     mappedCol = trans->col;
-//    std::cout << "rank: " << mappedRank << " mappedBank " << mappedBank << " Row " << mappedRow << " Col " << mappedCol << std::endl;
 #else
     AddressMapping(trans->address, &mappedRank, &mappedBank, &mappedRow, &mappedCol);
 #endif

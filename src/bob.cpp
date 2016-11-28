@@ -54,6 +54,10 @@ BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned de
     portInputBufferAvg(num_ports, 0),
     portOutputBufferAvg(num_ports, 0),
 
+    //Initialize fields for bookkeeping
+    reqLinkBus(NUM_LINK_BUSES, bob_linkbus()),
+    respLinkBus(NUM_LINK_BUSES, bob_linkbus()),
+
     priorityPort(0),
     priorityLinkBus(num_ports, 0), //Used for round-robin
 
@@ -115,9 +119,6 @@ BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned de
         exit(0);
     }
 
-    //Initialize fields for bookkeeping
-    memset(reqLinkBus, 0, sizeof(struct linkbus) * NUM_LINK_BUSES);
-    memset(respLinkBus, 0, sizeof(struct linkbus) * NUM_LINK_BUSES);
 
     memset(responseLinkRoundRobin, 0, sizeof(unsigned) * NUM_LINK_BUSES);
 
@@ -206,7 +207,7 @@ void BOB::Update(void)
 
     for(unsigned i=0; i<NUM_LINK_BUSES; i++)
     {
-        struct linkbus *i_reqLinkBus = &reqLinkBus[i];
+        bob_linkbus *i_reqLinkBus = &reqLinkBus[i];
         if(i_reqLinkBus->inFlightLinkCountdowns && !--i_reqLinkBus->inFlightLinkCountdowns)
         {
             //compute total time in serDes and travel up channel
@@ -222,7 +223,7 @@ void BOB::Update(void)
             i_reqLinkBus->serDesBuffer = NULL;
         }
 
-        struct linkbus *i_respLinkBus = &respLinkBus[i];
+        bob_linkbus *i_respLinkBus = &respLinkBus[i];
         if(i_respLinkBus->inFlightLinkCountdowns && !--i_respLinkBus->inFlightLinkCountdowns)
         {
             if(i_respLinkBus->serDesBuffer!=NULL)
@@ -235,10 +236,10 @@ void BOB::Update(void)
             i_respLinkBus->inFlightLink->channelTimeTotal = currentClockCycle - i_respLinkBus->inFlightLink->channelStartTime;
 
             //remove from return queue
-            BusPacket* front = *channels[respLinkBus[i].inFlightLink->mappedChannel]->readReturnQueue.begin();
+            BusPacket* front = *channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.begin();
             channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.erase(channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.begin());
             delete front;
-
+            // psiegl ... here in the serdes buffer!
             i_respLinkBus->serDesBuffer = i_respLinkBus->inFlightLink;
             i_respLinkBus->inFlightLink = NULL;
         }
@@ -252,7 +253,7 @@ void BOB::Update(void)
         //
         //REQUEST
         //
-        struct linkbus *i_reqLinkBus = &reqLinkBus[c];
+        bob_linkbus *i_reqLinkBus = &reqLinkBus[c];
         if(i_reqLinkBus->serDesBuffer!=NULL &&
            i_reqLinkBus->inFlightLinkCountdowns==0)
         {
@@ -328,7 +329,7 @@ void BOB::Update(void)
         if(ports[p].outputBusyCountdown==0)
         {
             //check to see if something has been received from a channel
-            struct linkbus *i_respLinkBus = &respLinkBus[priorityLinkBus[p]];
+            bob_linkbus *i_respLinkBus = &respLinkBus[priorityLinkBus[p]];
             if(i_respLinkBus->serDesBuffer!=NULL &&
                i_respLinkBus->serDesBuffer->portID==p)
             {
@@ -349,6 +350,7 @@ void BOB::Update(void)
                     break;
                 };
                 i_respLinkBus->serDesBuffer = NULL;
+                // psiegl !! HEEEERE
             }
             priorityLinkBus[p]++;
             if(priorityLinkBus[p]==NUM_LINK_BUSES)priorityLinkBus[p]=0;
@@ -374,7 +376,7 @@ void BOB::Update(void)
                 unsigned linkBusID = channelID / CHANNELS_PER_LINK_BUS;
 
                 //make sure the serDe isn't busy and the queue isn't full
-                struct linkbus *i_reqLinkBus = &reqLinkBus[linkBusID];
+                bob_linkbus *i_reqLinkBus = &reqLinkBus[linkBusID];
                 if(i_reqLinkBus->serDesBuffer==NULL &&
                     channels[channelID]->simpleController.waitingACTS<CHANNEL_WORK_Q_MAX)
                 {
@@ -434,7 +436,7 @@ void BOB::Update(void)
     for(unsigned link=0; link<NUM_LINK_BUSES; link++)
     {
         //make sure output is not busy sending something else
-        struct linkbus *i_respLinkBus = &respLinkBus[link];
+        bob_linkbus *i_respLinkBus = &respLinkBus[link];
         if(i_respLinkBus->inFlightLinkCountdowns==0 &&
            i_respLinkBus->serDesBuffer==NULL)
         {
@@ -547,16 +549,20 @@ void BOB::Update(void)
                     if(i_respLinkBus->inFlightLinkCountdowns>0)
                     {
                         //increment round robin (increment here to go to next index before we break)
+#if CHANNELS_PER_LINK_BUS > 1
                         responseLinkRoundRobin[link]++;
                         if(responseLinkRoundRobin[link]==CHANNELS_PER_LINK_BUS)
+#endif
                             responseLinkRoundRobin[link]=0;
                         break;
                     }
                 }
 
                 //increment round robin (increment here if we found nothing)
+#if CHANNELS_PER_LINK_BUS > 1
                 responseLinkRoundRobin[link]++;
                 if(responseLinkRoundRobin[link]==CHANNELS_PER_LINK_BUS)
+#endif
                     responseLinkRoundRobin[link]=0;
             }
         }
@@ -676,7 +682,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 #define MAX_TMP_STR 512
     char tmp_str[MAX_TMP_STR];
 
-    PRINT(" === BOB Print === ");
+    PRINT(std::dec << " === BOB Print === ");
     unsigned long totalRequestsAtChannels = 0L;
     PRINT(" == Ports");
     for(unsigned p=0; p<this->num_ports; p++)
@@ -853,6 +859,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 
         PRINT("    -- DRAM Power : "<<totalChannelPower<<" w");
     }
+    statsOut << ";" << allChanAveragePower/NUM_CHANNELS << endl;
 
 #if NUM_CHANNELS > 1
     PRINT("   Average Power  : "<<allChanAveragePower/NUM_CHANNELS<<" w");
@@ -863,7 +870,6 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     PRINT("   SimpCont Core Power : "<<NUM_CHANNELS * SIMP_CONT_CORE_POWER<<" w");
     PRINT("   System Power   : "<<allChanAveragePower + NUM_LINK_BUSES * SIMP_CONT_BACKGROUND_POWER + NUM_CHANNELS * SIMP_CONT_CORE_POWER<<" w");
 #endif
-    statsOut << ";" << allChanAveragePower/NUM_CHANNELS << endl;
 
     //compute static power from controllers
     powerOut<<SIMP_CONT_BACKGROUND_POWER * NUM_LINK_BUSES + NUM_CHANNELS * SIMP_CONT_CORE_POWER <<",";

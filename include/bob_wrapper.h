@@ -47,7 +47,8 @@ private:
     //BOB object
     BOB bob;
 
-    struct __attribute__ ((packed)) {
+    class inFlightRequest { // like a struct
+    public:
       //Incoming transactions being sent to each port
       vector<Transaction*> Cache;
       //Counters for determining how long packet should be sent
@@ -55,7 +56,8 @@ private:
       vector<unsigned> HeaderCounter;
     } inFlightRequest;
 
-    struct __attribute__ ((packed)) {
+    class inFlightResponse { // like a struct
+    public:
       //Outgoing transactiong being sent to cache
       vector<Transaction*> Cache;
       //Counters for determining how long packet should be sent
@@ -79,7 +81,8 @@ private:
     vector<unsigned> returnsPerPort;
 
     //More bookkeeping and statistics
-    struct  __attribute__ ((packed)) {
+    class perChan {
+    public:
       vector<unsigned> FullLatencies;
       double ReqPort;
       double RspPort;

@@ -597,6 +597,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 	totalReturnedReads += returnedReads;
 	totalIssuedWrites += issuedWrites;
 
+    PRINT(std::dec);
 	PRINT("==================Epoch ["<<currentClockCycle/EPOCH_LENGTH<<"]=======================");
 	PRINT("per epoch] reads   : "<<returnedReads<<" writes : "<<issuedWrites<<" ("<<(float)returnedReads/(float)(returnedReads+issuedWrites)*100<<"% Reads) : "<<returnedReads+issuedWrites);
 	PRINT("lifetime ] reads   : "<<totalReturnedReads<<" writes : "<<totalIssuedWrites<<" total : "<<totalTransactionsServiced);

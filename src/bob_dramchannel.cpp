@@ -70,12 +70,12 @@ DRAMChannel::~DRAMChannel(void)
     {
       delete *it;
     }
-    if(pendingLogicResponse)
-      delete pendingLogicResponse;
-    if(inFlightCommandPacket)
-      delete inFlightCommandPacket;
-    if(inFlightDataPacket)
-      delete inFlightDataPacket;
+//    if(pendingLogicResponse)
+//      delete pendingLogicResponse;
+//    if(inFlightCommandPacket)
+//      delete inFlightCommandPacket;
+//    if(inFlightDataPacket)
+//      delete inFlightDataPacket;
 }
 
 void DRAMChannel::Update(void)
@@ -111,7 +111,7 @@ void DRAMChannel::Update(void)
                 simpleController.outstandingReads--;
 
                 bob->ReportCallback(inFlightDataPacket);
-                inFlightDataPacket = NULL;
+                //inFlightDataPacket = nullptr;
 
                 //keep track of total number of entries in return queue
                 if(readReturnQueue.size()>readReturnQueueMax)

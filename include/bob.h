@@ -45,7 +45,18 @@ class BOBWrapper;
 class DRAMChannel;
 class BusPacket;
 
-struct linkbus {
+class bob_linkbus {
+public:
+  bob_linkbus(void) :
+    serDesBuffer(0),
+    inFlightLink(0),
+    inFlightLinkCountdowns(0),
+    linkIdle(0)
+  {
+
+  }
+  ~bob_linkbus(void){}
+
   //SerDes buffer for holding incoming request packet
   Transaction* serDesBuffer;
   //The packet which is currently being sent
@@ -77,12 +88,12 @@ private:
     //
     //Request Link Bus
     //
-    struct linkbus reqLinkBus[NUM_LINK_BUSES];
+    vector<bob_linkbus> reqLinkBus;
 
     //
     //Response Link Bus
     //
-    struct linkbus respLinkBus[NUM_LINK_BUSES];
+    vector<bob_linkbus> respLinkBus;
 
     //Round-robin counter
     unsigned responseLinkRoundRobin[NUM_LINK_BUSES];
