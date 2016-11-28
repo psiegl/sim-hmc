@@ -22,7 +22,7 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, unsigned num_ranks, bool
   bobnotify_ctr(0),
 #endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   bobnotify(id, notify, this),
-  bobsim(new BOBSim::BOBWrapper(num_ports, num_ranks))
+  bobsim(new BOBSim::BOBWrapper(num_ports, num_ranks, num_ranks)) // DEVICE_WIDTH == NUM_RANKS
 {
   BOBSim::SHOW_SIM_OUTPUT = 0;
   this->bobsim->activatedPeriodPrintStates = periodPrintStats;
