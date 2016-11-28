@@ -16,6 +16,7 @@ class hmc_cube;
 class hmc_bobsim : private hmc_notify_cl, private hmc_vault {
 private:
   unsigned id;
+  unsigned quadId;
   hmc_cube *cube;
 
   hmc_notify linknotify;
@@ -152,7 +153,7 @@ private:
   bool notify_up(void);
 
 public:
-  hmc_bobsim(unsigned id, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
+  hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
              hmc_cube *cube, hmc_notify *notify, hmc_link *link);
   virtual ~hmc_bobsim(void);
 

@@ -81,7 +81,6 @@ umn addresses, addressing 1Mb blocks of 16 bytes each
 // MT41J256M4:  either 16K:2K, 16K:1K,  8K:1K
 #define   HMC_NUM_ROWS_PER_BANK 16384 // not specified by HMC spec, but typical value
 #define   HMC_NUM_COLS_PER_BANK 1024  // not specified by HMC spec, but typical value
-#define   HMC_DEVICE_WIDTH      16  // ToDo!
 #define   HMC_NUM_BANKS_PER_RANK 2
 
 #define   HMC_MAX_QUEUE_DEPTH   65536

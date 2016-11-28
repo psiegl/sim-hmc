@@ -76,7 +76,7 @@ void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
 
   bit_start += bank_mask_width;
 
-  this->dram_shift_lo = (unsigned)log2(HMC_DEVICE_WIDTH);
+  this->dram_shift_lo = 4;
   unsigned dram_mask_width_lo = begin_bit_start - this->dram_shift_lo;
   this->dram_mask_lo = (1 << dram_mask_width_lo) - 1;
 
@@ -85,7 +85,7 @@ void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
   this->dram_mask_hi = ((1 << dram_mask_width_hi) - 1) << dram_mask_width_lo;
 
 // alignment [4:0] already removed from dram_mask, col and row need the same (according to bobsim only column!)
-  unsigned col_mask_width = (unsigned)log2(HMC_NUM_COLS_PER_BANK) - (unsigned)log2(HMC_DEVICE_WIDTH);
+  unsigned col_mask_width = (unsigned)log2(HMC_NUM_COLS_PER_BANK) - this->dram_shift_lo;
   unsigned row_mask_width = (unsigned)log2(HMC_NUM_ROWS_PER_BANK);
   assert((dram_mask_width_lo + dram_mask_width_hi) == (col_mask_width + row_mask_width));
 

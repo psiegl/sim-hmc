@@ -10,11 +10,12 @@ bool callback(void *bobsim, void *packet)
 
 int BOBSim::SHOW_SIM_OUTPUT = 1;
 
-hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
+hmc_bobsim::hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
                        hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
   hmc_notify_cl(),
   hmc_vault(id, cube, &linknotify, link),
   id(id),
+  quadId(quadId),
   cube(cube),
   linknotify(id, notify, this),
   link(link),
@@ -34,9 +35,11 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned num_ports, unsigned num_ranks, bool
 
 hmc_bobsim::~hmc_bobsim(void)
 {
-  if (!this->id) {
+  if (this->bobnotify.get_notification()) {
+    std::cout << "- HMC cube: " << this->cube->get_id() << ", quad: " << this->quadId << ", vault: " << this->id << " -" << std::endl;
     this->bobsim->PrintStats(true);
   }
+
   delete this->bobsim;
 }
 
