@@ -1,5 +1,6 @@
 #ifndef _HMC_BOBSIM_H_
 #define _HMC_BOBSIM_H_
+#ifdef HMC_USES_BOBSIM
 
 #include <list>
 #include "hmc_notify.h"
@@ -161,4 +162,5 @@ public:
   bool bob_feedback(char *packet);
 };
 
+#endif /* #ifdef HMC_USES_BOBSIM */
 #endif /* #ifndef _HMC_BOBSIM_H_ */

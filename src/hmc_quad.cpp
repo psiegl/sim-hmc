@@ -36,7 +36,7 @@ hmc_quad::~hmc_quad(void)
   for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++) {
     delete this->vaults[i];
   }
-  for (auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
+  for (std::list<hmc_link*>::iterator it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
     delete[] *it;
 }
 

@@ -79,7 +79,7 @@ private:
 
   ALWAYS_INLINE uint32_t hmcsim_crc32(void *packet, unsigned flits)
   {
-
+#if 0
     uLong crc = crc32(0L, Z_NULL, 0);
     unsigned len = (flits << 1) * sizeof(uint64_t);
     /*
@@ -87,6 +87,9 @@ private:
        the tail (inserting 0s into the CRC field) of every packet.
      */
     return crc32(crc, (const Bytef *)packet, len);
+#else
+    return 0;
+#endif
   }
 
 protected:

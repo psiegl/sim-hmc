@@ -1,3 +1,4 @@
+#ifdef HMC_USES_BOBSIM
 #include "hmc_bobsim.h"
 #include "hmc_link.h"
 #include "hmc_cube.h"
@@ -69,6 +70,9 @@ void hmc_bobsim::clock(void)
       this->bobsim->Update();
     }
     else {
+      std::cerr << "WARNING: this shouldn't happen!" << std::endl;
+      std::cerr << "This can only happen, if bobsim pushes further responses,";
+      std::cerr << " while this module can't push it further ... " << std::endl;
       bool update = true;
       for (auto it = this->feedback_cache.begin(); it != this->feedback_cache.end(); ++it) {
         if (!this->bob_feedback(*it)) {
@@ -134,3 +138,5 @@ bool hmc_bobsim::notify_up(void)
   return (!this->linknotify.get_notification() &&
           !this->bobnotify.get_notification());
 }
+
+#endif /* #ifdef HMC_USES_BOBSIM */

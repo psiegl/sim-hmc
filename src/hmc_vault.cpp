@@ -19,7 +19,7 @@ hmc_vault::~hmc_vault(void)
 }
 
 #ifndef HMC_USES_BOBSIM
-#include <iostream>
+//#include <iostream>
 void hmc_vault::clock(void)
 {
   unsigned packetleninbit;
@@ -31,12 +31,12 @@ void hmc_vault::clock(void)
   uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
   unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
-  std::cout << "got packet!!! to bank " << bank << std::endl;
+  //std::cout << "got packet!!! to bank " << bank << std::endl;
   // ToDo: Bank Conflict!
 
   if (this->hmcsim_process_rqst(packet)) {
     this->link->get_ilink()->pop_front();
-    delete (uint64_t*)packet;
+    delete[] (uint64_t*)packet;
   }
 }
 #endif /* #ifndef HMC_USES_BOBSIM */

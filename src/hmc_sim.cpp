@@ -59,12 +59,13 @@ hmc_sim::~hmc_sim(void)
   }
 
   unsigned i = 0;
-  for (auto it = this->cubes.begin(); it != this->cubes.end(); ++it) {
+  for (std::map<unsigned, hmc_cube*>::iterator it = this->cubes.begin(); it != this->cubes.end(); ++it) {
     delete (*it).second;
     delete this->jtags[i++];
   }
 
-  for (auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {
+  for (std::list<hmc_link*>::iterator it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {
+    std::cout << "delete link " << std::hex << (*it) << std::endl;
     delete[] *it;
   }
 }
@@ -93,6 +94,7 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
     this->cubes[src_hmcId]->hmc_routing_tables_update(); // just one needed ...
     this->cubes[src_hmcId]->hmc_routing_tables_visualize();
 
+    std::cout << "add link " << std::hex << link << std::endl;
     this->link_garbage.push_back(link);
     return true;
   }
@@ -116,6 +118,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
 
   if (quad->set_ext_link(&link[0])) {
+    std::cout << "add link " << std::hex << link << std::endl;
     this->link_garbage.push_back(link);
     this->slids[slidId] = &link[1];
     return this->slidnotify[slidId];

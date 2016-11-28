@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[sendpacketleninbit / 8];
 
-  unsigned issue = 2002;
+  unsigned issue = 6002;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 
