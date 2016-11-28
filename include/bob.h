@@ -118,7 +118,7 @@ private:
     unsigned FindChannelID(Transaction* trans);
 public:
 	//Functions
-    BOB(BOBWrapper *_bobwrapper, unsigned num_ports, unsigned ranks);
+    BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned deviceWidth);
     ~BOB(void);
     void Update(void);
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);

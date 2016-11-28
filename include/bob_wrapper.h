@@ -118,8 +118,11 @@ private:
 #endif
 
 public:
-	//Functions
-    BOBWrapper(unsigned num_ports, unsigned num_ranks = NUM_RANKS);
+#ifdef HMCSIM_SUPPORT
+    BOBWrapper(unsigned num_ports, unsigned num_ranks, unsigned deviceWidth);
+#else
+    BOBWrapper(unsigned num_ports, unsigned num_ranks = NUM_RANKS, unsigned deviceWidth = DEVICE_WIDTH);
+#endif
     ~BOBWrapper(void);
     void Update(void);
     bool AddTransaction(Transaction* trans, unsigned port);

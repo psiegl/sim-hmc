@@ -42,9 +42,10 @@
 using namespace std;
 using namespace BOBSim;
 
-SimpleController::SimpleController(DRAMChannel *parent, unsigned ranks) :
+SimpleController::SimpleController(DRAMChannel *parent, unsigned ranks, unsigned deviceWidth) :
     channel(parent), //Registers the parent channel object
     ranks(ranks),
+    deviceWidth(deviceWidth),
 
 #ifndef HMCSIM_SUPPORT
     rankBitWidth(log2(ranks)),
@@ -159,7 +160,7 @@ void SimpleController::Update(void)
         }
 
         //DRAM_BUS_WIDTH/2 because value accounts for DDR
-        backgroundEnergy[r] += (bankOpen ? IDD3N : IDD2N) * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
+        backgroundEnergy[r] += (bankOpen ? IDD3N : IDD2N) * ((DRAM_BUS_WIDTH/2 * 8) / this->deviceWidth);
 
         //
         //Update
@@ -227,7 +228,7 @@ void SimpleController::Update(void)
                 //make sure we don't send anythign else
                 issuingRefresh = true;
 
-				refreshEnergy[r] += (IDD5B-IDD3N) * tRFC * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
+                refreshEnergy[r] += (IDD5B-IDD3N) * tRFC * ((DRAM_BUS_WIDTH/2 * 8) / this->deviceWidth);
 
 				for(unsigned b=0; b<NUM_BANKS; b++)
                 {
@@ -285,7 +286,7 @@ void SimpleController::Update(void)
 					}
 
 					//keep track of energy
-					burstEnergy[rank] += (IDD4R - IDD3N) * BL/2 * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
+                    burstEnergy[rank] += (IDD4R - IDD3N) * BL/2 * ((DRAM_BUS_WIDTH/2 * 8) / this->deviceWidth);
 
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
                     bankstate->stateChangeCountdown = (4*tCK>7.5)?tRTP:ceil(7.5/tCK); //4 clk or 7.5ns
@@ -323,7 +324,7 @@ void SimpleController::Update(void)
 					}
 
 					//keep track of energy
-					burstEnergy[rank] += (IDD4W - IDD3N) * BL/2 * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
+                    burstEnergy[rank] += (IDD4W - IDD3N) * BL/2 * ((DRAM_BUS_WIDTH/2 * 8) / this->deviceWidth);
 
                     BusPacket *writeData = new BusPacket(*commandQueue[i]);
 					writeData->busPacketType = WRITE_DATA;
@@ -374,7 +375,7 @@ void SimpleController::Update(void)
 						}
                     }
 
-					actpreEnergy[rank] += ((IDD0 * tRC) - ((IDD3N * tRAS) + (IDD2N * (tRC - tRAS)))) * ((DRAM_BUS_WIDTH/2 * 8) / DEVICE_WIDTH);
+                    actpreEnergy[rank] += ((IDD0 * tRC) - ((IDD3N * tRAS) + (IDD2N * (tRC - tRAS)))) * ((DRAM_BUS_WIDTH/2 * 8) / this->deviceWidth);
 
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
                     bankstate->currentBankState = ROW_ACTIVE;

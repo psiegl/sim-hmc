@@ -56,6 +56,7 @@ private:
     //Fields
     DRAMChannel *channel;
     unsigned ranks;
+    unsigned deviceWidth;
 
 #ifndef HMCSIM_SUPPORT
     unsigned rankBitWidth;
@@ -88,7 +89,7 @@ private:
 
 public:
 	//Functions
-    SimpleController(DRAMChannel *parent, unsigned num_ranks);
+    SimpleController(DRAMChannel *parent, unsigned num_ranks, unsigned deviceWidth);
     ~SimpleController(void);
     void Update(void);
     void AddTransaction(Transaction *trans);

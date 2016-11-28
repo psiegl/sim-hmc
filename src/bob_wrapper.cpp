@@ -37,9 +37,9 @@ using namespace std;
 
 namespace BOBSim
 {
-BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks) :
+BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks, unsigned deviceWidth) :
     //Create BOB object and register callbacks
-    bob(this, num_ports, num_ranks),
+    bob(this, num_ports, num_ranks, deviceWidth),
 
     inFlightRequest(),
     inFlightResponse(),
@@ -149,7 +149,7 @@ BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks) :
 	statsOut<<"NUM_BANKS="<<NUM_BANKS<<endl;
 	statsOut<<"NUM_ROWS="<<NUM_ROWS<<endl;
 	statsOut<<"NUM_COLS="<<NUM_COLS<<endl;
-	statsOut<<"DEVICE_WIDTH="<<DEVICE_WIDTH<<endl;
+    statsOut<<"DEVICE_WIDTH="<<deviceWidth<<endl;
 	statsOut<<"REFRESH_PERIOD=7800"<<endl;
 	statsOut<<"tCK="<<tCK<<endl;
 	statsOut<<"CL="<<tCL<<endl;

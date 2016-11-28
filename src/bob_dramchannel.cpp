@@ -41,8 +41,8 @@
 using namespace std;
 using namespace BOBSim;
 
-DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, unsigned num_ranks):
-    simpleController(this, num_ranks),
+DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, unsigned num_ranks, unsigned deviceWidth):
+    simpleController(this, num_ranks, deviceWidth),
     inFlightCommandCountdown(0),
     inFlightDataCountdown(0),
     channelID(id),

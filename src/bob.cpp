@@ -49,7 +49,7 @@ ofstream logOutput;
 
 unsigned DRAM_CPU_CLK_RATIO;
 unsigned DRAM_CPU_CLK_ADJUSTMENT;
-BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports, unsigned ranks) :
+BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned deviceWidth) :
     num_ranks(ranks),
     portInputBufferAvg(num_ports, 0),
     portOutputBufferAvg(num_ports, 0),
@@ -73,7 +73,7 @@ BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports, unsigned ranks) :
 
     num_ports(num_ports),
     ports(num_ports, Port()), //Make port objects
-    bobwrapper(_bobwrapper)
+    bobwrapper(bobwrapper)
 {
     dram_channel_clk = 0;
     currentClockCycle = 0;
@@ -125,7 +125,7 @@ BOB::BOB(BOBWrapper *_bobwrapper, unsigned num_ports, unsigned ranks) :
     //Create channels
     for(unsigned i=0; i<NUM_CHANNELS; i++)
     {
-        channels[i] = new DRAMChannel(i, this, num_ranks);
+        channels[i] = new DRAMChannel(i, this, num_ranks, deviceWidth);
     }
 }
 
@@ -854,12 +854,13 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
 
 #if NUM_CHANNELS > 1
     PRINT("   Average Power  : "<<allChanAveragePower/NUM_CHANNELS<<" w");
-#endif
     PRINT("   Total Power    : "<<allChanAveragePower<<" w");
+#endif
+#ifndef HMCSIM_SUPPORT // ToDo: check in HMCSIM spec, if same info is available!
     PRINT("   SimpCont BG Power : "<<NUM_LINK_BUSES * SIMP_CONT_BACKGROUND_POWER<<" w");
     PRINT("   SimpCont Core Power : "<<NUM_CHANNELS * SIMP_CONT_CORE_POWER<<" w");
     PRINT("   System Power   : "<<allChanAveragePower + NUM_LINK_BUSES * SIMP_CONT_BACKGROUND_POWER + NUM_CHANNELS * SIMP_CONT_CORE_POWER<<" w");
-
+#endif
     statsOut << ";" << allChanAveragePower/NUM_CHANNELS << endl;
 
     //compute static power from controllers

@@ -1,14 +1,15 @@
 //
 //DRAM Timing
 //
+#include "../../../../src/config.h"
 
-#define NUM_RANKS     4        // depends on capacity!
-#define NUM_BANKS     2
-#define NUM_ROWS      16384
-#define NUM_COLS      1024
+//#define NUM_RANKS     4     /*DONE*/      // depends on capacity!
+#define NUM_BANKS     HMC_NUM_BANKS_PER_RANK  /*DONE*/
+#define NUM_ROWS      HMC_NUM_ROWS_PER_BANK   /*DONE*/
+#define NUM_COLS      HMC_NUM_COLS_PER_BANK   /*DONE*/
 
-#define DEVICE_WIDTH  4 //wide is the xX X = 4, 8, 16 ToDo
-#define BL            8 //only used in power calculation, burst length
+//#define DEVICE_WIDTH  4     /*DONE*/  //wide is the xX X = 4, 8, 16 ToDo -> for HMC: rank == DEVICE_WIDTH
+#define BL            8       /* ?  */  //only used in power calculation, burst length ... maybe the same?!
 
 
 /*
@@ -20,7 +21,7 @@
  * V_DDK          NVM,I2C,JTAG, PWR manage. 1.5V (-0.05V/+0.20V)
  */
 
-#define Vdd           1.2f // V_ddm
+#define Vdd           1.2f // V_ddm /*DONE*/
 
 // ----- keep the DDR3-1333 spec below ...
 
