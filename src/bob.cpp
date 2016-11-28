@@ -103,8 +103,10 @@ BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned de
     if(DRAM_CPU_CLK_RATIO!=1)
       cout<<"DRAM to CPU ratio : "<<DRAM_CPU_CLK_RATIO<<endl;
     DRAM_CPU_CLK_ADJUSTMENT = tCK / fmod(tCK,CPU_CLK_PERIOD);
+#ifndef HMCSIM_SUPPORT
     if(DRAM_CPU_CLK_ADJUSTMENT!=1)
       cout<<"DRAM_CPU_CLK_ADJUSTMENT : "<<DRAM_CPU_CLK_ADJUSTMENT<<endl;
+#endif
 
     //Ensure that parameters have been set correclty
     if(NUM_CHANNELS / CHANNELS_PER_LINK_BUS != NUM_LINK_BUSES)
