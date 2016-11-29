@@ -1,4 +1,4 @@
-#ifdef HMC_USES_BOBSIM
+//#ifdef HMC_USES_BOBSIM
 #include "hmc_bobsim.h"
 #include "hmc_link.h"
 #include "hmc_cube.h"
@@ -97,9 +97,17 @@ void hmc_bobsim::clock(void)
     uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
     hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
 
-    unsigned rqstlen;
-    enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd, &rqstlen);
-    BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, rqstlen, 0, packet);
+    enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd);
+    //std::cout << "rqstlen: " << std::dec << rqstlen << " Byte ! " << std::endl;
+
+    bool no_response;
+    unsigned rsp_lenInFlits;
+    this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_lenInFlits);
+
+
+    unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
+    BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, 0 /* addr */, flits, rsp_lenInFlits, packet);
+
     unsigned long gl_bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
     bobtrans->bank = gl_bank % HMC_NUM_BANKS_PER_RANK;
     bobtrans->rank = (gl_bank - bobtrans->bank) / HMC_NUM_BANKS_PER_RANK;
@@ -139,4 +147,4 @@ bool hmc_bobsim::notify_up(void)
           !this->bobnotify.get_notification());
 }
 
-#endif /* #ifdef HMC_USES_BOBSIM */
+//#endif /* #ifdef HMC_USES_BOBSIM */

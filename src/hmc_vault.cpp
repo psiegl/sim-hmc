@@ -29,7 +29,7 @@ void hmc_vault::clock(void)
 
   uint64_t header = HMC_PACKET_HEADER(packet);
   uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
-  unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
+  //unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
   //std::cout << "got packet!!! to bank " << bank << std::endl;
   // ToDo: Bank Conflict!

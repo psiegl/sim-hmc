@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
   unsigned clks = 0;
   unsigned *track = new unsigned[issue];
 
-  char retpacket[16*FLIT_WIDTH / 8];
+  char retpacket[17*FLIT_WIDTH / 8];
   bool next_available = false;
   do
   {
