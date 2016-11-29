@@ -270,7 +270,7 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 
 	if ((openPort = FindOpenPort(coreID)) > -1)
 	{
-        trans = new Transaction(type, trans->transactionSize, addr);
+        trans = new Transaction(type, addr, trans->reqSizeInBytes());
 		trans->portID = openPort;
 		trans->coreID=coreID;
 		if (isLogicOp)
@@ -313,33 +313,36 @@ bool BOBWrapper::IsPortBusy(unsigned port)
 
 bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 {
+#ifndef HMCSIM_SUPPORT // checked with IsPortBusy in bobsim.cpp
     if(inFlightRequest.Counter[port]==0 &&
        bob.ports[port].inputBuffer.size()<PORT_QUEUE_DEPTH)
-	{
-		trans->fullStartTime = currentClockCycle;
+#endif
+    {
 		requestCounterPerPort[port]++;
 
+        trans->portID = port;
+        trans->cyclesReqPort = currentClockCycle;
+        trans->fullStartTime = currentClockCycle;
         inFlightRequest.Cache[port] = trans;
-        inFlightRequest.Cache[port]->portID = port;
-        inFlightRequest.Cache[port]->cyclesReqPort = currentClockCycle;
-
         inFlightRequest.HeaderCounter[port] = 1;
 
 		switch(trans->transactionType)
 		{
 		case DATA_READ:
-			readsPerPort[port]++;
+          std::cout << "read : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
+            readsPerPort[port]++;
             inFlightRequest.Counter[port] = 1;
 			break;
 		case DATA_WRITE:
 			issuedWrites++;
-            issuedWritesSize += trans->transactionSize;
+            std::cout << "write : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
+            issuedWritesSize += trans->reqSizeInBytes();
 			writesPerPort[port]++;
-            inFlightRequest.Counter[port] = trans->transactionSize / PORT_WIDTH;
+            inFlightRequest.Counter[port] = trans->reqSizeInBytes() / PORT_WIDTH;
 			break;
 		case LOGIC_OPERATION:
 			issuedLogicOperations++;
-            inFlightRequest.Counter[port] = trans->transactionSize / PORT_WIDTH;
+            inFlightRequest.Counter[port] = trans->reqSizeInBytes() / PORT_WIDTH;
 			break;
 		default:
 			ERROR(" = Error - wrong type");
@@ -351,12 +354,14 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 
 		return true;
 	}
+#ifndef HMCSIM_SUPPORT
 	else
 	{
 		if(DEBUG_PORTS) DEBUG(" = Port Busy or Full");
 
 		return false; //port busy
 	}
+#endif
 }
 
 
@@ -458,7 +463,7 @@ void BOBWrapper::Update(void)
 
             switch(inFlightResponse.Cache[i]->transactionType) {
             case RETURN_DATA:
-                inFlightResponse.Counter[i] = inFlightResponse.Cache[i]->transactionSize / PORT_WIDTH;
+                inFlightResponse.Counter[i] = inFlightResponse.Cache[i]->respSizeInBytes() / PORT_WIDTH;
                 break;
             case LOGIC_RESPONSE:
                 inFlightResponse.Counter[i] = 1;
@@ -520,7 +525,8 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 		//latencies[((returnedRead->fullTimeTotal/10)*10)*CPU_CLK_PERIOD]++;
 
 		returnedReads++;
-        returnedReadSize += returnedRead->transactionSize;
+        std::cout << "return : " << std::dec << returnedRead->respSizeInBytes() << " Bytes, FLITS: " << ((returnedRead->respSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
+        returnedReadSize += returnedRead->respSizeInBytes();
       }
         break;
     default:
@@ -584,7 +590,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 
     double clockperiod_ns = CPU_CLK_PERIOD * 1E-9 /* ns */;
 //    double frequency_GHz = 1/(clockperiod_ns / 1E-9) /* GHz */;
-    double transferamount_Bytes = issuedWritesSize + returnedReadSize; // psiegl ToDo!!!!!! //(issuedWrites+returnedReads)*TRANSACTION_SIZE;
+    double transferamount_Bytes = issuedWritesSize + returnedReadSize;
     double one_GB = (1<<30);
 
     double bandwidth = transferamount_Bytes/(double)(elapsedCycles*clockperiod_ns)/one_GB;

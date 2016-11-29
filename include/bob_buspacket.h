@@ -55,39 +55,67 @@ class BusPacket
 public:
     //Functions
     BusPacket(BusPacketType packtype, unsigned id, unsigned col, unsigned rw,
-              unsigned rnk, unsigned bnk, unsigned prt, unsigned bl,
-              unsigned mappedChannel, uint64_t addr, bool fromLogic) :
-      burstLength(bl),
+              unsigned rnk, unsigned bnk, unsigned prt,
+              unsigned mappedChannel, uint64_t addr, bool fromLogic, unsigned bl, unsigned rbl = 0) :
       busPacketType(packtype),
       transactionID(id),
 //      column(col),
       row(rw),
-      bank(bnk),
       rank(rnk),
+      bank(bnk),
       port(prt),
+#ifdef HMCSIM_SUPPORT
+      burstLen(bl),
+      retBurstLen(rbl),
+#else
+      burstLength(bl),
+#endif
       channel(mappedChannel),
-      queueWaitTime(0),
       address(addr),
-      fromLogicOp(fromLogic)
+      fromLogicOp(fromLogic),
+      queueWaitTime(0)
     {}
 
     //Fields
-    unsigned burstLength;
     BusPacketType busPacketType;
     unsigned transactionID;
 //    unsigned column;
     unsigned row;
-    unsigned bank;
     unsigned rank;
+    unsigned bank;
     unsigned port;
+
+#ifdef HMCSIM_SUPPORT
+    unsigned burstLen;
+    unsigned retBurstLen;
+#else
+    unsigned burstLength;
+#endif
 	unsigned channel;
-    unsigned queueWaitTime;
-	uint64_t address;
+    uint64_t address;
     bool fromLogicOp;
+    unsigned queueWaitTime;
 
 #ifdef HMCSIM_SUPPORT
     void *payload;
 #endif
+
+    unsigned reqBurstSize(void)
+    {
+#ifdef HMCSIM_SUPPORT
+      return burstLen;
+#else
+      return burstLength;
+#endif
+    }
+    unsigned respBurstSize(void)
+    {
+#ifdef HMCSIM_SUPPORT
+      return retBurstLen;
+#else
+      return burstLength;
+#endif
+    }
 };
 }
 

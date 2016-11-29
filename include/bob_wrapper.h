@@ -47,7 +47,7 @@ private:
     //BOB object
     BOB bob;
 
-    class inFlightRequest { // like a struct
+    class inFlightRequest { // ToDo -> vector outside! [port]
     public:
       //Incoming transactions being sent to each port
       vector<Transaction*> Cache;
@@ -56,7 +56,7 @@ private:
       vector<unsigned> HeaderCounter;
     } inFlightRequest;
 
-    class inFlightResponse { // like a struct
+    class inFlightResponse { // ToDo -> vector outside! [port]
     public:
       //Outgoing transactiong being sent to cache
       vector<Transaction*> Cache;

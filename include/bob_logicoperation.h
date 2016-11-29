@@ -110,7 +110,7 @@ public:
     //generate the writes required to write a pattern to each page
     for(int i=0; i<numPages; i++)
     {
-        Transaction *trans = new Transaction(DATA_WRITE, 64, pageStart + i*(1<<((unsigned)(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS)))));
+        Transaction *trans = new Transaction(DATA_WRITE, pageStart + i*(1<<((unsigned)(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS)))), 64);
         trans->originatedFromLogicOp = true;
 
 //        if(DEBUG_LOGIC) DEBUG("      == Logic Op created");
@@ -168,7 +168,7 @@ public:
 
     for(int i=0; i<sizeToCopy; i++)
     {
-        Transaction *trans = new Transaction(DATA_READ, 64, sourceAddress + i*(1<<(unsigned)(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))));
+        Transaction *trans = new Transaction(DATA_READ, sourceAddress + i*(1<<(unsigned)(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))), 64);
         trans->originatedFromLogicOp = true;
 
 //        if(DEBUG_LOGIC) DEBUG("      == Logic Op created");
@@ -181,7 +181,7 @@ public:
   bool response(Transaction *currentTransaction, vector<Transaction *> *newOperationQueue, vector<Transaction*> *outgoingQueue)
   {
 //    if (DEBUG_LOGIC) DEBUG((*newOperationQueue->begin())->address - currentTransaction->address);
-    Transaction *t = new Transaction(DATA_WRITE, 64, (*newOperationQueue->begin())->address - currentTransaction->address + this->arguments[0]);
+    Transaction *t = new Transaction(DATA_WRITE, (*newOperationQueue->begin())->address - currentTransaction->address + this->arguments[0], 64);
     t->originatedFromLogicOp = true;
 
 //    if(DEBUG_LOGIC) DEBUG("      == Logic Op Copy moved data");
@@ -220,7 +220,7 @@ public:
 //    uint64_t src_address = currentTransaction->address;
     for (size_t i=0; i<this->arguments.size(); i++)
     {
-        Transaction *trans = new Transaction(DATA_READ, 64, this->arguments[i]);
+        Transaction *trans = new Transaction(DATA_READ, this->arguments[i], 64);
         trans->originatedFromLogicOp = true;
         outgoingQueue->push_back(trans);
     }

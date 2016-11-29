@@ -69,7 +69,7 @@ void Rank::Update(void)
         }
         if((*readReturn.begin()).first==0)
         {
-            dramchannel->ReceiveOnDataBus((*readReturn.begin()).second);
+            dramchannel->ReceiveOnDataBus((*readReturn.begin()).second, true);
             readReturn.erase(readReturn.begin());
         }
     }
@@ -157,6 +157,7 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 		bankStates[busPacket->bank].nextWrite = bankStates[busPacket->bank].nextActivate;
 		break;
 	case WRITE_P:
+    {
 		if(bankStates[busPacket->bank].currentBankState != ROW_ACTIVE ||
 		        bankStates[busPacket->bank].openRowAddress != busPacket->row ||
 		        currentClockCycle < bankStates[busPacket->bank].nextWrite)
@@ -175,13 +176,15 @@ void Rank::ReceiveFromBus(BusPacket *busPacket)
 			bankStates[i].nextWrite = max(bankStates[i].nextWrite, currentClockCycle + tCCD);
 		}
         bankStates[busPacket->bank].lastCommand = WRITE_P;
-        bankStates[busPacket->bank].stateChangeCountdown = tCWL + busPacket->burstLength + tWR; // busPacket->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-		bankStates[busPacket->bank].nextActivate = currentClockCycle + tCWL + busPacket->burstLength + tWR + tRP;
+        unsigned burstLength = busPacket->reqBurstSize(); // incoming!
+        bankStates[busPacket->bank].stateChangeCountdown = tCWL + burstLength + tWR;
+        bankStates[busPacket->bank].nextActivate = currentClockCycle + tCWL + burstLength + tWR + tRP;
 		bankStates[busPacket->bank].nextRead = bankStates[busPacket->bank].nextActivate;
 		bankStates[busPacket->bank].nextWrite = bankStates[busPacket->bank].nextActivate;
 
 		delete busPacket;
         break;
+    }
 	case WRITE_DATA:
 		if(bankStates[busPacket->bank].currentBankState != ROW_ACTIVE ||
            bankStates[busPacket->bank].openRowAddress != busPacket->row)

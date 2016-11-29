@@ -69,7 +69,7 @@ public:
     ~DRAMChannel(void);
     bool AddTransaction(Transaction *trans);
     void Update(void);
-    void ReceiveOnDataBus(BusPacket *busPacket);
+    void ReceiveOnDataBus(BusPacket *busPacket, bool is_return);
     void ReceiveOnCmdBus(BusPacket *busPacket);
 
     //Fields

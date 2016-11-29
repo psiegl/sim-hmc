@@ -284,15 +284,15 @@ void BOB::Update(void)
                 //
                 //widths are in bits
                 //
-                totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->transactionSize) * 8) / REQUEST_LINK_BUS_WIDTH +
-                                     !!(((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->transactionSize) * 8) % REQUEST_LINK_BUS_WIDTH);
+                totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->reqSizeInBytes()) * 8) / REQUEST_LINK_BUS_WIDTH +
+                                     !!(((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->reqSizeInBytes()) * 8) % REQUEST_LINK_BUS_WIDTH);
                 break;
             case LOGIC_OPERATION:
                 //
                 //widths are in bits
                 //
-                totalChannelCycles = (i_reqLinkBus->inFlightLink->transactionSize * 8) / REQUEST_LINK_BUS_WIDTH +
-                                     !!((i_reqLinkBus->inFlightLink->transactionSize * 8) % REQUEST_LINK_BUS_WIDTH);
+                totalChannelCycles = (i_reqLinkBus->inFlightLink->reqSizeInBytes() * 8) / REQUEST_LINK_BUS_WIDTH +
+                                     !!((i_reqLinkBus->inFlightLink->reqSizeInBytes() * 8) % REQUEST_LINK_BUS_WIDTH);
                 break;
             default:
                 ERROR("== Error - wrong type ");
@@ -338,7 +338,7 @@ void BOB::Update(void)
                 switch(i_respLinkBus->serDesBuffer->transactionType)
                 {
                 case RETURN_DATA:
-                    ports[p].outputBusyCountdown = i_respLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
+                    ports[p].outputBusyCountdown = i_respLinkBus->serDesBuffer->respSizeInBytes() / PORT_WIDTH;
                     break;
                 case LOGIC_RESPONSE:
                     ports[p].outputBusyCountdown = 1;
@@ -403,13 +403,13 @@ void BOB::Update(void)
                         writeCounter++;
 
                         //set port busy time
-                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
+                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->reqSizeInBytes() / PORT_WIDTH;
                         break;
                     case LOGIC_OPERATION:
 //						logicOpCounter++;
 
                         //set port busy time
-                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
+                        ports[p].inputBusyCountdown = i_reqLinkBus->serDesBuffer->reqSizeInBytes() / PORT_WIDTH;
                         break;
                     default:
                         ERROR("== Error - unknown transaction type going to channel : ");
@@ -500,8 +500,8 @@ void BOB::Update(void)
                             //calculate numbers to see how long the response is on the bus
                             //
                             //widths are in bits
-                            unsigned totalChannelCycles = ((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->transactionSize) * 8) / RESPONSE_LINK_BUS_WIDTH +
-                                                          !!(((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->transactionSize) * 8) % RESPONSE_LINK_BUS_WIDTH);
+                            unsigned totalChannelCycles = ((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->respSizeInBytes()) * 8) / RESPONSE_LINK_BUS_WIDTH +
+                                                          !!(((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->respSizeInBytes()) * 8) % RESPONSE_LINK_BUS_WIDTH);
 
                             if(LINK_BUS_USE_DDR)
                             {

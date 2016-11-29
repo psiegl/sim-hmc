@@ -86,13 +86,13 @@ void FillTransactionBuffer(int port)
 		Transaction *newTrans;
 		if(physicalAddress%1000<READ_WRITE_RATIO*10)
 		{
-			newTrans = new Transaction(DATA_READ,TRANSACTION_SIZE,physicalAddress);
+            newTrans = new Transaction(DATA_READ,physicalAddress,TRANSACTION_SIZE);
 			//cout<<*newTrans<<endl;
 			useCounters[port]+= RD_REQUEST_PACKET_OVERHEAD/PORT_WIDTH+!!(RD_REQUEST_PACKET_OVERHEAD%PORT_WIDTH);
 		}
 		else
 		{
-			newTrans = new Transaction(DATA_WRITE,TRANSACTION_SIZE,physicalAddress);
+            newTrans = new Transaction(DATA_WRITE,physicalAddress,TRANSACTION_SIZE);
 			//cout<<*newTrans<<endl;
 			useCounters[port]+=(WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE)/PORT_WIDTH +
 				!!((WR_REQUEST_PACKET_OVERHEAD + TRANSACTION_SIZE)%PORT_WIDTH);

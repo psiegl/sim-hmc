@@ -101,7 +101,7 @@ void DRAMChannel::Update(void)
             //if the bus packet was from a request originating from a logic operation, send it back to logic layer
             if(inFlightDataPacket->fromLogicOp)
             {
-                logicLayer.ReceiveLogicOperation(new Transaction(RETURN_DATA, 64, inFlightDataPacket->address));
+                logicLayer.ReceiveLogicOperation(new Transaction(RETURN_DATA, inFlightDataPacket->address, 64));
             }
             //if it was a regular request, add to return queue
             else
@@ -198,7 +198,7 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
 	inFlightCommandCountdown = tCMDS;
 }
 
-void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket)
+void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket, bool is_return)
 {
     switch(busPacket->busPacketType)
     {
@@ -218,5 +218,8 @@ void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket)
 	}
 
     inFlightDataPacket = busPacket;
-    inFlightDataCountdown = busPacket->burstLength;
+    if(is_return)
+      inFlightDataCountdown = busPacket->respBurstSize();
+    else
+      inFlightDataCountdown = busPacket->reqBurstSize();
 }

@@ -41,25 +41,40 @@ static unsigned globalID=0;
 
 enum TransactionType
 {
-    DATA_READ       = 0x1,
-    DATA_WRITE      = 0x2,
-    RETURN_DATA     = 0x3,
-    LOGIC_OPERATION = 0x4,
-    LOGIC_RESPONSE  = 0x5
+    DATA_READ,
+    DATA_WRITE,
+    RETURN_DATA,
+    LOGIC_OPERATION,
+    LOGIC_RESPONSE
 };
 
 class Transaction
 {
+    //Size of data
+#ifdef HMCSIM_SUPPORT
+    unsigned flits;
+    unsigned returnflits;
+#else
+    unsigned transactionSize;
+#endif
 public:
 	//Functions
-    Transaction(TransactionType transType, unsigned size, uint64_t addr, void *_payload = NULL):
-      transactionType(transType),
-      address(addr),
-      mappedChannel(0),
+    Transaction(TransactionType transType, uint64_t addr, unsigned size, unsigned retflits = 0, void *_payload = NULL):
+#ifdef HMCSIM_SUPPORT
+      flits(size),
+      returnflits(retflits),
+#else
       transactionSize(size),
+#endif
+      transactionType(transType),
+#ifndef HMCSIM_SUPPORT
+      address(addr),
+#endif
+      mappedChannel(0),
+      transactionID(globalID++),
       portID(0),
+//      coreID(0),
       logicOpContents(NULL),
-      //      coreID(0),
       originatedFromLogicOp(false),
 #ifdef HMCSIM_SUPPORT
       payload(_payload),
@@ -81,18 +96,18 @@ public:
       channelStartTime(0),
       channelTimeTotal(0)
     {
-        transactionID = globalID++;
     }
 
 	//Fields
 	//Type of transaction (defined above)
 	TransactionType transactionType;
 	//Physical address of request
-	uint64_t address;
+//#ifndef HMCSIM_SUPPORT
+    uint64_t address; // ToDO: doesn't matter here
+//#endif
 	//Channel used to service request
 	unsigned mappedChannel;
-	//Size of data
-	unsigned transactionSize;
+
 	//Unique identifier 
 	unsigned transactionID;
 	//Port ID used to send request
@@ -128,6 +143,23 @@ public:
 
 	uint64_t channelStartTime; //start sending on BOB Channel bus until...
 	uint64_t channelTimeTotal; //completely added to SerDeDownBuffer
+
+    unsigned reqSizeInBytes(void)
+    {
+#ifdef HMCSIM_SUPPORT
+      return flits*FLIT_WIDTH / 8;
+#else
+      return transactionSize;
+#endif
+    }
+    unsigned respSizeInBytes(void)
+    {
+#ifdef HMCSIM_SUPPORT
+      return returnflits*FLIT_WIDTH / 8;
+#else
+      return transactionSize;
+#endif
+    }
 };
 }
 

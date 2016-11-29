@@ -182,7 +182,7 @@ void SimpleController::Update(void)
     if(writeBurst.size()>0&&(*writeBurst.begin()).first==0)
 	{
         if(DEBUG_CHANNEL) DEBUG("     == Sending Write Data : ");
-        channel->ReceiveOnDataBus((*writeBurst.begin()).second);
+        channel->ReceiveOnDataBus((*writeBurst.begin()).second, false);
         writeBurst.erase(writeBurst.begin());
 	}
 
@@ -212,7 +212,7 @@ void SimpleController::Update(void)
 				if(DEBUG_CHANNEL) DEBUGN("-- !! Refresh is issuable - Sending : ");
 
 				//BusPacketType packtype, unsigned transactionID, unsigned col, unsigned rw, unsigned r, unsigned b, unsigned prt, unsigned bl
-                BusPacket *refreshPacket = new BusPacket(REFRESH, -1, 0, 0, r, 0, 0, 0, channel->channelID, 0, false);
+                BusPacket *refreshPacket = new BusPacket(REFRESH, -1, 0, 0, r, 0, 0, channel->channelID, 0, false, 0);
 
 				//Send to command bus
                 channel->ReceiveOnCmdBus(refreshPacket);
@@ -266,6 +266,7 @@ void SimpleController::Update(void)
 				//Main block for determining what to do with each type of command
                 //
                 BankState *bankstate = &bankStates[rank][bank];
+                unsigned burstLength = commandQueue[i]->reqBurstSize();
 				switch(commandQueue[i]->busPacketType)
 				{
                 case READ_P:
@@ -289,16 +290,16 @@ void SimpleController::Update(void)
                     {
                         uint64_t read_offset;
                         if(r==rank)
-                          read_offset = max((uint)tCCD, commandQueue[i]->burstLength);
+                          read_offset = max((uint)tCCD, burstLength);
                         else
-                          read_offset = commandQueue[i]->burstLength + tRTRS;
+                          read_offset = burstLength + tRTRS;
 
                         for(unsigned b=0; b<NUM_BANKS; b++)
                         {
                             bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
                                                             currentClockCycle + read_offset);
                             bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                             currentClockCycle + (tCL + commandQueue[i]->burstLength + tRTRS - tCWL));
+                                                             currentClockCycle + (tCL + burstLength + tRTRS - tCWL));
                         }
 					}
 
@@ -324,7 +325,7 @@ void SimpleController::Update(void)
                     if(DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :"<<writeBurst.size()<<" "<<writeBurst.size()<<" with head : "<<(*writeBurst.begin()).second);
 
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
-                    unsigned stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR;
+                    unsigned stateChangeCountdown = tCWL + burstLength + tWR;
                     bankstate->stateChangeCountdown = stateChangeCountdown;
                     bankstate->nextActivate = currentClockCycle + stateChangeCountdown + tRP;
 //					bankstate->nextRefresh = bankstate->nextActivate;
@@ -336,9 +337,9 @@ void SimpleController::Update(void)
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + commandQueue[i]->burstLength + tCWL + tWTR);
+                                                                currentClockCycle + burstLength + tCWL + tWTR);
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle+(uint64_t)max((uint)tCCD, commandQueue[i]->burstLength));
+                                                                 currentClockCycle+(uint64_t)max((uint)tCCD, burstLength));
 							}
 						}
 						else
@@ -346,9 +347,9 @@ void SimpleController::Update(void)
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + commandQueue[i]->burstLength + tRTRS + tCWL - tCL);
+                                                                currentClockCycle + burstLength + tRTRS + tCWL - tCL);
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle + commandQueue[i]->burstLength + tRTRS);
+                                                                 currentClockCycle + burstLength + tRTRS);
 							}
 						}
 					}
@@ -411,20 +412,21 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 	//DEBUG("!!!!!!!!!"<<*busPacket)
 	//exit(0);
 	//return false;
-	//}
+    //}
+    unsigned burstLength = busPacket->reqBurstSize();
 	switch(busPacket->busPacketType)
 	{
     case READ_P:
         if(bankState->currentBankState == ROW_ACTIVE &&
            bankState->openRowAddress == busPacket->row &&
            currentClockCycle >= bankState->nextRead &&
-           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX)
+           (channel->readReturnQueue.size()+outstandingReads) * (burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX)
         {
 			return true;
 		}
 		else
 		{
-            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
+            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
 			return false;
         }
 
@@ -433,13 +435,13 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
         if(bankState->currentBankState == ROW_ACTIVE &&
            bankState->openRowAddress == busPacket->row &&
            currentClockCycle >= bankState->nextWrite &&
-           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX)
+           (channel->readReturnQueue.size()+outstandingReads) * (burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX)
         {
 			return true;
 		}
 		else
 		{
-            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
+            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
 			return false;
         }
 		break;
@@ -468,12 +470,12 @@ void SimpleController::AddTransaction(Transaction *trans)
 #endif
 
     bool originatedFromLogicOp = trans->originatedFromLogicOp;;
-    BusPacket *action, *activate = new BusPacket(ACTIVATE,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,0,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
+    BusPacket *action, *activate = new BusPacket(ACTIVATE,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->mappedChannel,trans->address,trans->originatedFromLogicOp, 0);
     switch(trans->transactionType)
     {
     case DATA_READ:
         readCounter++;
-        action = new BusPacket(READ_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
+        action = new BusPacket(READ_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->mappedChannel,trans->address,trans->originatedFromLogicOp,trans->reqSizeInBytes()/DRAM_BUS_WIDTH,trans->respSizeInBytes()/DRAM_BUS_WIDTH);
 
 #ifdef HMCSIM_SUPPORT
         action->payload = trans->payload;
@@ -481,7 +483,7 @@ void SimpleController::AddTransaction(Transaction *trans)
         break;
     case DATA_WRITE:
         writeCounter++;
-        action = new BusPacket(WRITE_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->transactionSize/DRAM_BUS_WIDTH,trans->mappedChannel,trans->address,trans->originatedFromLogicOp);
+        action = new BusPacket(WRITE_P,trans->transactionID,mappedCol,mappedRow,mappedRank,mappedBank,trans->portID,trans->mappedChannel,trans->address,trans->originatedFromLogicOp,trans->reqSizeInBytes()/DRAM_BUS_WIDTH,trans->respSizeInBytes()/DRAM_BUS_WIDTH);
 
 #ifdef HMCSIM_SUPPORT
         action->payload = trans->payload;
