@@ -329,13 +329,13 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 		switch(trans->transactionType)
 		{
 		case DATA_READ:
-          std::cout << "read : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
+//            std::cout << "read : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
             readsPerPort[port]++;
             inFlightRequest.Counter[port] = 1;
 			break;
 		case DATA_WRITE:
 			issuedWrites++;
-            std::cout << "write : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
+//            std::cout << "write : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
             issuedWritesSize += trans->reqSizeInBytes();
 			writesPerPort[port]++;
             inFlightRequest.Counter[port] = trans->reqSizeInBytes() / PORT_WIDTH;
@@ -525,7 +525,7 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 		//latencies[((returnedRead->fullTimeTotal/10)*10)*CPU_CLK_PERIOD]++;
 
 		returnedReads++;
-        std::cout << "return : " << std::dec << returnedRead->respSizeInBytes() << " Bytes, FLITS: " << ((returnedRead->respSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
+//        std::cout << "return : " << std::dec << returnedRead->respSizeInBytes() << " Bytes, FLITS: " << ((returnedRead->respSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
         returnedReadSize += returnedRead->respSizeInBytes();
       }
         break;
