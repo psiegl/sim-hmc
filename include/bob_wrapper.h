@@ -37,9 +37,37 @@
 
 using namespace std;
 
+
 namespace BOBSim
 {
 class Transaction;
+
+class clInFlightRequest {
+public:
+  clInFlightRequest(void) :
+    Cache(0),
+    Counter(0),
+    HeaderCounter(0)
+  {}
+  //Incoming transactions being sent to each port
+  Transaction* Cache;
+  //Counters for determining how long packet should be sent
+  unsigned Counter;
+  unsigned HeaderCounter;
+};
+
+class clInFlightResponse {
+public:
+  clInFlightResponse(void) :
+    Cache(0),
+    Counter(0)
+  {}
+  //Outgoing transactiong being sent to cache
+  Transaction* Cache;
+  //Counters for determining how long packet should be sent
+  unsigned Counter;
+};
+
 class BOBWrapper
 {
 private:
@@ -47,22 +75,8 @@ private:
     //BOB object
     BOB bob;
 
-    class inFlightRequest { // ToDo -> vector outside! [port]
-    public:
-      //Incoming transactions being sent to each port
-      vector<Transaction*> Cache;
-      //Counters for determining how long packet should be sent
-      vector<unsigned> Counter;
-      vector<unsigned> HeaderCounter;
-    } inFlightRequest;
-
-    class inFlightResponse { // ToDo -> vector outside! [port]
-    public:
-      //Outgoing transactiong being sent to cache
-      vector<Transaction*> Cache;
-      //Counters for determining how long packet should be sent
-      vector<unsigned> Counter;
-    } inFlightResponse;
+    vector<clInFlightRequest> inFlightRequest;
+    vector<clInFlightResponse> inFlightResponse;
 
     unsigned returnedReads;
     uint64_t returnedReadSize;
