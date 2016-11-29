@@ -296,9 +296,9 @@ void SimpleController::Update(void)
                         for(unsigned b=0; b<NUM_BANKS; b++)
                         {
                             bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                            currentClockCycle + read_offset); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                            currentClockCycle + read_offset);
                             bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                             currentClockCycle + (tCL + commandQueue[i]->burstLength + tRTRS - tCWL)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                             currentClockCycle + (tCL + commandQueue[i]->burstLength + tRTRS - tCWL));
                         }
 					}
 
@@ -325,9 +325,9 @@ void SimpleController::Update(void)
 
                     bankstate->lastCommand = commandQueue[i]->busPacketType;
                     unsigned stateChangeCountdown = tCWL + commandQueue[i]->burstLength + tWR;
-                    bankstate->stateChangeCountdown = stateChangeCountdown; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-                    bankstate->nextActivate = currentClockCycle + stateChangeCountdown + tRP; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
-//					bankstate->nextRefresh = bankstate->nextActivate; // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                    bankstate->stateChangeCountdown = stateChangeCountdown;
+                    bankstate->nextActivate = currentClockCycle + stateChangeCountdown + tRP;
+//					bankstate->nextRefresh = bankstate->nextActivate;
 
                     for(unsigned r=0; r<this->ranks; r++)
 					{
@@ -336,9 +336,9 @@ void SimpleController::Update(void)
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + commandQueue[i]->burstLength + tCWL + tWTR); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                                currentClockCycle + commandQueue[i]->burstLength + tCWL + tWTR);
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle+(uint64_t)max((uint)tCCD, commandQueue[i]->burstLength)); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                                 currentClockCycle+(uint64_t)max((uint)tCCD, commandQueue[i]->burstLength));
 							}
 						}
 						else
@@ -346,9 +346,9 @@ void SimpleController::Update(void)
 							for(unsigned b=0; b<NUM_BANKS; b++)
 							{
                                 bankStates[r][b].nextRead = max(bankStates[r][b].nextRead,
-                                                                currentClockCycle + commandQueue[i]->burstLength + tRTRS + tCWL - tCL); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                                currentClockCycle + commandQueue[i]->burstLength + tRTRS + tCWL - tCL);
                                 bankStates[r][b].nextWrite = max(bankStates[r][b].nextWrite,
-                                                                 currentClockCycle + commandQueue[i]->burstLength + tRTRS); // commandQueue[i]->burstLength == TRANSACTION_SIZE/DRAM_BUS_WIDTH
+                                                                 currentClockCycle + commandQueue[i]->burstLength + tRTRS);
 							}
 						}
 					}
@@ -404,8 +404,8 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
 	unsigned bank = busPacket->bank;
     BankState *bankState = &bankStates[rank][bank];
 
-	//if((channel->readReturnQueue.size()+outstandingReads) * TRANSACTION_SIZE >= CHANNEL_RETURN_Q_MAX)
-	//if((channel->readReturnQueue.size()) * TRANSACTION_SIZE >= CHANNEL_RETURN_Q_MAX)
+    //if((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX)
+    //if((channel->readReturnQueue.size()) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX)
 	//	{
 	//RRQFull++;
 	//DEBUG("!!!!!!!!!"<<*busPacket)
@@ -418,13 +418,13 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
         if(bankState->currentBankState == ROW_ACTIVE &&
            bankState->openRowAddress == busPacket->row &&
            currentClockCycle >= bankState->nextRead &&
-           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
+           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX)
         {
 			return true;
 		}
 		else
 		{
-            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX); // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
+            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
 			return false;
         }
 
@@ -433,13 +433,13 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
         if(bankState->currentBankState == ROW_ACTIVE &&
            bankState->openRowAddress == busPacket->row &&
            currentClockCycle >= bankState->nextWrite &&
-           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX) // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
+           (channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) < CHANNEL_RETURN_Q_MAX)
         {
 			return true;
 		}
 		else
 		{
-            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX); // busPacket->burstLength * DRAM_BUS_WIDTH == TRANSACTION_SIZE
+            RRQFull += ((channel->readReturnQueue.size()+outstandingReads) * (busPacket->burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
 			return false;
         }
 		break;

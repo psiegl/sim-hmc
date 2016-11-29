@@ -270,7 +270,7 @@ bool BOBWrapper::AddTransaction(uint64_t addr, bool isWrite, int coreID, void *l
 
 	if ((openPort = FindOpenPort(coreID)) > -1)
 	{
-		trans = new Transaction(type, TRANSACTION_SIZE, addr);
+        trans = new Transaction(type, trans->transactionSize, addr);
 		trans->portID = openPort;
 		trans->coreID=coreID;
 		if (isLogicOp)
@@ -335,11 +335,11 @@ bool BOBWrapper::AddTransaction(Transaction* trans, unsigned port)
 			issuedWrites++;
             issuedWritesSize += trans->transactionSize;
 			writesPerPort[port]++;
-            inFlightRequest.Counter[port] = trans->transactionSize / PORT_WIDTH; // trans->transactionSize == TRANSACTION_SIZE
+            inFlightRequest.Counter[port] = trans->transactionSize / PORT_WIDTH;
 			break;
 		case LOGIC_OPERATION:
 			issuedLogicOperations++;
-            inFlightRequest.Counter[port] = trans->transactionSize / PORT_WIDTH; // trans->transactionSize == TRANSACTION_SIZE
+            inFlightRequest.Counter[port] = trans->transactionSize / PORT_WIDTH;
 			break;
 		default:
 			ERROR(" = Error - wrong type");
@@ -458,7 +458,7 @@ void BOBWrapper::Update(void)
 
             switch(inFlightResponse.Cache[i]->transactionType) {
             case RETURN_DATA:
-                inFlightResponse.Counter[i] = inFlightResponse.Cache[i]->transactionSize / PORT_WIDTH; // inFlightResponse.Cache[i]->transactionSize == TRANSACTION_SIZE
+                inFlightResponse.Counter[i] = inFlightResponse.Cache[i]->transactionSize / PORT_WIDTH;
                 break;
             case LOGIC_RESPONSE:
                 inFlightResponse.Counter[i] = 1;
@@ -584,7 +584,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
 
     double clockperiod_ns = CPU_CLK_PERIOD * 1E-9 /* ns */;
 //    double frequency_GHz = 1/(clockperiod_ns / 1E-9) /* GHz */;
-    double transferamount_Bytes = issuedWritesSize + returnedReadSize; // psiegl TODO //(issuedWrites+returnedReads)*TRANSACTION_SIZE;
+    double transferamount_Bytes = issuedWritesSize + returnedReadSize; // psiegl ToDo!!!!!! //(issuedWrites+returnedReads)*TRANSACTION_SIZE;
     double one_GB = (1<<30);
 
     double bandwidth = transferamount_Bytes/(double)(elapsedCycles*clockperiod_ns)/one_GB;

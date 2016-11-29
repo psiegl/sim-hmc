@@ -284,7 +284,6 @@ void BOB::Update(void)
                 //
                 //widths are in bits
                 //
-                // inFlightRequestLink[c]->transactionSize == TRANSACTION_SIZE
                 totalChannelCycles = ((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->transactionSize) * 8) / REQUEST_LINK_BUS_WIDTH +
                                      !!(((WR_REQUEST_PACKET_OVERHEAD + i_reqLinkBus->inFlightLink->transactionSize) * 8) % REQUEST_LINK_BUS_WIDTH);
                 break;
@@ -339,7 +338,7 @@ void BOB::Update(void)
                 switch(i_respLinkBus->serDesBuffer->transactionType)
                 {
                 case RETURN_DATA:
-                    ports[p].outputBusyCountdown = i_respLinkBus->serDesBuffer->transactionSize / PORT_WIDTH; // serDesBufferResponse[priorityLinkBus[p]]->transactionSize == TRANSACTION_SIZE
+                    ports[p].outputBusyCountdown = i_respLinkBus->serDesBuffer->transactionSize / PORT_WIDTH;
                     break;
                 case LOGIC_RESPONSE:
                     ports[p].outputBusyCountdown = 1;
@@ -501,7 +500,6 @@ void BOB::Update(void)
                             //calculate numbers to see how long the response is on the bus
                             //
                             //widths are in bits
-                            // pendingReads[p]->transactionSize == TRANSACTION_SIZE
                             unsigned totalChannelCycles = ((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->transactionSize) * 8) / RESPONSE_LINK_BUS_WIDTH +
                                                           !!(((RD_RESPONSE_PACKET_OVERHEAD + pendingReads[p]->transactionSize) * 8) % RESPONSE_LINK_BUS_WIDTH);
 
