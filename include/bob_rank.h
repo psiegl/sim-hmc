@@ -52,7 +52,6 @@ private:
     //Callback for returning data
     DRAMChannel *dramchannel;
     //State of all banks in the DRAM channel
-    uint64_t banksNeedUpdate;
     BankState *bankStates;
     uint64_t currentClockCycle;
 public:

@@ -83,7 +83,6 @@ private:
     vector<unsigned> refreshCounters;
 
     //More bookkeeping
-    unsigned refreshCounter;
     unsigned readCounter;
     unsigned writeCounter;
 
