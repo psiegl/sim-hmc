@@ -55,17 +55,16 @@ HMCSIM_MACROS += -DHMC_USES_BOBSIM
 CC=clang
 
 #-- C++ COMPILER
-CXX=g++
-#clang++ -std=c++11
+CXX=clang++
 
 #-- INCLUDE DIRECTORIES
 INC=
 
 #-- C COMPILER FLAGS
-CFLAGS= -Wall $(INC) $(HMCSIM_MACROS) -pg
+CFLAGS=-std=c++11 -Wall $(INC) $(HMCSIM_MACROS) #-pg
 
 #-- C++ COMPILER FLAGS
-CXXFLAGS= -Wall $(INC) $(HMCSIM_MACROS) -lz
+CXXFLAGS=-std=c++11 -Wall $(INC) $(HMCSIM_MACROS)
 
 #-- ARCHIVE BINARY
 AR=ar
