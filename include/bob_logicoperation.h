@@ -108,7 +108,7 @@ public:
 #endif
 
     //generate the writes required to write a pattern to each page
-    for(int i=0; i<numPages; i++)
+    for(unsigned i=0; i<numPages; i++)
     {
         Transaction *trans = new Transaction(DATA_WRITE, pageStart + i*(1<<((unsigned)(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS)))), 64);
         trans->originatedFromLogicOp = true;
@@ -166,7 +166,7 @@ public:
     }
 #endif
 
-    for(int i=0; i<sizeToCopy; i++)
+    for(unsigned i=0; i<sizeToCopy; i++)
     {
         Transaction *trans = new Transaction(DATA_READ, sourceAddress + i*(1<<(unsigned)(log2(BUS_ALIGNMENT_SIZE)+log2(NUM_CHANNELS))), 64);
         trans->originatedFromLogicOp = true;

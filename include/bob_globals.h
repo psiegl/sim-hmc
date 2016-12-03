@@ -133,18 +133,18 @@ enum AddressMappingScheme
 //Ratio between CPU and link bus clocks - computed at runtime
 #define LINK_CPU_CLK_RATIO           (unsigned)(CPU_CLK_PERIOD / LINK_BUS_CLK_PERIOD)
 //Flag to turn on/off double-data rate transfer on link bus
-#define LINK_BUS_USE_DDR            true
+#define LINK_BUS_USE_DDR             true
 
 //Size of DRAM request
-#define TRANSACTION_SIZE             64 // psiegl: changes as of packet size!
+#define TRANSACTION_SIZE             64 // ToDo: psiegl: changes as of packet size!
 //Width of DRAM bus as standardized by JEDEC
 #define DRAM_BUS_WIDTH               16 //bytes - DOUBLE TO ACCOUNT FOR DDR - 64-bits wide JEDEC bus
 
 //Number of ports on main BOB controller
 //Number of bytes each port can transfer in a CPU cycle
-#define PORT_WIDTH                   16
+#define PORT_WIDTH                   16 // ToDo: does not really exists ...
 //Number of transaction packets that each port buffer may hold
-#define PORT_QUEUE_DEPTH              8
+#define PORT_QUEUE_DEPTH              8 // ToDo: does not really exists ...
 //Heuristic used for adding new requests to the available ports
 #define PORT_HEURISTIC               FIRST_AVAILABLE
 

@@ -82,6 +82,8 @@ BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned de
   dram_channel_clk = 0;
   currentClockCycle = 0;
 
+  pendingReadsBufferAvg = 0;
+
 #ifdef LOG_OUTPUT
   string output_filename("BOBsim");
   if (getenv("SIM_DESC"))
@@ -323,9 +325,7 @@ void BOB::Update(void)
           exit(0);
           break;
         }
-        ;
         i_respLinkBus->serDesBuffer = NULL;
-        // psiegl !! HEEEERE
       }
       priorityLinkBus[p]++;
       if (priorityLinkBus[p] == NUM_LINK_BUSES) priorityLinkBus[p] = 0;
@@ -365,6 +365,7 @@ void BOB::Update(void)
             //put in pending queue
             //  make it a RETURN_DATA type before we put it in pending queue
             pendingReads.push_back(ports[p].inputBuffer[i]);
+            pendingReadsBufferAvg += pendingReads.size();
 
             readCounter++;
 
@@ -637,6 +638,7 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     portInputBufferAvg[p] = 0;
     portOutputBufferAvg[p] = 0;
   }
+  std::cout << "pendingReadsBufferAvg " << ((float)pendingReadsBufferAvg) / elapsedCycles << std::endl;
 
   //calculate possible bandwidth of part
   float dataperiod = tCK / 2;

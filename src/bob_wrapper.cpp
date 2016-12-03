@@ -486,7 +486,6 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
     //latencies[((returnedRead->fullTimeTotal/10)*10)*CPU_CLK_PERIOD]++;
 
     returnedReads++;
-//        std::cout << "return : " << std::dec << returnedRead->respSizeInBytes() << " Bytes, FLITS: " << ((returnedRead->respSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
     returnedReadSize += returnedRead->respSizeInBytes();
   }
   break;

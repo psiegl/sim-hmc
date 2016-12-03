@@ -49,7 +49,7 @@
 
 
 //Total number of reads (as a percentage) in request stream
-#define READ_WRITE_RATIO 66.6f //%
+#define READ_WRITE_RATIO 100.0f //%
 //Frequency of requests - 0.0 = no requests; 1.0 = as fast as possible
 #define PORT_UTILIZATION  1.0f
 

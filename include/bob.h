@@ -80,6 +80,7 @@ private:
 
     //Storage for pending read request information
     vector<Transaction*> pendingReads;
+    unsigned pendingReadsBufferAvg;
 
     //Bookkeeping for port statistics
     vector<unsigned> portInputBufferAvg;
