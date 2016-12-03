@@ -6,6 +6,7 @@
 #include <list>
 #include <zlib.h> // crc32(), uLong
 #include "config.h"
+#include "hmc_sim_t.h"
 #include "hmc_jtag.h"
 #include "hmc_macros.h"
 #include "hmc_notify.h"
@@ -14,16 +15,6 @@
 
 class hmc_link;
 class hmc_cube;
-
-typedef enum{
-  RD_RS     = 0x38,
-  WR_RS     = 0x39,
-  MD_RD_RS  = 0x3A,
-  MD_WR_RS  = 0x3B,
-  RSP_ERROR = 0x3E,
-  RSP_NONE  = 0x00,	// not really defined, but let's take it
-  RSP_CMC
-} hmc_response_t;
 
 class hmc_sim : private hmc_notify_cl {
 private:

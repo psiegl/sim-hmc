@@ -47,7 +47,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
   for (unsigned i = 0; i < num_hmcs; i++) {
-    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, vaultbuswidth, capacity, &this->cubes, num_hmcs);
+    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, vaultbuswidth, capacity, &this->cubes, num_hmcs, &this->clk);
     this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 }
@@ -65,8 +65,7 @@ hmc_sim::~hmc_sim(void)
   }
 
   for (std::list<hmc_link*>::iterator it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {
-    std::cout << "delete link " << std::hex << (*it) << std::endl;
-    delete[] *it;
+    delete *it;
   }
 }
 
@@ -79,27 +78,28 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
                                   unsigned dst_hmcId, unsigned dst_linkId,
                                   enum link_width_t bitwidth)
 {
-  hmc_link *link = new hmc_link[2];
-  link[0].connect_linkports(&link[1]);
-  link[0].re_adjust_links(bitwidth, 1);
+  hmc_link *linkend0 = new hmc_link(&this->clk);
+  hmc_link *linkend1 = new hmc_link(&this->clk);
+  linkend0->connect_linkports(linkend1);
+  linkend0->re_adjust_links(bitwidth, 1);
 
   hmc_quad *src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
   hmc_quad *dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
 
-  bool ret = src_quad->set_ext_link(&link[0]);
-  ret &= dst_quad->set_ext_link(&link[1]);
+  bool ret = src_quad->set_ext_link(linkend0);
+  ret &= dst_quad->set_ext_link(linkend1);
   if (ret) {
     this->cubes[src_hmcId]->get_partial_link_graph(dst_hmcId)->links |= (0x1 << src_linkId);
     this->cubes[dst_hmcId]->get_partial_link_graph(src_hmcId)->links |= (0x1 << dst_linkId);
     this->cubes[src_hmcId]->hmc_routing_tables_update(); // just one needed ...
     this->cubes[src_hmcId]->hmc_routing_tables_visualize();
-
-    std::cout << "add link " << std::hex << link << std::endl;
-    this->link_garbage.push_back(link);
+    this->link_garbage.push_back(linkend0);
+    this->link_garbage.push_back(linkend1);
     return true;
   }
   else {
-    delete[] link;
+    delete linkend0;
+    delete linkend1;
     return false;
   }
 }
@@ -108,23 +108,25 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 
-  hmc_link *link = new hmc_link[2];
-  link[0].connect_linkports(&link[1]);
-  link[1].re_adjust_links(bitwidth, 1);
-  link[1].set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
+  hmc_link *linkend0 = new hmc_link(&this->clk);
+  hmc_link *linkend1 = new hmc_link(&this->clk);
+  linkend0->connect_linkports(linkend1);
+  linkend1->re_adjust_links(bitwidth, 1);
+  linkend1->set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
 
   // notify all!
   for (unsigned i = 0; i < this->cubes.size(); i++)
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
 
-  if (quad->set_ext_link(&link[0])) {
-    std::cout << "add link " << std::hex << link << std::endl;
-    this->link_garbage.push_back(link);
-    this->slids[slidId] = &link[1];
+  if (quad->set_ext_link(linkend0)) {
+    this->link_garbage.push_back(linkend0);
+    this->link_garbage.push_back(linkend1);
+    this->slids[slidId] = linkend1;
     return this->slidnotify[slidId];
   }
   else {
-    delete[] link;
+    delete linkend0;
+    delete linkend1;
     return nullptr;
   }
 }

@@ -1,6 +1,7 @@
 #ifndef _HMC_LINK_H_
 #define _HMC_LINK_H_
 
+#include <stdint.h>
 #include "hmc_queue.h"
 
 class hmc_notify;
@@ -12,7 +13,7 @@ class hmc_link {
   hmc_link *binding;
 
 public:
-  hmc_link(void);
+  hmc_link(uint64_t *i_cur_cycle);
   ~hmc_link(void);
 
   hmc_queue* get_ilink(void);
@@ -20,7 +21,7 @@ public:
 
   void set_ilink_notify(unsigned id, hmc_notify *notify);
 
-  void re_adjust_links(enum link_width_t bitwidth, unsigned queuedepth);
+  void re_adjust_links(enum link_width_t lanes, unsigned queuedepth);
 
   // setup of two parts of hmc_link to form ONE link
   void connect_linkports(hmc_link *part);

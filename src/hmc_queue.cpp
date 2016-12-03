@@ -2,9 +2,10 @@
 #include "hmc_queue.h"
 #include "hmc_notify.h"
 
-hmc_queue::hmc_queue(void) :
+hmc_queue::hmc_queue(uint64_t *cur_cycle) :
   id(-1),
   notify(NULL),
+  cur_cycle(cur_cycle),
   bitoccupation(0),
   bitoccupationmax(0),
   linkwidth(HMCSIM_QUARTER_LINK_WIDTH)
@@ -21,10 +22,10 @@ void hmc_queue::set_notify(unsigned id, hmc_notify *notify)
   this->notify = notify;
 }
 
-void hmc_queue::re_adjust(enum link_width_t linkwidth, unsigned queuedepth)
+void hmc_queue::re_adjust(enum link_width_t lanes, unsigned queuedepth)
 {
-  this->linkwidth = linkwidth;
-  this->bitoccupationmax = (this->linkwidth * 8) * queuedepth;
+  this->linkwidth = lanes;
+  this->bitoccupationmax = (lanes * 8) * queuedepth;
 }
 
 bool hmc_queue::has_space(unsigned packetleninbit)
@@ -41,9 +42,7 @@ bool hmc_queue::push_back(char *packet, unsigned packetleninbit)
 
     this->bitoccupation += packetleninbit;
     unsigned cycles = packetleninbit / (this->linkwidth * 8);
-    if (!cycles)
-      cycles = 1;
-    this->list.push_back(std::make_tuple(packet, cycles, packetleninbit));
+    this->list.push_back(std::make_tuple(packet, cycles, packetleninbit, *this->cur_cycle));
     return true;
   }
   return false;
@@ -52,24 +51,21 @@ bool hmc_queue::push_back(char *packet, unsigned packetleninbit)
 char* hmc_queue::front(unsigned *packetleninbit)
 {
   assert(!this->list.empty());
-  auto *q = &this->list;
   // ToDo: shall be all decreased or just the first ones?
-  for (auto it = q->begin(); it != q->end(); ++it) {
-    unsigned cyclestowait = std::get<1>(*it);
-    if (cyclestowait > 0)
-      cyclestowait = --std::get<1>(q->front());
+  for (auto it = this->list.begin(); it != this->list.end(); ++it) {
+    std::get<1>(*it) -= (std::get<1>(*it) > 0);
   }
-  unsigned cyclestowait = std::get<1>(q->front());
-  *packetleninbit = std::get<2>(q->front());
-  return (!cyclestowait) ? std::get<0>(q->front()) : nullptr;
+  auto front = this->list.front();
+  unsigned cyclestowait = std::get<1>(front);
+  *packetleninbit = std::get<2>(front);
+  return (!cyclestowait && std::get<3>(front) != *this->cur_cycle) ? std::get<0>(front) : nullptr;
 }
 
 char* hmc_queue::pop_front(void)
 {
-  std::list< std::tuple<char*, unsigned, unsigned> > *q = &this->list;
-  char *front = std::get<0>(q->front());
-  this->bitoccupation -= std::get<2>(q->front());
-  q->pop_front();
+  char *front = std::get<0>(this->list.front());
+  this->bitoccupation -= std::get<2>(this->list.front());
+  this->list.pop_front();
   if (this->notify != NULL && !this->bitoccupation) {
     this->notify->notify_del(this->id);
   }

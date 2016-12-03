@@ -2,7 +2,7 @@
 #define _HMC_QUEUE_H_
 
 #include <list>
-#include <cstdint>
+#include <stdint.h>
 #include <tuple>
 
 class hmc_notify;
@@ -28,20 +28,21 @@ class hmc_queue {
 private:
   unsigned id;
   hmc_notify *notify;
+  uint64_t *cur_cycle;
 
   unsigned bitoccupation;
   unsigned bitoccupationmax;
   enum link_width_t linkwidth;
 
-  std::list< std::tuple<char*, unsigned, unsigned> > list;
+  std::list< std::tuple<char*, unsigned, unsigned, uint64_t> > list;
 
 public:
-  hmc_queue(void);
+  hmc_queue(uint64_t* cur_cycle);
   ~hmc_queue(void);
 
   void set_notify(unsigned id, hmc_notify *notify);
 
-  void re_adjust(enum link_width_t linkwidth, unsigned queuedepth);
+  void re_adjust(enum link_width_t lanes, unsigned queuedepth);
 
   bool has_space(unsigned packetleninbit);
   bool push_back(char *packet, unsigned packetleninbit);

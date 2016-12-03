@@ -56,6 +56,7 @@ bool hmc_bobsim::bob_feedback(char *packet)
   }
   else {
     this->feedback_cache.push_back(packet);
+    std::cout << "shiiiiiiiTTTT!" << std::endl;
     return false;
   }
 }
@@ -100,12 +101,13 @@ void hmc_bobsim::clock(void)
     enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd);
     //std::cout << "rqstlen: " << std::dec << rqstlen << " Byte ! " << std::endl;
 
-    bool no_response;
-    unsigned rsp_lenInFlits;
-    this->hmcsim_packet_resp_len(cmd, &no_response, &rsp_lenInFlits);
 
+    unsigned rsp_lenInFlits;
+    this->hmcsim_packet_resp_len(cmd, &rsp_lenInFlits);
 
     unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
+    rsp_lenInFlits -= (rsp_lenInFlits > 0); // netto! without overhead!
+    flits -= (flits > 0); // netto! without overhead!
     BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, 0 /* addr */, flits, rsp_lenInFlits, packet);
 
     unsigned long gl_bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
@@ -127,7 +129,7 @@ void hmc_bobsim::clock(void)
       this->bobnotify.notify_add(0);
     }
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
-    link->get_ilink()->pop_front();
+    this->link->get_ilink()->pop_front();
   }
 }
 

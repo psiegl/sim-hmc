@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
   unsigned capacity = 4;
   hmc_sim sim(cubes, 2, 4, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_FULL_LINK_WIDTH);
   unsigned slidId = 0;
-  unsigned destcub = 1;
+  unsigned destcub = 0; // 1
   unsigned addr = 0b110000000000; // quad 3
   hmc_notify* slidnotify = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH);
 
@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
   }
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
-  char packet[sendpacketleninbit / 8];
+  char packet[(17*FLIT_WIDTH) / 8];
 
-  unsigned issue = 6002;
+  unsigned issue = 300; //6002;
   unsigned send_ctr = 0;
   unsigned recv_ctr = 0;
 
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     {
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
 
-      if(send_ctr < (issue - 2)) {
+      if(send_ctr < (issue /*- 2*/)) {
         unsigned dram_hi = (send_ctr & 0b111) << 4;
         unsigned dram_lo = (send_ctr >> 3) << (capacity == 8 ? 16 : 15);
         sim.hmc_encode_pkt(destcub, addr+dram_hi+dram_lo, 0, RD256, packet);
@@ -73,6 +73,7 @@ int main(int argc, char* argv[])
 
   delete[] track;
   std::cout << "done in " << clks << " clks, avg.: " << avg << std::endl;
+  std::cout << "bw: " << (((float)avg)/((256+16)*0.8f)) << "GB/s" << std::endl;
 
   return 0;
 }

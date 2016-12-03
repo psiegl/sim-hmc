@@ -27,7 +27,7 @@ public:
   hmc_cube(unsigned id, hmc_notify *notify,
            enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth,
            unsigned capacity,
-           std::map<unsigned, hmc_cube*>* cubes, unsigned numcubes);
+           std::map<unsigned, hmc_cube*>* cubes, unsigned numcubes, uint64_t *clk);
   virtual ~hmc_cube(void);
 
   ALWAYS_INLINE unsigned get_id(void)

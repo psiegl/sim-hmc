@@ -63,7 +63,6 @@ void hmc_route::hmc_routing_tables_visualize(void)
   }
 }
 
-#include <iostream>
 bool hmc_route::hmc_insert_route(hmc_cube *cube, unsigned cube_endId, hmc_route_t *route)
 {
   hmc_route_t **cur = &cube->get_routingtbl()[ cube_endId ];
@@ -99,7 +98,6 @@ int hmc_route::hmc_graph_search(unsigned start_id, unsigned i, unsigned first_ho
 {
   if (i == end_id) {
     hmc_route_t *route = new hmc_route_t[1];
-    std::cout << "new alloc: " << route << std::endl;
     route->hops = hop - 1;
     route->next_dev = first_hop;
     route->links = &(*this->cubes)[start_id]->get_partial_link_graph(first_hop)->links;             // fixME
