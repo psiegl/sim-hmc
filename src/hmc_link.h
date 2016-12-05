@@ -21,7 +21,7 @@ public:
 
   void set_ilink_notify(unsigned id, hmc_notify *notify);
 
-  void re_adjust_links(enum link_width_t lanes, unsigned queuedepth);
+  void re_adjust_links(unsigned link_bitwidth, float link_bitrate);
 
   // setup of two parts of hmc_link to form ONE link
   void connect_linkports(hmc_link *part);

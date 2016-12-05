@@ -27,10 +27,10 @@ void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
   this->i.set_notify(id, notify);
 }
 
-void hmc_link::re_adjust_links(enum link_width_t lanes, unsigned queuedepth)
+void hmc_link::re_adjust_links(unsigned link_bitwidth, float link_bitrate)
 {
-  this->get_ilink()->re_adjust(lanes, queuedepth);
-  this->binding->get_ilink()->re_adjust(lanes, queuedepth);
+  this->get_ilink()->re_adjust(link_bitwidth, link_bitrate);
+  this->binding->get_ilink()->re_adjust(link_bitwidth, link_bitrate);
 }
 
 void hmc_link::connect_linkports(hmc_link *part)
