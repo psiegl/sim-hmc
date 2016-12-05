@@ -48,7 +48,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 
   for (unsigned i = 0; i < num_hmcs; i++) {
     this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, vaultbuswidth, capacity, &this->cubes, num_hmcs, &this->clk);
-    this->jtags[i] = new hmc_jtag(this->cubes[i]);
+//    this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 }
 
@@ -58,10 +58,10 @@ hmc_sim::~hmc_sim(void)
     delete (*it).second;
   }
 
-  unsigned i = 0;
+//  unsigned i = 0;
   for (std::map<unsigned, hmc_cube*>::iterator it = this->cubes.begin(); it != this->cubes.end(); ++it) {
     delete (*it).second;
-    delete this->jtags[i++];
+//    delete this->jtags[i++];
   }
 
   for (std::list<hmc_link*>::iterator it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {

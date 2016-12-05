@@ -7,7 +7,7 @@
 #include <zlib.h> // crc32(), uLong
 #include "config.h"
 #include "hmc_sim_t.h"
-#include "hmc_jtag.h"
+//#include "hmc_jtag.h"
 #include "hmc_macros.h"
 #include "hmc_notify.h"
 #include "hmc_queue.h"
@@ -21,7 +21,7 @@ private:
   uint64_t clk;
   hmc_notify cubes_notify;
   std::map<unsigned, hmc_cube*> cubes;
-  hmc_jtag* jtags[HMC_MAX_DEVS];
+//  hmc_jtag* jtags[HMC_MAX_DEVS];
 
   std::map<unsigned, hmc_link*> slids;
   std::map<unsigned, hmc_notify*> slidnotify;
@@ -76,10 +76,10 @@ public:
           enum link_width_t vaultbuswidth);
   ~hmc_sim(void);
 
-  ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)
-  {
-    return this->jtags[id];
-  }
+//  ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)
+//  {
+//    return this->jtags[id];
+//  }
   bool hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
                            unsigned dst_hmcId, unsigned dst_linkId,
                            enum link_width_t bitwidth);
