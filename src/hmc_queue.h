@@ -49,7 +49,7 @@ public:
   bool has_space(unsigned packetleninbit);
   bool push_back(char *packet, unsigned packetleninbit);
   char* front(unsigned *packetleninbit);
-  char* pop_front(void);
+  void pop_front(void);
 };
 
 #endif /* #ifndef _HMC_QUEUE_H_ */

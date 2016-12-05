@@ -74,12 +74,10 @@ char* hmc_queue::front(unsigned *packetleninbit)
   return (!((unsigned)std::get<1>(front)) && std::get<3>(front) != *this->cur_cycle) ? std::get<0>(front) : nullptr;
 }
 
-char* hmc_queue::pop_front(void)
+void hmc_queue::pop_front(void)
 {
-  char *front = std::get<0>(this->list.front());
   this->list.pop_front();
   if (this->notify != NULL && !this->list.size()) {
     this->notify->notify_del(this->id);
   }
-  return front;
 }
