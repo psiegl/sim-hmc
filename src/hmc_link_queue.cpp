@@ -11,7 +11,8 @@ hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle) :
   bitoccupation(0),
   bitoccupationmax(30.0f * HMCSIM_QUARTER_LINK_WIDTH),
   bitwidth(HMCSIM_QUARTER_LINK_WIDTH),
-  bitrate(30.0f)
+  bitrate(30.0f),
+  buf(nullptr) // ToDo
 {
 }
 
@@ -25,10 +26,11 @@ void hmc_link_queue::set_notify(unsigned id, hmc_notify *notify)
   this->notify = notify;
 }
 
-void hmc_link_queue::re_adjust(unsigned link_bitwidth, float link_bitrate)
+void hmc_link_queue::re_adjust(unsigned link_bitwidth, float link_bitrate, unsigned buf_bitsize)
 {
   this->bitwidth = link_bitwidth;
   this->bitoccupationmax = bitrate /*ToDo*/ * link_bitwidth;
+  this->buf.adjust_size(buf_bitsize);
 }
 
 bool hmc_link_queue::has_space(unsigned packetleninbit)
@@ -80,4 +82,14 @@ void hmc_link_queue::pop_front(void)
   if (this->notify != NULL && !this->list.size()) {
     this->notify->notify_del(this->id);
   }
+}
+
+void hmc_link_queue::clock(void)
+{
+  // ToDo
+}
+
+bool hmc_link_queue::notify_up(void)
+{
+  return true; // ToDo
 }

@@ -4,8 +4,8 @@
 #include <list>
 #include <stdint.h>
 #include <tuple>
-
-class hmc_notify;
+#include "hmc_link_buf.h"
+#include "hmc_notify.h"
 
 
 /* lanes -> each lane 1 bit per unit interval (UI). 1 UI -> 100ps (is set by the ref. clock oscillator) HMCv1.0
@@ -21,10 +21,10 @@ enum link_width_t {
   HMCSIM_FULL_LINK_WIDTH    = 16,
   HMCSIM_HALF_LINK_WIDTH    =  8,
   HMCSIM_QUARTER_LINK_WIDTH =  4
-};
+}; // ToDo: move to hmc_sim.h
 
 // tuple( packetptr, amount of cycles, totalsizeinbits );
-class hmc_link_queue {
+class hmc_link_queue : public hmc_notify_cl {
 private:
   unsigned id;
   hmc_notify *notify;
@@ -37,6 +37,7 @@ private:
   float bitrate;
 
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
+  hmc_link_buf buf;
 
 public:
   hmc_link_queue(uint64_t* cur_cycle);
@@ -44,12 +45,15 @@ public:
 
   void set_notify(unsigned id, hmc_notify *notify);
 
-  void re_adjust(unsigned link_bitwidth, float link_bitrate);
+  void re_adjust(unsigned link_bitwidth, float link_bitrate, unsigned buf_bitsize);
 
   bool has_space(unsigned packetleninbit);
   bool push_back(char *packet, unsigned packetleninbit);
   char* front(unsigned *packetleninbit);
   void pop_front(void);
+
+  void clock(void);
+  bool notify_up(void);
 };
 
 #endif /* #ifndef _HMC_LINK_QUEUE_H_ */
