@@ -59,7 +59,6 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 char* hmc_link_queue::front(unsigned *packetleninbit)
 {
   assert(!this->list.empty());
-  // ToDo: shall be all decreased or just the first ones?
   float tbitrate = this->bitrate;
   for (auto it = this->list.begin(); it != this->list.end(); ++it) {
     float UI = std::get<1>(*it);
