@@ -32,9 +32,11 @@ private:
 
   unsigned bitoccupation;
   unsigned bitoccupationmax;
-  enum link_width_t linkwidth;
 
-  std::list< std::tuple<char*, unsigned, unsigned, uint64_t> > list;
+  unsigned bitwidth;
+  float bitrate;
+
+  std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
 
 public:
   hmc_queue(uint64_t* cur_cycle);
@@ -42,7 +44,7 @@ public:
 
   void set_notify(unsigned id, hmc_notify *notify);
 
-  void re_adjust(enum link_width_t lanes, unsigned queuedepth);
+  void re_adjust(unsigned link_bitwidth, float link_bitrate);
 
   bool has_space(unsigned packetleninbit);
   bool push_back(char *packet, unsigned packetleninbit);

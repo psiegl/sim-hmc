@@ -42,6 +42,8 @@
 #define   HMC_MIN_LINKS         2
 #define   HMC_MAX_CAPACITY      8
 #define   HMC_MIN_CAPACITY      4
+#define   HMC_CLK_PERIOD_NS   0.8f //1.25 GHz
+
 
 /*
 HMC2.1

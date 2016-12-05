@@ -22,9 +22,10 @@ int main(int argc, char* argv[])
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[(17*FLIT_WIDTH) / 8];
 
-  unsigned issue = 300; //6002;
+  unsigned issue = 6000; //6002;
   unsigned send_ctr = 0;
-  unsigned recv_ctr = 0;
+  unsigned skip = 0;
+  unsigned recv_ctr = 0 + skip;
 
   unsigned clks = 0;
   unsigned *track = new unsigned[issue];
@@ -67,13 +68,17 @@ int main(int argc, char* argv[])
   } while(true);
 
   unsigned long long avg = 0;
-  for(unsigned i=0; i<issue; i++)
+  for(unsigned i=0; i<issue-skip; i++) {
     avg += track[i];
-  avg /= issue;
+  }
+  avg /= (issue-skip);
 
   delete[] track;
+
+  float freq = 1.0f; // we clk at the same frequency! otherwise: 0.8f
   std::cout << "done in " << clks << " clks, avg.: " << avg << std::endl;
-  std::cout << "bw: " << (((float)avg)/((256+16)*0.8f)) << "GB/s" << std::endl;
+  std::cout << "bw: " << (((float)(256+16)*8*(issue-skip))/(clks*freq)) << "GBit/s" << std::endl;
+  std::cout << "bw per lane: " << (((float)(256+16)*8*(issue-skip))/(clks*freq*16)) << "GBit/s" << std::endl;
 
   return 0;
 }

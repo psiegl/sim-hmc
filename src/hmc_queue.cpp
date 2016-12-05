@@ -7,8 +7,9 @@ hmc_queue::hmc_queue(uint64_t *cur_cycle) :
   notify(NULL),
   cur_cycle(cur_cycle),
   bitoccupation(0),
-  bitoccupationmax(0),
-  linkwidth(HMCSIM_QUARTER_LINK_WIDTH)
+  bitoccupationmax(30.0f * HMCSIM_QUARTER_LINK_WIDTH),
+  bitwidth(HMCSIM_QUARTER_LINK_WIDTH),
+  bitrate(30.0f)
 {
 }
 
@@ -22,10 +23,10 @@ void hmc_queue::set_notify(unsigned id, hmc_notify *notify)
   this->notify = notify;
 }
 
-void hmc_queue::re_adjust(enum link_width_t lanes, unsigned queuedepth)
+void hmc_queue::re_adjust(unsigned link_bitwidth, float link_bitrate)
 {
-  this->linkwidth = lanes;
-  this->bitoccupationmax = (lanes * 8) * queuedepth;
+  this->bitwidth = link_bitwidth;
+  this->bitoccupationmax = bitrate/*ToDo*/ * link_bitwidth;
 }
 
 bool hmc_queue::has_space(unsigned packetleninbit)
@@ -41,8 +42,8 @@ bool hmc_queue::push_back(char *packet, unsigned packetleninbit)
       this->notify->notify_add(this->id);
 
     this->bitoccupation += packetleninbit;
-    unsigned cycles = packetleninbit / (this->linkwidth * 8);
-    this->list.push_back(std::make_tuple(packet, cycles, packetleninbit, *this->cur_cycle));
+    float UI = (float)(packetleninbit / this->bitwidth);
+    this->list.push_back(std::make_tuple(packet, UI, packetleninbit, *this->cur_cycle));
     return true;
   }
   return false;
@@ -52,13 +53,22 @@ char* hmc_queue::front(unsigned *packetleninbit)
 {
   assert(!this->list.empty());
   // ToDo: shall be all decreased or just the first ones?
+  float tbitrate = this->bitrate;
   for (auto it = this->list.begin(); it != this->list.end(); ++it) {
-    std::get<1>(*it) -= (std::get<1>(*it) > 0);
+    float UI = std::get<1>(*it);
+    if (UI > tbitrate) {
+      std::get<1>(*it) -= tbitrate;
+      break;
+    }
+    else {
+      std::get<1>(*it) = 0.0f;
+      tbitrate -= UI;
+    }
   }
   auto front = this->list.front();
-  unsigned cyclestowait = std::get<1>(front);
+  unsigned UI = (unsigned)std::get<1>(front);
   *packetleninbit = std::get<2>(front);
-  return (!cyclestowait && std::get<3>(front) != *this->cur_cycle) ? std::get<0>(front) : nullptr;
+  return (!UI && std::get<3>(front) != *this->cur_cycle) ? std::get<0>(front) : nullptr;
 }
 
 char* hmc_queue::pop_front(void)
