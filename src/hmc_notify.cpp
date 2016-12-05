@@ -42,3 +42,9 @@ uint32_t hmc_notify::get_notification(void)
 {
   return this->notifier;
 }
+
+void hmc_notify::set(unsigned id, hmc_notify *up)
+{
+  this->id = id;
+  this->up = up;
+}

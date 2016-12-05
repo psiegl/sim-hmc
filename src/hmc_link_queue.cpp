@@ -6,13 +6,14 @@
 // therewith we can use safer unsigned, instead of float
 hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle) :
   id(-1),
-  notify(NULL),
   cur_cycle(cur_cycle),
   bitoccupation(0),
   bitoccupationmax(30.0f * HMCSIM_QUARTER_LINK_WIDTH),
   bitwidth(HMCSIM_QUARTER_LINK_WIDTH),
   bitrate(30.0f),
-  buf(nullptr) // ToDo
+  hmc_links_notify(-1, nullptr, this),
+  hmc_buf_notify(-1, nullptr, this),
+  buf(&hmc_buf_notify) // ToDo
 {
 }
 
@@ -23,7 +24,8 @@ hmc_link_queue::~hmc_link_queue(void)
 void hmc_link_queue::set_notify(unsigned id, hmc_notify *notify)
 {
   this->id = id;
-  this->notify = notify;
+  this->hmc_links_notify.set(id, notify);
+  this->hmc_buf_notify.set(id, notify);
 }
 
 void hmc_link_queue::re_adjust(unsigned link_bitwidth, float link_bitrate, unsigned buf_bitsize)
@@ -42,8 +44,9 @@ bool hmc_link_queue::has_space(unsigned packetleninbit)
 bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 {
   if ((this->bitoccupation / 1000) /* + packetleninbit */ < this->bitoccupationmax) {
-    if (this->notify != NULL && !this->bitoccupation)
-      this->notify->notify_add(this->id);
+    if (this->hmc_links_notify.is_set() && !this->bitoccupation) {
+      this->hmc_links_notify.notify_add(this->id);
+    }
 
     this->bitoccupation += (packetleninbit / this->bitwidth * 1000);
     float UI = packetleninbit / this->bitwidth;
@@ -79,8 +82,8 @@ char* hmc_link_queue::front(unsigned *packetleninbit)
 void hmc_link_queue::pop_front(void)
 {
   this->list.pop_front();
-  if (this->notify != NULL && !this->list.size()) {
-    this->notify->notify_del(this->id);
+  if (this->hmc_links_notify.is_set() && !this->list.size()) {
+    this->hmc_links_notify.notify_del(this->id);
   }
 }
 
@@ -91,5 +94,6 @@ void hmc_link_queue::clock(void)
 
 bool hmc_link_queue::notify_up(void)
 {
-  return true; // ToDo
+  return (!this->hmc_buf_notify.get_notification()
+          && !this->hmc_links_notify.get_notification());
 }

@@ -27,7 +27,6 @@ enum link_width_t {
 class hmc_link_queue : public hmc_notify_cl {
 private:
   unsigned id;
-  hmc_notify *notify;
   uint64_t *cur_cycle;
 
   unsigned bitoccupation;
@@ -36,7 +35,9 @@ private:
   unsigned bitwidth;
   float bitrate;
 
+  hmc_notify hmc_links_notify;
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
+  hmc_notify hmc_buf_notify;
   hmc_link_buf buf;
 
 public:
