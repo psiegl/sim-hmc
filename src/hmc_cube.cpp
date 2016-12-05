@@ -3,7 +3,7 @@
 #include "hmc_link.h"
 
 hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
-                   enum link_width_t ringbuswidth, enum link_width_t vaultbuswidth,
+                   unsigned ringbuswidth,
                    unsigned capacity,
                    std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes, uint64_t *clk) :
   hmc_route(cubes, numcubes),
@@ -14,7 +14,7 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
 {
   unsigned num_ranks = capacity; // 8GB -> 8 layer, 4GB -> 4layer
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
-    this->quads[i] = new hmc_quad(i, num_ranks, &this->quad_notify, this, vaultbuswidth, clk);
+    this->quads[i] = new hmc_quad(i, num_ranks, &this->quad_notify, this, clk);
   }
 
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {

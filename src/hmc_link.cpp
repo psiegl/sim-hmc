@@ -2,8 +2,8 @@
 #include "hmc_notify.h"
 
 hmc_link::hmc_link(uint64_t *i_cur_cycle) :
-  i(i_cur_cycle),
-  o(nullptr),
+  rx(i_cur_cycle),
+  tx(nullptr),
   binding(nullptr)
 {
 }
@@ -14,17 +14,17 @@ hmc_link::~hmc_link(void)
 
 hmc_queue* hmc_link::get_ilink(void)
 {
-  return &this->i;
+  return &this->rx;
 }
 
 hmc_queue* hmc_link::get_olink(void)
 {
-  return this->o;
+  return this->tx;
 }
 
 void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
 {
-  this->i.set_notify(id, notify);
+  this->rx.set_notify(id, notify);
 }
 
 void hmc_link::re_adjust_links(unsigned link_bitwidth, float link_bitrate)
@@ -41,6 +41,6 @@ void hmc_link::connect_linkports(hmc_link *part)
 
 void hmc_link::set_binding(hmc_link *part)
 {
-  this->o = part->get_ilink();
+  this->tx = part->get_ilink();
   this->binding = part;
 }

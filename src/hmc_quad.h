@@ -31,7 +31,7 @@ class hmc_quad : private hmc_notify_cl {
 
 public:
   hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
-           hmc_cube *cube, enum link_width_t vaultbuswidth, uint64_t *clk);
+           hmc_cube *cube, uint64_t *clk);
   virtual ~hmc_quad(void);
 
   void clock(void);

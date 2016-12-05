@@ -72,8 +72,7 @@ private:
 public:
   hmc_sim(unsigned num_hmcs, unsigned num_slids,
           unsigned num_links, unsigned capacity,
-          enum link_width_t ringbuswidth,
-          enum link_width_t vaultbuswidth);
+          enum link_width_t ringbuswidth);
   ~hmc_sim(void);
 
 //  ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)

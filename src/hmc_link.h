@@ -7,8 +7,8 @@
 class hmc_notify;
 
 class hmc_link {
-  hmc_queue i;
-  hmc_queue *o;
+  hmc_queue rx;
+  hmc_queue *tx;
 
   hmc_link *binding;
 

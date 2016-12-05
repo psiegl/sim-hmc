@@ -9,8 +9,7 @@
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
-                 enum link_width_t ringbuswidth,
-                 enum link_width_t vaultbuswidth) :
+                 enum link_width_t ringbuswidth) :
   clk(0),
   cubes_notify(0, nullptr, this)
 {
@@ -47,7 +46,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
   for (unsigned i = 0; i < num_hmcs; i++) {
-    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, vaultbuswidth, capacity, &this->cubes, num_hmcs, &this->clk);
+    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, capacity, &this->cubes, num_hmcs, &this->clk);
 //    this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 }

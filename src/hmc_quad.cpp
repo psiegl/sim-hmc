@@ -10,7 +10,7 @@
 #include "hmc_ring.h"
 
 hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
-                   hmc_cube *cube, enum link_width_t vaultbuswidth, uint64_t *clk) :
+                   hmc_cube *cube, uint64_t *clk) :
   hmc_notify_cl(),
   ring_notify(id, notify, this),
   ring(id, &this->ring_notify, cube),
@@ -20,7 +20,8 @@ hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
     hmc_link *linkend0 = new hmc_link(clk);
     hmc_link *linkend1 = new hmc_link(clk);
     linkend0->connect_linkports(linkend1);
-    linkend0->re_adjust_links(vaultbuswidth, 1);
+    linkend0->re_adjust_links(HMCSIM_FULL_LINK_WIDTH, 1);
+    //linkend0->re_adjust_links(32, 1.25f); // ToDo
     this->link_garbage.push_back(linkend0);
     this->link_garbage.push_back(linkend1);
 
