@@ -12,12 +12,12 @@ hmc_link::~hmc_link(void)
 {
 }
 
-hmc_queue* hmc_link::get_ilink(void)
+hmc_link_queue* hmc_link::get_ilink(void)
 {
   return &this->rx;
 }
 
-hmc_queue* hmc_link::get_olink(void)
+hmc_link_queue* hmc_link::get_olink(void)
 {
   return this->tx;
 }

@@ -2,13 +2,13 @@
 #define _HMC_LINK_H_
 
 #include <stdint.h>
-#include "hmc_queue.h"
+#include "hmc_link_queue.h"
 
 class hmc_notify;
 
 class hmc_link {
-  hmc_queue rx;
-  hmc_queue *tx;
+  hmc_link_queue rx;
+  hmc_link_queue *tx;
 
   hmc_link *binding;
 
@@ -16,8 +16,8 @@ public:
   hmc_link(uint64_t *i_cur_cycle);
   ~hmc_link(void);
 
-  hmc_queue* get_ilink(void);
-  hmc_queue* get_olink(void);
+  hmc_link_queue* get_ilink(void);
+  hmc_link_queue* get_olink(void);
 
   void set_ilink_notify(unsigned id, hmc_notify *notify);
 

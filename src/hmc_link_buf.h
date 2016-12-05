@@ -1,10 +1,14 @@
 #ifndef _HMC_LINK_BUF_H_
 #define _HMC_LINK_BUF_H_
 
+#include <list>
+#include <utility>
+
 class hmc_link_buf {
 
   unsigned bitoccupation;
   unsigned bitoccupationmax;
+  std::list< std::pair<char*, unsigned> > buf;
 
 public:
   hmc_link_buf(unsigned bitsize);

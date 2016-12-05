@@ -1,5 +1,5 @@
-#ifndef _HMC_QUEUE_H_
-#define _HMC_QUEUE_H_
+#ifndef _HMC_LINK_QUEUE_H_
+#define _HMC_LINK_QUEUE_H_
 
 #include <list>
 #include <stdint.h>
@@ -24,7 +24,7 @@ enum link_width_t {
 };
 
 // tuple( packetptr, amount of cycles, totalsizeinbits );
-class hmc_queue {
+class hmc_link_queue {
 private:
   unsigned id;
   hmc_notify *notify;
@@ -39,8 +39,8 @@ private:
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
 
 public:
-  hmc_queue(uint64_t* cur_cycle);
-  ~hmc_queue(void);
+  hmc_link_queue(uint64_t* cur_cycle);
+  ~hmc_link_queue(void);
 
   void set_notify(unsigned id, hmc_notify *notify);
 
@@ -52,4 +52,4 @@ public:
   void pop_front(void);
 };
 
-#endif /* #ifndef _HMC_QUEUE_H_ */
+#endif /* #ifndef _HMC_LINK_QUEUE_H_ */

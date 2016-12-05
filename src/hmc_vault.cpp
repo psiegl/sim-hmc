@@ -3,6 +3,7 @@
 #include <cstring>
 #include "hmc_vault.h"
 #include "hmc_link.h"
+#include "hmc_link_queue.h"
 #include "hmc_cube.h"
 #include "hmc_macros.h"
 #include "hmc_sim.h"
@@ -114,7 +115,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    *
    */
   unsigned packetleninbit = rsp_flits * FLIT_WIDTH;
-  hmc_queue *o_queue = this->link->get_olink();
+  hmc_link_queue *o_queue = this->link->get_olink();
   assert(o_queue);
   if (!no_response && !o_queue->has_space(packetleninbit)) {
 //    HMCSIM_TRACE_STALL(dev->hmc, dev->id, 1);

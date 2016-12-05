@@ -2,8 +2,8 @@
 #include <cstdint>
 #include "hmc_cube.h"
 #include "hmc_link.h"
+#include "hmc_link_queue.h"
 #include "hmc_ring.h"
-#include "hmc_queue.h"
 #include "hmc_packet.h"
 #include "hmc_notify.h"
 #include "hmc_macros.h"
@@ -82,7 +82,7 @@ void hmc_ring::clock(void)
   unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
   for (unsigned i = lid; i < HMC_JTL_ALL_LINKS; i++) {
     if ((0x1 << i) & notifymap) {
-      hmc_queue *queue = this->links[i]->get_ilink();
+      hmc_link_queue *queue = this->links[i]->get_ilink();
       unsigned packetleninbit;
       char *packet = queue->front(&packetleninbit);
       if (packet == nullptr)
@@ -90,7 +90,7 @@ void hmc_ring::clock(void)
 
       hmc_link *next_link = this->links[decode_link_of_packet(packet)];
       assert(next_link != nullptr);
-      hmc_queue *next_queue = next_link->get_olink();
+      hmc_link_queue *next_queue = next_link->get_olink();
       assert(next_queue != nullptr);
       if (!next_queue->has_space(packetleninbit))
         continue;

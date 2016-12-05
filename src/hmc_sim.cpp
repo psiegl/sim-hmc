@@ -4,7 +4,7 @@
 #include "hmc_sim.h"
 #include "hmc_link.h"
 #include "hmc_quad.h"
-#include "hmc_queue.h"
+#include "hmc_link_queue.h"
 #include "hmc_vault.h"
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
@@ -139,7 +139,7 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
 
   unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
   unsigned flitwidthInBit = flits * FLIT_WIDTH;
-  hmc_queue *slid = this->slids[slidId]->get_olink();
+  hmc_link_queue *slid = this->slids[slidId]->get_olink();
   if (!slid->has_space(flitwidthInBit)) // check if we have space!
     return false;
 

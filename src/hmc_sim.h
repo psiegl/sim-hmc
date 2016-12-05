@@ -10,7 +10,7 @@
 //#include "hmc_jtag.h"
 #include "hmc_macros.h"
 #include "hmc_notify.h"
-#include "hmc_queue.h"
+#include "hmc_link_queue.h"
 #include "hmc_vault.h"
 
 class hmc_link;

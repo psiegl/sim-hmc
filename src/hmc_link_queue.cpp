@@ -1,10 +1,10 @@
 #include <cassert>
-#include "hmc_queue.h"
+#include "hmc_link_queue.h"
 #include "hmc_notify.h"
 
 // everything related to occupation will be in Mega instead of Giga!
 // therewith we can use safer unsigned, instead of float
-hmc_queue::hmc_queue(uint64_t *cur_cycle) :
+hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle) :
   id(-1),
   notify(NULL),
   cur_cycle(cur_cycle),
@@ -15,29 +15,29 @@ hmc_queue::hmc_queue(uint64_t *cur_cycle) :
 {
 }
 
-hmc_queue::~hmc_queue(void)
+hmc_link_queue::~hmc_link_queue(void)
 {
 }
 
-void hmc_queue::set_notify(unsigned id, hmc_notify *notify)
+void hmc_link_queue::set_notify(unsigned id, hmc_notify *notify)
 {
   this->id = id;
   this->notify = notify;
 }
 
-void hmc_queue::re_adjust(unsigned link_bitwidth, float link_bitrate)
+void hmc_link_queue::re_adjust(unsigned link_bitwidth, float link_bitrate)
 {
   this->bitwidth = link_bitwidth;
   this->bitoccupationmax = bitrate /*ToDo*/ * link_bitwidth;
 }
 
-bool hmc_queue::has_space(unsigned packetleninbit)
+bool hmc_link_queue::has_space(unsigned packetleninbit)
 {
   assert(this->bitoccupationmax); // otherwise not initialized!
   return ((this->bitoccupation / 1000) < this->bitoccupationmax);
 }
 
-bool hmc_queue::push_back(char *packet, unsigned packetleninbit)
+bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 {
   if ((this->bitoccupation / 1000) /* + packetleninbit */ < this->bitoccupationmax) {
     if (this->notify != NULL && !this->bitoccupation)
@@ -51,7 +51,7 @@ bool hmc_queue::push_back(char *packet, unsigned packetleninbit)
   return false;
 }
 
-char* hmc_queue::front(unsigned *packetleninbit)
+char* hmc_link_queue::front(unsigned *packetleninbit)
 {
   assert(!this->list.empty());
   // ToDo: shall be all decreased or just the first ones?
@@ -74,7 +74,7 @@ char* hmc_queue::front(unsigned *packetleninbit)
   return (!((unsigned)std::get<1>(front)) && std::get<3>(front) != *this->cur_cycle) ? std::get<0>(front) : nullptr;
 }
 
-void hmc_queue::pop_front(void)
+void hmc_link_queue::pop_front(void)
 {
   this->list.pop_front();
   if (this->notify != NULL && !this->list.size()) {

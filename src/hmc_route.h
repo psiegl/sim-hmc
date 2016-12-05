@@ -5,7 +5,6 @@
 #include <cstring>
 #include <map>
 #include "hmc_macros.h"
-#include "hmc_queue.h"
 
 class hmc_cube;
 
