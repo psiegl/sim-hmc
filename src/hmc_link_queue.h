@@ -4,6 +4,7 @@
 #include <list>
 #include <stdint.h>
 #include <tuple>
+//#include <map>
 #include "hmc_link_buf.h"
 #include "hmc_notify.h"
 
@@ -39,6 +40,8 @@ private:
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
   hmc_link_buf *buf;
 
+//  std::map<char*, uint64_t> tmp;
+
 public:
   hmc_link_queue(uint64_t* cur_cycle, hmc_link_buf *buf, hmc_notify *notify);
   ~hmc_link_queue(void);
@@ -49,8 +52,6 @@ public:
 
   bool has_space(unsigned packetleninbit);
   bool push_back(char *packet, unsigned packetleninbit);
-  char* front(unsigned *packetleninbit);
-  void pop_front(void);
 
   void clock(void);
 };

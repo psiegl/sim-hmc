@@ -2,6 +2,8 @@
 #include "hmc_link_buf.h"
 #include "hmc_notify.h"
 
+// ToDo: timestamp!
+
 hmc_link_buf::hmc_link_buf(hmc_notify *notify) :
   bitoccupation(0),
   bitoccupationmax(0),

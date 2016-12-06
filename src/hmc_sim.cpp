@@ -81,7 +81,7 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
   hmc_link *linkend0 = new hmc_link(&this->clk);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
-  linkend0->re_adjust_links(bitwidth, 1);
+  linkend0->re_adjust_links(32, 1.25f);
 
   hmc_quad *src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
   hmc_quad *dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
@@ -111,7 +111,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   hmc_link *linkend0 = new hmc_link(&this->clk);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
-  linkend1->re_adjust_links(bitwidth, 1);
+  linkend1->re_adjust_links(32, 1.25);
   linkend1->set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
 
   // notify all!
