@@ -35,6 +35,12 @@ bool hmc_link_queue::has_space(unsigned packetleninbit)
 {
   assert(this->bitoccupationmax); // otherwise not initialized!
   return ((this->bitoccupation / 1000) < this->bitoccupationmax);
+  //{
+  //bool tmp = this->buf->reserve_space(packetleninbit);
+  //std::cout << tmp << std::endl;
+  //  return true; // ToDo
+  //}
+  //return false;
 }
 
 bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
@@ -100,13 +106,16 @@ void hmc_link_queue::clock(void)
       std::get<1>(*it) = 0.0f;
     }
   }
+
   auto front = this->list.front();
   if (!((unsigned)std::get<1>(front))
       && std::get<3>(front) != *this->cur_cycle) {
-    this->buf->push_back_set_avail(std::get<0>(front), std::get<2>(front));
-    this->list.pop_front();
-    if (!this->list.size()) {
-      this->notify->notify_del(this->id);
+    if (this->buf->reserve_space(std::get<2>(front))) { // could be also above, but then it needs to add bitrate per clk to the buffer
+      this->buf->push_back_set_avail(std::get<0>(front), std::get<2>(front));
+      this->list.pop_front();
+      if (!this->list.size()) {
+        this->notify->notify_del(this->id);
+      }
     }
   }
 }

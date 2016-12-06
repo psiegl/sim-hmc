@@ -43,8 +43,8 @@ void hmc_link::re_adjust_links(unsigned link_bitwidth, float link_bitrate)
   this->__get_ilink()->re_adjust(link_bitwidth, link_bitrate);
   this->binding->__get_ilink()->re_adjust(link_bitwidth, link_bitrate);
 
-  this->re_adjust_size(128 * 14);
-  this->binding->re_adjust_size(128 * 14);
+  this->re_adjust_size(128 * 17);
+  this->binding->re_adjust_size(128 * 17);
 }
 
 void hmc_link::re_adjust_size(unsigned buf_bitsize)

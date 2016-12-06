@@ -1,3 +1,4 @@
+#include <cassert>
 #include "hmc_link_buf.h"
 #include "hmc_notify.h"
 
@@ -19,8 +20,12 @@ void hmc_link_buf::adjust_size(unsigned bitsize)
 
 bool hmc_link_buf::reserve_space(unsigned packetleninbit)
 {
-  if ((bitoccupation + packetleninbit) < bitoccupationmax) {
+  assert(packetleninbit <= this->bitoccupationmax);
+  if ((this->bitoccupation + packetleninbit) <= this->bitoccupationmax) {
     this->bitoccupation += packetleninbit;
+    if (!this->buf.size()) {
+      this->notify->notify_add(0);
+    }
     return true;
   }
   return false;
@@ -28,9 +33,6 @@ bool hmc_link_buf::reserve_space(unsigned packetleninbit)
 
 void hmc_link_buf::push_back_set_avail(char *packet, unsigned packetleninbit)
 {
-  if (!this->buf.size()) {
-    this->notify->notify_add(0);
-  }
   this->buf.push_back(std::make_pair(packet, packetleninbit));
 }
 
