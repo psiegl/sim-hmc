@@ -51,6 +51,8 @@ public:
   bool push_back(char *packet, unsigned packetleninbit);
   char* front(unsigned *packetleninbit);
   void pop_front(void);
+
+  void clock(void);
 };
 
 #endif /* #ifndef _HMC_LINK_QUEUE_H_ */

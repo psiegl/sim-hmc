@@ -5,6 +5,7 @@
 #include "hmc_link.h"
 #include "hmc_quad.h"
 #include "hmc_link_queue.h"
+#include "hmc_link_buf.h"
 #include "hmc_vault.h"
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
@@ -160,11 +161,14 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
   assert(pkt != nullptr);
 
   unsigned recvpacketleninbit;
-  uint64_t *packet = (uint64_t*)this->slids[slidId]->get_ilink()->front(&recvpacketleninbit);
+
+  hmc_link_buf *buf = this->slids[slidId]->get_ibuf();
+  this->slids[slidId]->clock(); // ToDo
+  uint64_t *packet = (uint64_t*)buf->front(&recvpacketleninbit);
   if (packet == nullptr)
     return false;
 
-  this->slids[slidId]->get_ilink()->pop_front();
+  buf->pop_front();
   memcpy(pkt, packet, recvpacketleninbit / 64);
   delete[] packet;
   return true;

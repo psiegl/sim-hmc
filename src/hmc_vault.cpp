@@ -31,8 +31,11 @@ hmc_vault::~hmc_vault(void)
 //#include <iostream>
 void hmc_vault::clock(void)
 {
+  // ToDo: check if clock needed!
+  this->link->clock();
+
   unsigned packetleninbit;
-  char *packet = this->link->get_ilink()->front(&packetleninbit);
+  char *packet = this->link->get_ibuf()->front(&packetleninbit);
   if (packet == nullptr)
     return;
 
@@ -44,7 +47,7 @@ void hmc_vault::clock(void)
   // ToDo: Bank Conflict!
 
   if (this->hmcsim_process_rqst(packet)) {
-    this->link->get_ilink()->pop_front();
+    this->link->get_ibuf()->pop_front();
     delete[] (char*)packet;
   }
 }

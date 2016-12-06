@@ -83,3 +83,31 @@ void hmc_link_queue::pop_front(void)
   }
 }
 
+void hmc_link_queue::clock(void)
+{
+  assert(!this->list.empty());
+  float tbitrate = this->bitrate;
+  for (auto it = this->list.begin(); it != this->list.end(); ++it) {
+    float UI = std::get<1>(*it);
+    if (UI > tbitrate) {
+      std::get<1>(*it) -= tbitrate;
+      this->bitoccupation -= (unsigned)(tbitrate * 1000);
+      break;
+    }
+    else {
+      tbitrate -= UI;
+      this->bitoccupation -= (unsigned)(std::get<1>(*it) * 1000);
+      std::get<1>(*it) = 0.0f;
+    }
+  }
+  auto front = this->list.front();
+  if (!((unsigned)std::get<1>(front))
+      && std::get<3>(front) != *this->cur_cycle) {
+    this->buf->push_back_set_avail(std::get<0>(front), std::get<2>(front));
+    this->list.pop_front();
+    if (!this->list.size()) {
+      this->notify->notify_del(this->id);
+    }
+  }
+}
+

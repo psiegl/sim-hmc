@@ -82,7 +82,10 @@ void hmc_ring::clock(void)
   unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
   for (unsigned i = lid; i < HMC_JTL_ALL_LINKS; i++) {
     if ((0x1 << i) & notifymap) {
-      hmc_link_queue *queue = this->links[i]->get_ilink();
+      // ToDo!
+      this->links[i]->clock();
+
+      hmc_link_buf *queue = this->links[i]->get_ibuf();
       unsigned packetleninbit;
       char *packet = queue->front(&packetleninbit);
       if (packet == nullptr)
