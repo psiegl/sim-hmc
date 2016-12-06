@@ -24,7 +24,7 @@ enum link_width_t {
 }; // ToDo: move to hmc_sim.h
 
 // tuple( packetptr, amount of cycles, totalsizeinbits );
-class hmc_link_queue : public hmc_notify_cl {
+class hmc_link_queue {
 private:
   unsigned id;
   uint64_t *cur_cycle;
@@ -35,26 +35,22 @@ private:
   unsigned bitwidth;
   float bitrate;
 
-  hmc_notify hmc_links_notify;
+  hmc_notify *notify;
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
-  hmc_notify hmc_buf_notify;
-  hmc_link_buf buf;
+  hmc_link_buf *buf;
 
 public:
-  hmc_link_queue(uint64_t* cur_cycle);
+  hmc_link_queue(uint64_t* cur_cycle, hmc_link_buf *buf, hmc_notify *notify);
   ~hmc_link_queue(void);
 
-  void set_notify(unsigned id, hmc_notify *notify);
+  void set_id(unsigned id);
 
-  void re_adjust(unsigned link_bitwidth, float link_bitrate, unsigned buf_bitsize);
+  void re_adjust(unsigned link_bitwidth, float link_bitrate);
 
   bool has_space(unsigned packetleninbit);
   bool push_back(char *packet, unsigned packetleninbit);
   char* front(unsigned *packetleninbit);
   void pop_front(void);
-
-  void clock(void);
-  bool notify_up(void);
 };
 
 #endif /* #ifndef _HMC_LINK_QUEUE_H_ */

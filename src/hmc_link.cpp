@@ -1,8 +1,10 @@
 #include "hmc_link.h"
-#include "hmc_notify.h"
 
 hmc_link::hmc_link(uint64_t *i_cur_cycle) :
-  rx(i_cur_cycle),
+  not_rx(-1, nullptr, this),
+  rx(i_cur_cycle, &rx_buf, &not_rx),
+  not_rx_buf(-1, nullptr, this),
+  rx_buf(&not_rx_buf),
   tx(nullptr),
   binding(nullptr)
 {
@@ -24,13 +26,20 @@ hmc_link_queue* hmc_link::get_olink(void)
 
 void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
 {
-  this->rx.set_notify(id, notify);
+  this->not_rx.set(id, notify);
+  this->not_rx_buf.set(id, notify);
+
+  this->rx.set_id(id);
 }
+
 
 void hmc_link::re_adjust_links(unsigned link_bitwidth, float link_bitrate)
 {
-  this->get_ilink()->re_adjust(link_bitwidth, link_bitrate, 128 * 14); // ToDo
-  this->binding->get_ilink()->re_adjust(link_bitwidth, link_bitrate, 128 * 14); // ToDo
+  this->get_ilink()->re_adjust(link_bitwidth, link_bitrate);
+  this->binding->get_ilink()->re_adjust(link_bitwidth, link_bitrate);
+
+  this->rx_buf.adjust_size(128 * 14);
+  //this->binding->get_ilink() ... ToDo -> the other one!
 }
 
 void hmc_link::connect_linkports(hmc_link *part)
@@ -43,4 +52,17 @@ void hmc_link::set_binding(hmc_link *part)
 {
   this->tx = part->get_ilink();
   this->binding = part;
+}
+
+
+void hmc_link::clock(void)
+{
+//  this->rx.clock();
+// ToDo -> will be most likely a combination out of front and pop_front
+}
+
+bool hmc_link::notify_up(void)
+{
+  return (!this->not_rx.get_notification()
+          && !this->not_rx_buf.get_notification());
 }
