@@ -20,31 +20,24 @@ hmc_notify::~hmc_notify(void)
 {
 }
 
+void hmc_notify::set(unsigned id, hmc_notify *up)
+{
+  this->id = id;
+  this->up = up;
+}
+
 void hmc_notify::notify_add(unsigned down_id)
 {
-  if (!(this->notifier & (0x1ull << down_id))) {
-    this->notifier |= (0x1ull << down_id);
-    if (up != nullptr) {
-      up->notify_add(this->id);
-    }
+  if (!(this->notifier & (0x1 << down_id))) {
+    this->notifier |= (0x1 << down_id);
+    if (this->up != nullptr)
+      this->up->notify_add(this->id);
   }
 }
 
 void hmc_notify::notify_del(unsigned down_id)
 {
-  this->notifier &= ~(0x1ull << down_id);
-  if (up != nullptr && this->notify->notify_up()) {
-    up->notify_del(this->id);
-  }
-}
-
-uint32_t hmc_notify::get_notification(void)
-{
-  return this->notifier;
-}
-
-void hmc_notify::set(unsigned id, hmc_notify *up)
-{
-  this->id = id;
-  this->up = up;
+  this->notifier &= ~(0x1 << down_id);
+  if (this->up != nullptr && this->notify->notify_up())
+    this->up->notify_del(this->id);
 }

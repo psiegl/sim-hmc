@@ -1,6 +1,7 @@
 #include "hmc_link.h"
 
 hmc_link::hmc_link(uint64_t *i_cur_cycle) :
+  hmc_notify_cl(),
   not_rx(-1, nullptr, this),
   rx(i_cur_cycle, &rx_buf, &not_rx),
   not_rx_buf(-1, nullptr, this),
