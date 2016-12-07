@@ -89,7 +89,7 @@ void hmc_bobsim::clock(void)
 
   if (this->linknotify.get_notification() && !this->bobsim->IsPortBusy(0 /* port */)) {
     unsigned packetleninbit;
-    char *packet = this->link->get_ilink()->front(&packetleninbit);
+    char *packet = this->link->get_ibuf()->front(&packetleninbit);
     if (packet == nullptr)
       return;
 
@@ -129,7 +129,7 @@ void hmc_bobsim::clock(void)
       this->bobnotify.notify_add(0);
     }
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
-    this->link->get_ilink()->pop_front();
+    this->link->get_ibuf()->pop_front();
   }
 }
 

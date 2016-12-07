@@ -24,8 +24,8 @@ default: $(TARGET)
 ####### Conditional ##############################
 
 ifneq (,$(findstring HMC_DEBUG, $(HMCSIM_MACROS)))
-CFLAGS   += -O -g -fsanitize=address -fno-omit-frame-pointer -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift
-CXXFLAGS += -O -g -fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift -fsanitize=undefined 
+CFLAGS   += -O -g -pg #-fsanitize=address -fno-omit-frame-pointer -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift
+CXXFLAGS += -O -g -pg #-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift -fsanitize=undefined 
 else
 CFLAGS   += -O3 -ffast-math
 CXXFLAGS += -O3 -ffast-math

@@ -5,7 +5,7 @@
 // ToDo: timestamp!
 
 hmc_link_buf::hmc_link_buf(hmc_notify *notify) :
-  bitoccupation(0),
+  bitoccupation(0.f),
   bitoccupationmax(0),
   notify(notify)
 {
@@ -20,7 +20,7 @@ void hmc_link_buf::adjust_size(unsigned bitsize)
   this->bitoccupationmax = bitsize;
 }
 
-bool hmc_link_buf::reserve_space(unsigned packetleninbit)
+bool hmc_link_buf::reserve_space(float packetleninbit)
 {
   assert(packetleninbit <= this->bitoccupationmax);
   if ((this->bitoccupation + packetleninbit) <= this->bitoccupationmax) {

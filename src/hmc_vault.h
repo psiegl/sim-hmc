@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <tuple>
-#ifndef NDEBUG
+#ifdef NDEBUG
 #include <zlib.h>
 #endif
 #include "hmc_macros.h"
@@ -27,7 +27,7 @@ private:
 
   ALWAYS_INLINE uint32_t hmcsim_crc32(void *packet, unsigned flits)
   {
-#ifndef NDEBUG
+#ifdef NDEBUG
     uLong crc = crc32(0L, Z_NULL, 0);
     unsigned len = (flits << 1) * sizeof(uint64_t);
     /*

@@ -37,12 +37,6 @@ bool hmc_link_queue::has_space(unsigned packetleninbit)
 {
   assert(this->bitoccupationmax); // otherwise not initialized!
   return ((this->bitoccupation / 1000) < this->bitoccupationmax);
-  //{
-  //bool tmp = this->buf->reserve_space(packetleninbit);
-  //std::cout << tmp << std::endl;
-  //  return true; // ToDo
-  //}
-  //return false;
 }
 
 bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
@@ -61,45 +55,42 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
   return false;
 }
 
-//#include <iostream>
 void hmc_link_queue::clock(void)
 {
   assert(!this->list.empty());
-  float tbitrate = this->bitrate;
-  for (auto it = this->list.begin(); it != this->list.end(); ++it) {
-    if (std::get<3>(*it) == *this->cur_cycle) {
-      break;
-    }
+  if (this->bitoccupation) { // speedup, it could be that clock is issued, but there is no bitoccupation, but still elements left, since it could not yet fit into the buffer
+    float tbitrate = this->bitrate;
+    for (auto it = this->list.begin(); it != this->list.end(); ++it) {
+      if (std::get<3>(*it) == *this->cur_cycle) {
+        break;
+      }
 
-    float UI = std::get<1>(*it);
-    if (UI == 0.0f)
-      continue;
+      float UI = std::get<1>(*it);
+      if (UI == 0.0f)
+        continue;
 
-    if (UI > tbitrate) {
-      std::get<1>(*it) -= tbitrate;
-      this->bitoccupation -= (unsigned)(tbitrate * 1000);
-      break;
-    }
-    else {
-      tbitrate -= UI;
-      this->bitoccupation -= (unsigned)(UI * 1000);
-      std::get<1>(*it) = 0.0f;
+      if (UI > tbitrate) {
+        std::get<1>(*it) -= tbitrate;
+        this->bitoccupation -= (unsigned)(tbitrate * 1000);
+        this->buf->reserve_space(tbitrate);
+        break;
+      }
+      else {
+        tbitrate -= UI;
+        this->buf->reserve_space(UI);
+        this->bitoccupation -= (unsigned)(UI * 1000);
+        std::get<1>(*it) = 0.0f;
+      }
     }
   }
 
   auto front = this->list.front();
-  if (std::get<1>(front) == 0.0f) {
-    if (this->buf->reserve_space(std::get<2>(front))) { // could be also above, but then it needs to add bitrate per clk to the buffer
-      this->buf->push_back_set_avail(std::get<0>(front), std::get<2>(front));
-
-//      char *p = std::get<0>(front);
-//      uint64_t in_cycle = tmp[p];
-//      std::cout << "p: in: " << in_cycle << ", out: " << *this->cur_cycle;
-//      std::cout << ", cycles: " << (*this->cur_cycle - in_cycle) << std::endl;
-
-      this->list.pop_front();
-      if (!this->list.size())
-        this->notify->notify_del(this->id);
+  unsigned packetleninbit = std::get<2>(front);
+  if (std::get<1>(front) == 0.0f) { // could be also above, but then it needs to add bitrate per clk to the buffer
+    this->buf->push_back_set_avail(std::get<0>(front), packetleninbit);
+    this->list.pop_front();
+    if (!this->list.size()) {
+      this->notify->notify_del(this->id);
     }
   }
 }
