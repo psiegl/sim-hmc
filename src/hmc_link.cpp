@@ -15,17 +15,17 @@ hmc_link::~hmc_link(void)
 {
 }
 
-hmc_link_buf* hmc_link::get_ibuf(void)
+hmc_link_buf* hmc_link::get_rx(void)
 {
   return &this->rx_buf;
 }
 
-hmc_link_queue* hmc_link::__get_ilink(void)
+hmc_link_queue* hmc_link::__get_rx_q(void)
 {
   return &this->rx;
 }
 
-hmc_link_queue* hmc_link::get_olink(void)
+hmc_link_queue* hmc_link::get_tx(void)
 {
   return this->tx;
 }
@@ -41,8 +41,8 @@ void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
 
 void hmc_link::re_adjust_links(unsigned link_bitwidth, float link_bitrate)
 {
-  this->__get_ilink()->re_adjust(link_bitwidth, link_bitrate);
-  this->binding->__get_ilink()->re_adjust(link_bitwidth, link_bitrate);
+  this->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
+  this->binding->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
 
   this->re_adjust_size(128 * 17);
   this->binding->re_adjust_size(128 * 17);
@@ -61,7 +61,7 @@ void hmc_link::connect_linkports(hmc_link *part)
 
 void hmc_link::set_binding(hmc_link *part)
 {
-  this->tx = part->__get_ilink();
+  this->tx = part->__get_rx_q();
   this->binding = part;
 }
 

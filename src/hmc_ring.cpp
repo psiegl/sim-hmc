@@ -83,21 +83,21 @@ void hmc_ring::clock(void)
       // ToDo!
       this->links[i]->clock();
 
-      hmc_link_buf *queue = this->links[i]->get_ibuf();
+      hmc_link_buf *rx = this->links[i]->get_rx();
       unsigned packetleninbit;
-      char *packet = queue->front(&packetleninbit);
+      char *packet = rx->front(&packetleninbit);
       if (packet == nullptr)
         continue;
 
       hmc_link *next_link = this->links[decode_link_of_packet(packet)];
       assert(next_link != nullptr);
-      hmc_link_queue *next_queue = next_link->get_olink();
-      assert(next_queue != nullptr);
-      if (!next_queue->has_space(packetleninbit))
+      hmc_link_queue *tx = next_link->get_tx();
+      assert(tx != nullptr);
+      if (!tx->has_space(packetleninbit))
         continue;
 
-      next_queue->push_back(packet, packetleninbit);
-      queue->pop_front();
+      tx->push_back(packet, packetleninbit);
+      rx->pop_front();
     }
   }
 }

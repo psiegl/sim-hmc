@@ -21,9 +21,9 @@ public:
   hmc_link(uint64_t *i_cur_cycle);
   virtual ~hmc_link(void);
 
-  hmc_link_buf* get_ibuf(void);
-  hmc_link_queue* __get_ilink(void); // ToDo: rx
-  hmc_link_queue* get_olink(void); // ToDo: tx
+  hmc_link_buf* get_rx(void);
+  hmc_link_queue* __get_rx_q(void); // ToDo: rx
+  hmc_link_queue* get_tx(void); // ToDo: tx
 
   void set_ilink_notify(unsigned id, hmc_notify *notify);
 

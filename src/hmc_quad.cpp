@@ -39,16 +39,15 @@ hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
 
 hmc_quad::~hmc_quad(void)
 {
-  for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++) {
+  for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++)
     delete this->vaults[i];
-  }
   for (std::list<hmc_link*>::iterator it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
     delete *it;
 }
 
 void hmc_quad::clock(void)
 {
-  uint32_t notifymap = this->vault_notify.get_notification();
+  unsigned notifymap = this->vault_notify.get_notification();
   if (notifymap) {
     unsigned lid = __builtin_ctzl(notifymap);
     for (unsigned v = lid; v < HMC_NUM_VAULTS / HMC_NUM_QUADS; v++) {

@@ -33,20 +33,21 @@ void hmc_vault::clock(void)
   this->link->clock();
 
   unsigned packetleninbit;
-  char *packet = this->link->get_ibuf()->front(&packetleninbit);
+  hmc_link_buf *rx = this->link->get_rx();
+  char *packet = rx->front(&packetleninbit);
   if (packet == nullptr)
     return;
 
-  uint64_t header = HMC_PACKET_HEADER(packet);
-  uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+  //uint64_t header = HMC_PACKET_HEADER(packet);
+  //uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
   //unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
   //std::cout << "got packet!!! to bank " << bank << std::endl;
-  // ToDo: Bank Conflict!
+  // ToDo: Bank Conflict! <- only available with BOBSIM
 
   if (this->hmcsim_process_rqst(packet)) {
-    this->link->get_ibuf()->pop_front();
-    delete[] (char*)packet;
+    rx->pop_front();
+    delete[] packet;
   }
 }
 #endif /* #ifndef HMC_USES_BOBSIM */
@@ -116,9 +117,9 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    *
    */
   unsigned packetleninbit = rsp_flits * FLIT_WIDTH;
-  hmc_link_queue *o_queue = this->link->get_olink();
-  assert(o_queue);
-  if (!no_response && !o_queue->has_space(packetleninbit)) {
+  hmc_link_queue *tx = this->link->get_tx();
+  assert(tx);
+  if (!no_response && !tx->has_space(packetleninbit)) {
 //    HMCSIM_TRACE_STALL(dev->hmc, dev->id, 1);
     return false;
   }
@@ -246,7 +247,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
    */
   if (!no_response) {
     /* -- build the response */
-    uint64_t rsp_slid;
+    unsigned rsp_slid;
 //#ifdef HMC_HAS_LOGIC
 //    uint16_t logic_addr;
 //    if (HMCSIM_PACKET_REQUEST_GET_FROM_LOGIC(tail)) {
@@ -257,12 +258,12 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     {
       rsp_slid = HMCSIM_PACKET_REQUEST_GET_SLID(tail);
     }
-    uint64_t rsp_tag = HMCSIM_PACKET_REQUEST_GET_TAG(header);
+    unsigned rsp_tag = HMCSIM_PACKET_REQUEST_GET_TAG(header);
     //uint64_t rsp_crc = HMCSIM_PACKET_REQUEST_GET_CRC( tail ); // ToDo: validate CRC!
-    uint64_t rsp_rtc = HMCSIM_PACKET_REQUEST_GET_RTC(tail);
-    uint64_t rsp_seq = HMCSIM_PACKET_REQUEST_GET_SEQ(tail);
-    uint64_t rsp_frp = HMCSIM_PACKET_REQUEST_GET_FRP(tail);
-    uint64_t rsp_rrp = HMCSIM_PACKET_REQUEST_GET_RRP(tail);
+    unsigned rsp_rtc = HMCSIM_PACKET_REQUEST_GET_RTC(tail);
+    unsigned rsp_seq = HMCSIM_PACKET_REQUEST_GET_SEQ(tail);
+    unsigned rsp_frp = HMCSIM_PACKET_REQUEST_GET_FRP(tail);
+    unsigned rsp_rrp = HMCSIM_PACKET_REQUEST_GET_RRP(tail);
 
     char *response_packet = new char[rsp_flits * FLIT_WIDTH / 8];
     if (rsp_flits > 1)
@@ -304,7 +305,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     *r_tail |= HMCSIM_PACKET_RESPONSE_SET_CRC(hmcsim_crc32(response_packet, rsp_flits));    // ToDo: create CRC!
 
     /* -- register the response */
-    o_queue->push_back(response_packet, packetleninbit);
+    tx->push_back(response_packet, packetleninbit);
   }  /* else, no response required, probably flow control */
 
   return true;
