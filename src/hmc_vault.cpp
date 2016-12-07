@@ -43,7 +43,7 @@ void hmc_vault::clock(void)
   //unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
   //std::cout << "got packet!!! to bank " << bank << std::endl;
-  // ToDo: Bank Conflict! <- only available with BOBSIM
+  // Bank Conflict! <- only available with BOBSIM
 
   if (this->hmcsim_process_rqst(packet)) {
     rx->pop_front();

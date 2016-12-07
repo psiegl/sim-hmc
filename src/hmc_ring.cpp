@@ -75,13 +75,12 @@ unsigned hmc_ring::decode_link_of_packet(char *packet)
 
 void hmc_ring::clock(void)
 {
-  // ToDo: just one packet or multiple?
   uint32_t notifymap = this->links_notify.get_notification();
   unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
   for (unsigned i = lid; i < HMC_JTL_ALL_LINKS; i++) {
     if ((0x1 << i) & notifymap) {
-      // ToDo!
-      this->links[i]->clock();
+
+      this->links[i]->clock(); // ToDo!
 
       hmc_link_buf *rx = this->links[i]->get_rx();
       unsigned packetleninbit;
