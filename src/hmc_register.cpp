@@ -1,9 +1,8 @@
 #include <iostream>
 #include <cstdint>
 #include "config.h"
-#include "hmc_register.h"
 #include "hmc_cube.h"
-
+#include "hmc_register.h"
 
 hmc_register::hmc_register(hmc_cube *cube, unsigned capacity) :
   hmc_decode(),

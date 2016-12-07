@@ -3,7 +3,7 @@
 #include "hmc_link.h"
 
 hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
-                   unsigned ringbuswidth,
+                   unsigned ringbus_bitwidth, float ringbus_bitrate,
                    unsigned capacity,
                    std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes, uint64_t *clk) :
   hmc_route(cubes, numcubes),
@@ -26,7 +26,7 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
     hmc_link *linkend0 = new hmc_link(clk);
     hmc_link *linkend1 = new hmc_link(clk);
     linkend0->connect_linkports(linkend1);
-    linkend1->re_adjust_links(32, 1.25f);
+    linkend1->re_adjust_links(ringbus_bitwidth, ringbus_bitrate);
     quad0->set_ring_link(neighbour, linkend0);
     quad1->set_ring_link(i, linkend1);
     this->link_garbage.push_back(linkend0);

@@ -2,8 +2,8 @@
 #define _HMC_LINK_H_
 
 #include <stdint.h>
-#include "hmc_link_queue.h"
 #include "hmc_link_buf.h"
+#include "hmc_link_queue.h"
 #include "hmc_notify.h"
 
 class hmc_link : public hmc_notify_cl {

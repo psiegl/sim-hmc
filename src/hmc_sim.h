@@ -4,14 +4,36 @@
 #include <cstdint>
 #include <map>
 #include <list>
+#ifndef NDEBUG
 #include <zlib.h> // crc32(), uLong
+#endif
 #include "config.h"
 #include "hmc_sim_t.h"
 //#include "hmc_jtag.h"
 #include "hmc_macros.h"
 #include "hmc_notify.h"
-#include "hmc_link_queue.h"
-#include "hmc_vault.h"
+
+/* link bit rate in Gb/s */
+#define HMCSIM_BR12_5   12.5f
+#define HMCSIM_BR15     15.0f
+#define HMCSIM_BR25     25.0f
+#define HMCSIM_BR28     28.0f
+#define HMCSIM_BR30     30.0f /* 30Gb/s -> 15 GHz (DDR) -> 0.06666ns (48x 312.5MHz) */
+
+/* lanes -> each lane 1 bit per unit interval (UI). 1 UI -> 100ps (is set by the ref. clock oscillator) HMCv1.0
+Link serialization occurs with the least-significant portion of the FLIT traversing across
+the lanes of the link first. During one unit interval (UI) a single bit is transferred across
+each lane of the link. For the full-width configuration, 16 bits are transferred simultaneously
+during the UI, so it takes 8 UIs to transfer the entire 128-bit FLIT. For the half-width
+configuration, 8 bits are transferred simultaneously, taking 16 UIs to transfer a single
+FLIT. The following table shows the relationship of the FLIT bit positions to the lanes
+during each UI for both full-width and half-width configurations.
+*/
+enum link_width_t {
+  HMCSIM_FULL_LINK_WIDTH    = 16,
+  HMCSIM_HALF_LINK_WIDTH    =  8,
+  HMCSIM_QUARTER_LINK_WIDTH =  4
+};
 
 class hmc_link;
 class hmc_cube;
@@ -56,7 +78,7 @@ private:
   }
   ALWAYS_INLINE uint32_t hmcsim_crc32(unsigned char *packet, unsigned flits)
   {
-#if 0
+#ifndef NDEBUG
     uLong crc = crc32(0L, Z_NULL, 0);
     unsigned len = (flits << 1) * sizeof(uint64_t);
     /*
@@ -72,7 +94,7 @@ private:
 public:
   hmc_sim(unsigned num_hmcs, unsigned num_slids,
           unsigned num_links, unsigned capacity,
-          enum link_width_t ringbuswidth);
+          unsigned ringbus_bitwidth, float ringbus_bitrate);
   ~hmc_sim(void);
 
 //  ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)
@@ -81,9 +103,10 @@ public:
 //  }
   bool hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
                            unsigned dst_hmcId, unsigned dst_linkId,
-                           enum link_width_t bitwidth);
+                           unsigned bitwidth, float bitrate);
   hmc_notify* hmc_define_slid(unsigned slidId, unsigned hmcId,
-                            unsigned linkId, enum link_width_t bitwidth);
+                              unsigned linkId,
+                              unsigned bitwidth, float bitrate);
 
   bool hmc_send_pkt(unsigned slidId, char *pkt);
   bool hmc_recv_pkt(unsigned slidId, char *pkt);

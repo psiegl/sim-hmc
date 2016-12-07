@@ -1,14 +1,12 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
-#include "hmc_vault.h"
+#include "hmc_cube.h"
 #include "hmc_link.h"
 #include "hmc_link_queue.h"
-#include "hmc_cube.h"
 #include "hmc_macros.h"
-#include "hmc_sim.h"
-
-
+#include "hmc_notify.h"
+#include "hmc_vault.h"
 
 hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
   link(link),

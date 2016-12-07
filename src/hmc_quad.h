@@ -2,10 +2,9 @@
 #define _HMC_QUAD_H_
 
 #include <list>
+#include "config.h"
 #include "hmc_ring.h"
 #include "hmc_notify.h"
-#include "hmc_link.h"
-#include "config.h"
 
 #ifdef HMC_USES_BOBSIM
 class hmc_bobsim;
@@ -13,6 +12,7 @@ class hmc_bobsim;
 class hmc_vault;
 #endif /* #ifdef HMC_USES_BOBSIM */
 class hmc_cube;
+class hmc_link;
 
 class hmc_quad : private hmc_notify_cl {
 

@@ -10,7 +10,7 @@
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
-                 enum link_width_t ringbuswidth) :
+                 unsigned ringbus_bitwidth, float ringbus_bitrate) :
   clk(0),
   cubes_notify(0, nullptr, this)
 {
@@ -47,7 +47,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
   for (unsigned i = 0; i < num_hmcs; i++) {
-    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbuswidth, capacity, &this->cubes, num_hmcs, &this->clk);
+    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbus_bitwidth, ringbus_bitrate, capacity, &this->cubes, num_hmcs, &this->clk);
 //    this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 }
@@ -76,12 +76,12 @@ bool hmc_sim::notify_up(void)
 
 bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
                                   unsigned dst_hmcId, unsigned dst_linkId,
-                                  enum link_width_t bitwidth)
+                                  unsigned bitwidth, float bitrate)
 {
   hmc_link *linkend0 = new hmc_link(&this->clk);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
-  linkend0->re_adjust_links(32, 1.25f);
+  linkend0->re_adjust_links(bitwidth, bitrate);
 
   hmc_quad *src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
   hmc_quad *dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
@@ -104,14 +104,15 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
   }
 }
 
-hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned linkId, enum link_width_t bitwidth)
+hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned linkId,
+                                     unsigned bitwidth, float bitrate)
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 
   hmc_link *linkend0 = new hmc_link(&this->clk);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
-  linkend1->re_adjust_links(32, 1.25);
+  linkend1->re_adjust_links(bitwidth, bitrate);
   linkend1->set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
 
   // notify all!

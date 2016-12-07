@@ -8,7 +8,6 @@
 
 class hmc_cube;
 class hmc_link;
-class hmc_link_queue;
 class hmc_quad;
 
 #define HMC_JTL_ALL_LINKS         ( HMC_MAX_LINKS/HMC_NUM_QUADS + HMC_NUM_QUADS + HMC_NUM_VAULTS / HMC_NUM_QUADS )

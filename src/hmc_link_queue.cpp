@@ -1,4 +1,5 @@
 #include <cassert>
+#include "hmc_link_buf.h"
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
 

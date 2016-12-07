@@ -7,14 +7,14 @@ int main(int argc, char* argv[])
 {
   unsigned cubes = 2;
   unsigned capacity = 4;
-  hmc_sim sim(cubes, 2, 4, capacity, HMCSIM_FULL_LINK_WIDTH);
+  hmc_sim sim(cubes, 2, 4, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
   unsigned slidId = 0;
   unsigned destcub = 0; // 1
   unsigned addr = 0b110000000000; // quad 3
-  hmc_notify* slidnotify = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH);
+  hmc_notify* slidnotify = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
 
-  bool ret = sim.hmc_set_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH);
-  ret &= sim.hmc_set_link_config(0, 3, 1, 2, HMCSIM_FULL_LINK_WIDTH);
+  bool ret = sim.hmc_set_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
+  ret &= sim.hmc_set_link_config(0, 3, 1, 2, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
   if (!ret || slidnotify == nullptr) {
     std::cerr << "link setup was not successful" << std::endl;
   }
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[(17*FLIT_WIDTH) / 8];
 
-  unsigned issue = 400; //6002;
+  unsigned issue = 6000; //6002;
   unsigned send_ctr = 0;
   unsigned skip = 0;
   unsigned recv_ctr = 0 + skip;

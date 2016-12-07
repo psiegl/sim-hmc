@@ -211,12 +211,6 @@ Energy Components:
 
 */
 
-/* link bit rate in Gb/s */
-#define HMCSIM_BR12_5   12.5f
-#define HMCSIM_BR15     15.0f
-#define HMCSIM_BR25     25.0f
-#define HMCSIM_BR28     28.0f
-#define HMCSIM_BR30     30.0f /* 30Gb/s -> 15 GHz (DDR) -> 0.06666ns (48x 312.5MHz) */
 
 
 

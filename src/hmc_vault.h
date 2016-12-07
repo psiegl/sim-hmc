@@ -1,15 +1,17 @@
 #ifndef _HMC_VAULT_H_
 #define _HMC_VAULT_H_
 
-#include <zlib.h>
 #include <cstdint>
 #include <tuple>
-#include "hmc_notify.h"
+#ifndef NDEBUG
+#include <zlib.h>
+#endif
 #include "hmc_macros.h"
 #include "hmc_sim_t.h"
 
 class hmc_link;
 class hmc_cube;
+class hmc_notify;
 
 struct jtl_t {
   hmc_rqst_t rsqt;
@@ -25,7 +27,7 @@ private:
 
   ALWAYS_INLINE uint32_t hmcsim_crc32(void *packet, unsigned flits)
   {
-#if 0
+#ifndef NDEBUG
     uLong crc = crc32(0L, Z_NULL, 0);
     unsigned len = (flits << 1) * sizeof(uint64_t);
     /*
