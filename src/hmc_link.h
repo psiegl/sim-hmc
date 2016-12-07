@@ -6,7 +6,7 @@
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
 
-class hmc_link : public hmc_notify_cl {
+class hmc_link : private hmc_notify_cl {
   hmc_notify not_rx;
   hmc_link_queue rx;
 

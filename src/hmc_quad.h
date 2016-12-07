@@ -2,6 +2,7 @@
 #define _HMC_QUAD_H_
 
 #include <list>
+#include <map>
 #include "config.h"
 #include "hmc_ring.h"
 #include "hmc_notify.h"

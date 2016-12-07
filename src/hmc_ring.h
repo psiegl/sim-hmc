@@ -1,7 +1,7 @@
 #ifndef _HMC_RING_H_
 #define _HMC_RING_H_
 
-#include <map>
+#include <vector>
 #include "config.h"
 #include "hmc_notify.h"
 #include "hmc_macros.h"
@@ -21,7 +21,7 @@ private:
   hmc_cube* cub;
 
   hmc_notify links_notify;
-  std::map<unsigned, hmc_link*> links;
+  std::vector<hmc_link*> links;
 
   unsigned decode_link_of_packet(char* packet);
   bool set_link(unsigned lid, hmc_link *link);

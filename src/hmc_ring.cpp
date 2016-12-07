@@ -14,11 +14,9 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   hmc_notify_cl(),
   id(id),
   cub(cub),
-  links_notify(id, notify, this)
+  links_notify(id, notify, this),
+  links(HMC_JTL_ALL_LINKS, nullptr)
 {
-  for (unsigned i = 0; i < HMC_JTL_ALL_LINKS; i++) {
-    this->links[i] = nullptr;
-  }
 }
 
 hmc_ring::~hmc_ring(void)

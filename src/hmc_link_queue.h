@@ -4,7 +4,6 @@
 #include <list>
 #include <stdint.h>
 #include <tuple>
-//#include <map>
 
 class hmc_link_buf;
 class hmc_notify;
@@ -24,8 +23,6 @@ private:
   hmc_notify *notify;
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
   hmc_link_buf *buf;
-
-//  std::map<char*, uint64_t> tmp;
 
 public:
   hmc_link_queue(uint64_t* cur_cycle, hmc_link_buf *buf, hmc_notify *notify);

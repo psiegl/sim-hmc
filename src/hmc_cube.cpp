@@ -10,12 +10,12 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
   hmc_notify_cl(),
   hmc_register(this, capacity),
   id(id),
-  quad_notify(id, notify, this)
+  quad_notify(id, notify, this),
+  quads(HMC_NUM_QUADS, nullptr)
 {
-  unsigned num_ranks = capacity; // 8GB -> 8 layer, 4GB -> 4layer
-  for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
+  unsigned num_ranks = capacity; /* num_ranks 8GB -> 8 layer, 4GB -> 4layer */
+  for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
     this->quads[i] = new hmc_quad(i, num_ranks, &this->quad_notify, this, clk);
-  }
 
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
     unsigned map[] = { 0x2, 0x0, 0x3, 0x1 };
