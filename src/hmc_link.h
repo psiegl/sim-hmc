@@ -5,10 +5,12 @@
 #include "hmc_link_buf.h"
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
+#include "hmc_macros.h"
 
 class hmc_link : private hmc_notify_cl {
-  hmc_notify not_rx;
-  hmc_link_queue rx;
+private:
+  hmc_notify not_rx_q;
+  hmc_link_queue rx_q;
 
   hmc_notify not_rx_buf;
   hmc_link_buf rx_buf;
@@ -21,9 +23,17 @@ public:
   hmc_link(uint64_t *i_cur_cycle);
   virtual ~hmc_link(void);
 
-  hmc_link_buf* get_rx(void);
-  hmc_link_queue* __get_rx_q(void); // ToDo: rx
-  hmc_link_queue* get_tx(void); // ToDo: tx
+  // ToDo: tx buf!
+  ALWAYS_INLINE hmc_link_buf* get_rx(void)
+  {
+    return &this->rx_buf;
+  }
+
+  hmc_link_queue* __get_rx_q(void);
+  ALWAYS_INLINE hmc_link_queue* get_tx(void)
+  {
+    return this->tx;
+  }
 
   void set_ilink_notify(unsigned id, hmc_notify *notify);
 

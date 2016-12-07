@@ -2,8 +2,8 @@
 
 hmc_link::hmc_link(uint64_t *i_cur_cycle) :
   hmc_notify_cl(),
-  not_rx(-1, nullptr, this),
-  rx(i_cur_cycle, &rx_buf, &not_rx),
+  not_rx_q(-1, nullptr, this),
+  rx_q(i_cur_cycle, &rx_buf, &not_rx_q),
   not_rx_buf(-1, nullptr, this),
   rx_buf(&not_rx_buf),
   tx(nullptr),
@@ -15,27 +15,17 @@ hmc_link::~hmc_link(void)
 {
 }
 
-hmc_link_buf* hmc_link::get_rx(void)
-{
-  return &this->rx_buf;
-}
-
 hmc_link_queue* hmc_link::__get_rx_q(void)
 {
-  return &this->rx;
-}
-
-hmc_link_queue* hmc_link::get_tx(void)
-{
-  return this->tx;
+  return &this->rx_q;
 }
 
 void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
 {
-  this->not_rx.set(id, notify);
+  this->not_rx_q.set(id, notify);
   this->not_rx_buf.set(id, notify);
 
-  this->rx.set_id(id);
+  this->rx_q.set_id(id);
 }
 
 
@@ -68,13 +58,13 @@ void hmc_link::set_binding(hmc_link *part)
 
 void hmc_link::clock(void)
 {
-  if (this->not_rx.get_notification())
-    this->rx.clock();
+  if (this->not_rx_q.get_notification())
+    this->rx_q.clock();
 // ToDo -> will be most likely a combination out of front and pop_front
 }
 
 bool hmc_link::notify_up(void)
 {
-  return (!this->not_rx.get_notification()
+  return (!this->not_rx_q.get_notification()
           && !this->not_rx_buf.get_notification());
 }
