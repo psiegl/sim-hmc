@@ -43,10 +43,6 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     throw false;
   }
 
-  for (unsigned i = 0; i < num_slids; i++) {
-    this->slidnotify[i] = new hmc_notify(i, nullptr, nullptr);
-  }
-
   for (unsigned i = 0; i < num_hmcs; i++) {
     this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbus_bitwidth, ringbus_bitrate, capacity, &this->cubes, num_hmcs, &this->clk);
 //    this->jtags[i] = new hmc_jtag(this->cubes[i]);
@@ -55,10 +51,6 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 
 hmc_sim::~hmc_sim(void)
 {
-  for (auto it = this->slidnotify.begin(); it != this->slidnotify.end(); ++it) {
-    delete (*it).second;
-  }
-
 //  unsigned i = 0;
   for (std::map<unsigned, hmc_cube*>::iterator it = this->cubes.begin(); it != this->cubes.end(); ++it) {
     delete (*it).second;
@@ -114,7 +106,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
   linkend1->re_adjust_links(bitwidth, bitrate);
-  linkend1->set_ilink_notify(slidId, this->slidnotify[slidId]); // important 1!! -> will be return for slid
+  linkend1->set_ilink_notify(slidId, &this->slidnotify); // important 1!! -> will be return for slid
 
   // notify all!
   for (unsigned i = 0; i < this->cubes.size(); i++)
@@ -124,7 +116,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
     this->link_garbage.push_back(linkend0);
     this->link_garbage.push_back(linkend1);
     this->slids[slidId] = linkend1;
-    return this->slidnotify[slidId];
+    return &this->slidnotify; // ToDo: maybe just a ptr to it ...
   }
   else {
     delete linkend0;
@@ -163,8 +155,6 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
   assert(pkt != nullptr);
 
   unsigned recvpacketleninbit;
-
-  this->slids[slidId]->clock(); // ToDo
   hmc_link_buf *rx = this->slids[slidId]->get_rx();
   char *packet = rx->front(&recvpacketleninbit);
   if (packet == nullptr)
@@ -327,9 +317,13 @@ void hmc_sim::clock(void)
   this->clk++;
   uint32_t notifymap = this->cubes_notify.get_notification();
   unsigned lid = __builtin_ctzl(notifymap);
-  for (unsigned h = lid; h < this->cubes.size(); h++) {
-    if ((0x1 << h) & notifymap) {
+  for (unsigned h = lid; h < this->cubes.size(); h++)
+    if ((0x1 << h) & notifymap)
       this->cubes[h]->clock();
-    }
-  }
+
+  notifymap = this->slidnotify.get_notification();
+  lid = __builtin_ctzl(notifymap);
+  for (unsigned slidId = 0; slidId < 4; slidId++)
+    if ((0x1 << slidId) & notifymap)
+      this->slids[slidId]->clock(); // ToDo
 }

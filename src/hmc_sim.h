@@ -46,7 +46,7 @@ private:
 //  hmc_jtag* jtags[HMC_MAX_DEVS];
 
   std::map<unsigned, hmc_link*> slids;
-  std::map<unsigned, hmc_notify*> slidnotify;
+  hmc_notify slidnotify;
 
   std::list<hmc_link*> link_garbage;
 

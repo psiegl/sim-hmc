@@ -79,7 +79,6 @@ void hmc_ring::clock(void)
   unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
   for (unsigned i = lid; i < HMC_JTL_ALL_LINKS; i++) {
     if ((0x1 << i) & notifymap) {
-
       this->links[i]->clock(); // ToDo!
 
       hmc_link_buf *rx = this->links[i]->get_rx();
