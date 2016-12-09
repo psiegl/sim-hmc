@@ -47,6 +47,7 @@ private:
 
   std::map<unsigned, hmc_link*> slids;
   hmc_notify slidnotify;
+  unsigned num_slids;
 
   std::list<hmc_link*> link_garbage;
 

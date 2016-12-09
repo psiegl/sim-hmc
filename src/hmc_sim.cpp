@@ -13,7 +13,9 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned ringbus_bitwidth, float ringbus_bitrate) :
   hmc_notify_cl(),
   clk(0),
-  cubes_notify(0, nullptr, this)
+  cubes_notify(0, nullptr, this),
+  slidnotify(),
+  num_slids(num_slids)
 {
   if ((num_hmcs > HMC_MAX_DEVS) || (!num_hmcs)) {
     std::cerr << "INSUFFICIENT NUMBER DEVICES: between 1 to " << HMC_MAX_DEVS << " (" << num_hmcs << ")" << std::endl;
@@ -323,7 +325,7 @@ void hmc_sim::clock(void)
 
   notifymap = this->slidnotify.get_notification();
   lid = __builtin_ctzl(notifymap);
-  for (unsigned slidId = 0; slidId < 4; slidId++)
+  for (unsigned slidId = 0; slidId < this->num_slids; slidId++)
     if ((0x1 << slidId) & notifymap)
       this->slids[slidId]->clock(); // ToDo
 }
