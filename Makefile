@@ -70,10 +70,19 @@ $(TARGET): $(BLDDIR) $(OBJ) $(LIBS) $(BOBOBJ)
 	@$(AR) -M < $(TARGET).ar
 	@-$(RM) -f $(TARGET).ar
 
-all:
+
+TESTBIN := main.elf
+$(TESTBIN): $(TARGET)
+	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc
+
+bldall:
 	make clean
-	make
-	$(CXX) $(CFLAGS) main.cpp libhmcsim.a -lz
+	make $(TESTBIN)
+
+runall: bldall
+	./$(TESTBIN)
+	#gprof $(TESTBIN) gmon.out > $(TESTBIN).anal.txt
+	#gprof $(TESTBIN) | gprof2dot | dot -Tpng -o output.png
 
 clean:
 	rm -rf $(TARGET) $(BLDDIR)

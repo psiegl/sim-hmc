@@ -79,6 +79,7 @@ bool hmc_vault::hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len)
       break;
     }
 #endif
+    *rsp_len = 2;
     return false;
   }
 }

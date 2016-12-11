@@ -2,6 +2,7 @@
 #include "hmc_link_buf.h"
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
+#include "config.h"
 
 // everything related to occupation will be in Mega instead of Giga!
 // therewith we can use safer unsigned, instead of float
@@ -26,11 +27,12 @@ void hmc_link_queue::set_id(unsigned id)
   this->id = id;
 }
 
+// we run here relative to 1 GHz, just to have a possiblity to be in sync with BOBSIM
 void hmc_link_queue::re_adjust(unsigned link_bitwidth, float link_bitrate)
 {
-  this->bitrate = link_bitrate;
+  this->bitrate = link_bitrate / (1.0f / (float)HMC_CLK_PERIOD_NS);
   this->bitwidth = link_bitwidth;
-  this->bitoccupationmax = link_bitrate * link_bitwidth;
+  this->bitoccupationmax = link_bitrate / (1.0f / (float)HMC_CLK_PERIOD_NS) * link_bitwidth;
 }
 
 bool hmc_link_queue::has_space(unsigned packetleninbit)
