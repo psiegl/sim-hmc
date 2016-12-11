@@ -86,12 +86,17 @@ private:
     unsigned readCounter;
     unsigned writeCounter;
 
+    //Work queue for pending requests (DRAM specific commands go here)
+    deque<BusPacket*> commandQueue;
+
 public:
 	//Functions
     SimpleController(DRAMChannel *parent, unsigned num_ranks, unsigned deviceWidth);
     ~SimpleController(void);
-    void Update(void);
+    void Update(void); // this is called each tCK
     void AddTransaction(Transaction *trans);
+
+    void _update(void); // this is called each clk
 
     //Fields
     //Statistics and bookkeeping
@@ -101,9 +106,6 @@ public:
     unsigned numActBanksAverage;
     unsigned numPreBanksAverage;
     unsigned numRefBanksAverage;
-
-    //Work queue for pending requests (DRAM specific commands go here)
-    deque<BusPacket*> commandQueue;
 
     unsigned RRQFull;
     unsigned outstandingReads;

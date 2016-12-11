@@ -47,8 +47,6 @@ namespace BOBSim
 ofstream logOutput;
 #endif
 
-unsigned DRAM_CPU_CLK_RATIO;
-unsigned DRAM_CPU_CLK_ADJUSTMENT;
 BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned deviceWidth) :
   num_ranks(ranks),
   portInputBufferAvg(num_ports, 0),
@@ -93,7 +91,6 @@ BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned de
 #endif
 #ifndef HMCSIM_SUPPORT
   DEBUG("busoff:" << busOffsetBitWidth << " col:" << colBitWidth << " row:" << rowBitWidth << " rank:" << rankBitWidth << " bank:" << bankBitWidth << " chan:" << channelBitWidth);
-#endif
 
   //Compute ratios of various clock frequencies
   if (fmod(CPU_CLK_PERIOD, LINK_BUS_CLK_PERIOD) > 0.00001) {
@@ -101,13 +98,12 @@ BOB::BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned de
     ERROR("==         fmod=" << fmod(CPU_CLK_PERIOD, LINK_BUS_CLK_PERIOD));
     abort();
   }
+#endif
 
   if (LINK_CPU_CLK_RATIO != 1)
     cout << "Channel to CPU ratio : " << LINK_CPU_CLK_RATIO << endl;
-  DRAM_CPU_CLK_RATIO = tCK / CPU_CLK_PERIOD;
   if (DRAM_CPU_CLK_RATIO != 1)
     cout << "DRAM to CPU ratio : " << DRAM_CPU_CLK_RATIO << endl;
-  DRAM_CPU_CLK_ADJUSTMENT = tCK / fmod(tCK, CPU_CLK_PERIOD);
 #ifndef HMCSIM_SUPPORT
   if (DRAM_CPU_CLK_ADJUSTMENT != 1)
     cout << "DRAM_CPU_CLK_ADJUSTMENT : " << DRAM_CPU_CLK_ADJUSTMENT << endl;
@@ -161,9 +157,7 @@ void BOB::Update(void)
 
   //calculate number of transactions waiting
   for (unsigned i = 0; i < NUM_CHANNELS; i++) {
-    for (unsigned j = 0; j < channels[i]->simpleController.commandQueue.size(); j++) {
-      channels[i]->simpleController.commandQueue[j]->queueWaitTime += (channels[i]->simpleController.commandQueue[j]->busPacketType == ACTIVATE);
-    }
+    this->channels[i]->simpleController._update();
   }
 
   //keep track of idle link buses
@@ -206,7 +200,6 @@ void BOB::Update(void)
 
       //remove from channel bus
       i_reqLinkBus->inFlightLink = NULL;
-
       //remove from SerDes buffer
       i_reqLinkBus->serDesBuffer = NULL;
     }
@@ -222,8 +215,9 @@ void BOB::Update(void)
       i_respLinkBus->inFlightLink->channelTimeTotal = currentClockCycle - i_respLinkBus->inFlightLink->channelStartTime;
 
       //remove from return queue
-      BusPacket *front = *channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.begin();
-      channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.erase(channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue.begin());
+      deque<BusPacket*> *readReturnQueue = &channels[i_respLinkBus->inFlightLink->mappedChannel]->readReturnQueue;
+      BusPacket *front = *readReturnQueue->begin();
+      readReturnQueue->erase(readReturnQueue->begin());
       delete front;
       // psiegl ... here in the serdes buffer!
       i_respLinkBus->serDesBuffer = i_respLinkBus->inFlightLink;
@@ -537,11 +531,10 @@ void BOB::Update(void)
         for (unsigned i = 0; i < NUM_CHANNELS; i++) {
           channels[i]->Update();
         }
+        clockCycleAdjustmentCounter++;
       }
       else
-        clockCycleAdjustmentCounter = 0;
-
-      clockCycleAdjustmentCounter++;
+        clockCycleAdjustmentCounter = 1;
     }
     //if there is no adjustment, just update normally
     else {

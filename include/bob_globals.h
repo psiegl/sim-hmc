@@ -40,6 +40,23 @@
 #include <string>
 #include <cstdlib>
 #include <inttypes.h>
+#ifdef HMCSIM_SUPPORT
+#include "../../../src/config.h"
+#endif
+//
+//DRAM Timing
+//
+#ifdef HMCSIM_SUPPORT
+ #include "cfg/hmcsim.h"
+#else
+ #if defined(DDR3_1333)
+  #include "cfg/bob_ddr3_1333.h"
+ #elif defined(DDR3_1600)
+  #include "cfg/bob_ddr3_1600.h"
+ #elif defined(DDR3_1066)
+  #include "cfg/bob_ddr3_1066.h"
+ #endif
+#endif
 
 //Flag for quiet mode (-q)
 #if defined(LOG_OUTPUT)
@@ -109,7 +126,15 @@ enum AddressMappingScheme
 //CPU
 //
 //CPU clock frequency in nanoseconds
-#define CPU_CLK_PERIOD                0.8f //1.25 GHz  orig.: 0.3125f // ns - 3.2 GHz
+#ifdef HMCSIM_SUPPORT
+#define CPU_CLK_PERIOD                HMC_CLK_PERIOD_NS
+#define DRAM_CPU_CLK_ADJUSTMENT       (unsigned)(tCK / fmod(tCK, 1.0f)) /* relative to 1 GHz (same for HMCSIM) */
+#define DRAM_CPU_CLK_RATIO            (unsigned)(tCK)                   /* relative to 1 GHz (same for HMCSIM) */
+#else
+#define CPU_CLK_PERIOD                0.8f // 1.25 GHz  orig.: 0.3125f // ns - 3.2 GHz
+#define DRAM_CPU_CLK_ADJUSTMENT       (unsigned)(tCK / fmod(tCK, CPU_CLK_PERIOD))
+#define DRAM_CPU_CLK_RATIO            (unsigned)(tCK / CPU_CLK_PERIOD)
+#endif
 
 //
 //BOB Architecture Config
@@ -129,11 +154,11 @@ enum AddressMappingScheme
 #define RESPONSE_LINK_BUS_WIDTH      32 //calc. for HMC (psiegl)   orig.: 12 //Bit Lanes
 
 //Clock frequency for link buses
-#define LINK_BUS_CLK_PERIOD           0.8f //1.25 GHz  orig.: 0.3125f // ns - 3.2 GHz
+#define LINK_BUS_CLK_PERIOD          CPU_CLK_PERIOD //  orig.: 0.3125f // ns - 3.2 GHz
 //Ratio between CPU and link bus clocks - computed at runtime
 #define LINK_CPU_CLK_RATIO           (unsigned)(CPU_CLK_PERIOD / LINK_BUS_CLK_PERIOD)
 //Flag to turn on/off double-data rate transfer on link bus
-#define LINK_BUS_USE_DDR             true
+#define LINK_BUS_USE_DDR             false // ToDo: verify .. current doesn't look like
 
 //Size of DRAM request
 #define TRANSACTION_SIZE             64 // ToDo: psiegl: changes as of packet size!
@@ -189,23 +214,6 @@ enum AddressMappingScheme
 #define CHANNEL_ID_OFFSET            0
 //Address mapping scheme - defined at the top of this file
 #define MAPPINGSCHEME RW_CLH_BK_RK_CH_CLL_BY
-#endif
-//Ratio of clock speeds between DRAM and CPU - computed at runtime
-extern uint DRAM_CPU_CLK_RATIO;
-
-//
-//DRAM Timing
-//
-#ifdef HMCSIM_SUPPORT
- #include "cfg/hmcsim.h"
-#else
- #if defined(DDR3_1333)
-  #include "cfg/bob_ddr3_1333.h"
- #elif defined(DDR3_1600)
-  #include "cfg/bob_ddr3_1600.h"
- #elif defined(DDR3_1066)
-  #include "cfg/bob_ddr3_1066.h"
- #endif
 #endif
 }
 

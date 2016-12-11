@@ -550,7 +550,7 @@ void BOBWrapper::PrintStats(bool finalPrint)
   double transferamount_Bytes = issuedWritesSize + returnedReadSize;
   double one_GB = (1 << 30);
 
-  double bandwidth = transferamount_Bytes / (double)(elapsedCycles * clockperiod_ns) / one_GB;
+  double bandwidth = (transferamount_Bytes / one_GB) / (double)(elapsedCycles * clockperiod_ns);
 
   double rw_ratio = ((double)returnedReads / (double)committedWrites) * 100.0f;
 

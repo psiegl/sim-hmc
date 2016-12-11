@@ -301,7 +301,7 @@ void SimpleController::Update(void)
           unsigned stateChangeCountdown = tCWL + burstLength + tWR;
           bankstate->stateChangeCountdown = stateChangeCountdown;
           bankstate->nextActivate = currentClockCycle + stateChangeCountdown + tRP;
-//					bankstate->nextRefresh = bankstate->nextActivate;
+//			bankstate->nextRefresh = bankstate->nextActivate;
 
           for (unsigned r = 0; r < this->ranks; r++) {
             if (r == rank) {
@@ -364,6 +364,12 @@ void SimpleController::Update(void)
   currentClockCycle++;
 }
 
+void SimpleController::_update(void)
+{
+  for (unsigned j = 0; j < this->commandQueue.size(); j++) {
+    this->commandQueue[j]->queueWaitTime += (this->commandQueue[j]->busPacketType == ACTIVATE);
+  }
+}
 
 bool SimpleController::IsIssuable(BusPacket *busPacket)
 {
