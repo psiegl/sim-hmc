@@ -65,29 +65,27 @@ SimpleController::SimpleController(DRAMChannel *parent, unsigned ranks, unsigned
 #ifndef BOBSIM_NO_LOG
   readCounter(0),
   writeCounter(0),
-
+#endif
+  //init power fields
+#ifndef BOBSIM_NO_LOG_ENERGY
+  backgroundEnergyOpenCtr(ranks, 0),
+  backgroundEnergyCloseCtr(ranks, 0),
+  burstEnergyCtr(ranks, 0),
+  actpreEnergyCtr(ranks, 0),
+  refreshEnergyCtr(ranks, 0),
+#endif
+#ifndef BOBSIM_NO_LOG
   commandQueueMax(0),
   commandQueueAverage(0),
   numIdleBanksAverage(0),
   numActBanksAverage(0),
   numPreBanksAverage(0),
   numRefBanksAverage(0),
-#endif
-
-  #ifndef BOBSIM_NO_LOG
   RRQFull(0),
-  #endif
+#endif
   outstandingReads(0),
 
   waitingACTS(0)
-
-//init power fields
-#ifndef BOBSIM_NO_LOG
-  , backgroundEnergy(ranks, 0),
-  burstEnergy(ranks, 0),
-  actpreEnergy(ranks, 0),
-  refreshEnergy(ranks, 0)
-#endif
 {
   //Make the bank state objects
   for (unsigned i = 0; i < ranks; i++) {
@@ -134,32 +132,44 @@ void SimpleController::Update(void)
 #endif
 
   for (unsigned r = 0; r < this->ranks; r++) {
-#ifndef BOBSIM_NO_LOG
+#if !defined(BOBSIM_NO_LOG) || !defined(BOBSIM_NO_LOG_ENERGY)
     bool bankOpen = false;
 #endif
     for (unsigned b = 0; b < NUM_BANKS; b++) {
-#ifndef BOBSIM_NO_LOG
+#if !defined(BOBSIM_NO_LOG) || !defined(BOBSIM_NO_LOG_ENERGY)
       switch (bankStates[r][b].currentBankState) {
       //count the number of idle banks
       case IDLE:
+#ifndef BOBSIM_NO_LOG
         numIdleBanksAverage++;
+#endif
         break;
 
       //count the number of active banks
       case ROW_ACTIVE:
+#ifndef BOBSIM_NO_LOG
         numActBanksAverage++;
+#endif
+#ifndef BOBSIM_NO_LOG_ENERGY
         bankOpen = true;
+#endif
         break;
 
       //count the number of precharging banks
       case PRECHARGING:
+#ifndef BOBSIM_NO_LOG
         numPreBanksAverage++;
+#endif
         break;
 
       //count the number of refreshing banks
       case REFRESHING:
+#ifndef BOBSIM_NO_LOG
         numRefBanksAverage++;
+#endif
+#ifndef BOBSIM_NO_LOG_ENERGY
         bankOpen = true;
+#endif
         break;
       }
 #endif
@@ -172,8 +182,11 @@ void SimpleController::Update(void)
     //Power
     //
     //DRAM_BUS_WIDTH/2 because value accounts for DDR
-#ifndef BOBSIM_NO_LOG
-    backgroundEnergy[r] += (bankOpen ? IDD3N : IDD2N) * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#ifndef BOBSIM_NO_LOG_ENERGY
+    if (bankOpen)
+      backgroundEnergyOpenCtr[r]++;
+    else
+      backgroundEnergyCloseCtr[r]++;
 #endif
 
     //
@@ -228,8 +241,8 @@ void SimpleController::Update(void)
         //make sure we don't send anythign else
         issuingRefresh = true;
 
-#ifndef BOBSIM_NO_LOG
-        refreshEnergy[r] += (IDD5B - IDD3N) * tRFC * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#ifndef BOBSIM_NO_LOG_ENERGY
+        refreshEnergyCtr[r]++;
 #endif
 
         for (unsigned b = 0; b < NUM_BANKS; b++) {
@@ -281,8 +294,8 @@ void SimpleController::Update(void)
           }
 
           //keep track of energy
-#ifndef BOBSIM_NO_LOG
-          burstEnergy[rank] += (IDD4R - IDD3N) * BL / 2 * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#ifndef BOBSIM_NO_LOG_ENERGY
+          burstEnergyCtr[rank]++;
 #endif
 
           bankstate->lastCommand = commandQueue[i]->busPacketType;
@@ -318,8 +331,8 @@ void SimpleController::Update(void)
           }
 
           //keep track of energy
-#ifndef BOBSIM_NO_LOG
-          burstEnergy[rank] += (IDD4W - IDD3N) * BL / 2 * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#ifndef BOBSIM_NO_LOG_ENERGY
+          burstEnergyCtr[rank] += (IDD4W - IDD3N) * BL / 2 * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
 #endif
 
           BusPacket *writeData = new BusPacket(*commandQueue[i]);
@@ -364,8 +377,8 @@ void SimpleController::Update(void)
             }
           }
 
-#ifndef BOBSIM_NO_LOG
-          actpreEnergy[rank] += ((IDD0 * tRC) - ((IDD3N * tRAS) + (IDD2N * (tRC - tRAS)))) * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#ifndef BOBSIM_NO_LOG_ENERGY
+          actpreEnergyCtr[rank]++;
 #endif
 
           bankstate->lastCommand = commandQueue[i]->busPacketType;

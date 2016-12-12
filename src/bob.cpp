@@ -783,35 +783,31 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
     PRINTN("    -- Channel " << c);
 #endif
     for (unsigned r = 0; r < this->num_ranks; r++) {
-      float averagePower = ((float)(channels[c]->simpleController.actpreEnergy[r] +
-                                    channels[c]->simpleController.backgroundEnergy[r] +
-                                    channels[c]->simpleController.burstEnergy[r] +
-                                    channels[c]->simpleController.refreshEnergy[r]) / (float)dramCyclesElapsed) * Vdd / 1000;
+      float averagePower = ((float)(channels[c]->simpleController.get_actpreEnergy(r) +
+                                    channels[c]->simpleController.get_backgroundEnergy(r) +
+                                    channels[c]->simpleController.get_burstEnergy(r) +
+                                    channels[c]->simpleController.get_refreshEnergy(r)) / (float)dramCyclesElapsed) * Vdd / 1000;
       totalChannelPower += averagePower;
 
       if (!shortOutput) {
         PRINTN("    -- Rank " << r << ": ");
         if (detailedOutput) {
 #ifndef NO_OUTPUT
-          float backgroundPower = ((float)channels[c]->simpleController.backgroundEnergy[r] / (float)dramCyclesElapsed) * Vdd / 1000;
-          float burstPower = ((float)channels[c]->simpleController.burstEnergy[r] / (float)dramCyclesElapsed) * Vdd / 1000;
-          float actprePower = ((float)channels[c]->simpleController.actpreEnergy[r] / (float)dramCyclesElapsed) * Vdd / 1000;
-          float refreshPower = ((float)channels[c]->simpleController.refreshEnergy[r] / (float)dramCyclesElapsed) * Vdd / 1000;
-#endif
+          float backgroundPower = (channels[c]->simpleController.get_backgroundEnergy(r) / (float)dramCyclesElapsed) * Vdd / 1000;
+          float burstPower = (channels[c]->simpleController.get_burstEnergy(r) / (float)dramCyclesElapsed) * Vdd / 1000;
+          float actprePower = (channels[c]->simpleController.get_actpreEnergy(r) / (float)dramCyclesElapsed) * Vdd / 1000;
+          float refreshPower = (channels[c]->simpleController.get_refreshEnergy(r) / (float)dramCyclesElapsed) * Vdd / 1000;
 
           PRINT(setprecision(4) << "TOT :" << averagePower << "  bkg:" << backgroundPower << " brst:" << burstPower << " ap:" << actprePower << " ref:" << refreshPower << setprecision(6));
+#endif
         }
         else {
           PRINTN(setprecision(4) << averagePower << "w " << setprecision(6));
         }
       }
-
-      //clear for next epoch
-      channels[c]->simpleController.backgroundEnergy[r] = 0;
-      channels[c]->simpleController.burstEnergy[r] = 0;
-      channels[c]->simpleController.actpreEnergy[r] = 0;
-      channels[c]->simpleController.refreshEnergy[r] = 0;
     }
+    //clear for next epoch
+    channels[c]->simpleController.reset_energyctr();
 
     allChanAveragePower += totalChannelPower;
     statsOut << totalChannelPower << ",";

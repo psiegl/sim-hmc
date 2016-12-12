@@ -91,6 +91,15 @@ private:
     //Work queue for pending requests (DRAM specific commands go here)
     deque<BusPacket*> commandQueue;
 
+    //Power fields
+#ifndef BOBSIM_NO_LOG_ENERGY
+    vector<unsigned> backgroundEnergyOpenCtr;
+    vector<unsigned> backgroundEnergyCloseCtr;
+    vector<unsigned> burstEnergyCtr;
+    vector<unsigned> actpreEnergyCtr;
+    vector<unsigned> refreshEnergyCtr;
+#endif
+
 public:
 	//Functions
     SimpleController(DRAMChannel *parent, unsigned num_ranks, unsigned deviceWidth);
@@ -116,12 +125,31 @@ public:
     unsigned outstandingReads;
     int waitingACTS;
 
-    //Power fields
-#ifndef BOBSIM_NO_LOG
-    vector<uint64_t> backgroundEnergy;
-    vector<uint64_t> burstEnergy;
-    vector<uint64_t> actpreEnergy;
-    vector<uint64_t> refreshEnergy;
+#ifndef BOBSIM_NO_LOG_ENERGY
+    float get_backgroundEnergy(unsigned rank) {
+      float bankOpen = backgroundEnergyOpenCtr[rank] * (IDD3N * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth));
+      float bankClose = backgroundEnergyCloseCtr[rank] * (IDD2N * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth));
+      return (bankOpen + bankClose);
+    }
+    float get_burstEnergy(unsigned rank) {
+      return (this->burstEnergyCtr[rank] * ((IDD4R - IDD3N) * BL / 2 * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth)));
+    }
+    float get_actpreEnergy(unsigned rank) {
+      return this->actpreEnergyCtr[rank] * (((IDD0 * tRC) - ((IDD3N * tRAS) + (IDD2N * (tRC - tRAS)))) * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth));
+    }
+    float get_refreshEnergy(unsigned rank) {
+      return this->refreshEnergyCtr[rank] * ((IDD5B - IDD3N) * tRFC * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth));
+    }
+    void reset_energyctr(void) {
+      for(unsigned i = 0; i < this->ranks; i++) {
+        this->backgroundEnergyOpenCtr[i] = 0;
+        this->backgroundEnergyCloseCtr[i] = 0;
+        this->burstEnergyCtr[i] = 0;
+        this->actpreEnergyCtr[i] = 0;
+        this->refreshEnergyCtr[i] = 0;
+      }
+    }
+
 #endif
 };
 }
