@@ -72,8 +72,10 @@ public:
 #endif
       channel(mappedChannel),
       address(addr),
-      fromLogicOp(fromLogic),
-      queueWaitTime(0)
+      fromLogicOp(fromLogic)
+#ifndef BOBSIM_NO_LOG
+      , queueWaitTime(0)
+#endif
     {}
 
     //Fields
@@ -94,7 +96,9 @@ public:
 	unsigned channel;
     uint64_t address;
     bool fromLogicOp;
+#ifndef BOBSIM_NO_LOG
     unsigned queueWaitTime;
+#endif
 
 #ifdef HMCSIM_SUPPORT
     void *payload;

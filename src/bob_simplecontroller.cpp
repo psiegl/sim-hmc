@@ -62,6 +62,7 @@ SimpleController::SimpleController(DRAMChannel *parent, unsigned ranks, unsigned
   bankStates(ranks, vector<BankState>(NUM_BANKS, BankState())),
   tFAWWindow(ranks, vector<unsigned>(0)),
 
+#ifndef BOBSIM_NO_LOG
   readCounter(0),
   writeCounter(0),
 
@@ -71,16 +72,19 @@ SimpleController::SimpleController(DRAMChannel *parent, unsigned ranks, unsigned
   numActBanksAverage(0),
   numPreBanksAverage(0),
   numRefBanksAverage(0),
+#endif
 
   RRQFull(0),
   outstandingReads(0),
-  waitingACTS(0),
+  waitingACTS(0)
 
 //init power fields
-  backgroundEnergy(ranks, 0),
+#ifndef BOBSIM_NO_LOG
+  , backgroundEnergy(ranks, 0),
   burstEnergy(ranks, 0),
   actpreEnergy(ranks, 0),
   refreshEnergy(ranks, 0)
+#endif
 {
   //Make the bank state objects
   for (unsigned i = 0; i < ranks; i++) {
@@ -99,12 +103,22 @@ SimpleController::~SimpleController(void)
   }
 }
 
+#ifndef BOBSIM_NO_LOG
+void SimpleController::_update(void)
+{
+  for (unsigned j = 0; j < this->commandQueue.size(); j++) {
+    this->commandQueue[j]->queueWaitTime += (this->commandQueue[j]->busPacketType == ACTIVATE); // ToDo
+  }
+}
+#endif
+
 //Updates the state of everything
 void SimpleController::Update(void)
 {
   //
   //Stats
   //
+#ifndef BOBSIM_NO_LOG
   unsigned currentCount = 0;
   //count all the ACTIVATES waiting in the queue
   for (unsigned i = 0; i < commandQueue.size(); i++) {
@@ -114,10 +128,14 @@ void SimpleController::Update(void)
 
   //cumulative rolling average
   commandQueueAverage += currentCount;
+#endif
 
   for (unsigned r = 0; r < this->ranks; r++) {
+#ifndef BOBSIM_NO_LOG
     bool bankOpen = false;
+#endif
     for (unsigned b = 0; b < NUM_BANKS; b++) {
+#ifndef BOBSIM_NO_LOG
       switch (bankStates[r][b].currentBankState) {
       //count the number of idle banks
       case IDLE:
@@ -141,6 +159,7 @@ void SimpleController::Update(void)
         bankOpen = true;
         break;
       }
+#endif
 
       //Updates the bank states for each rank
       bankStates[r][b].UpdateStateChange();
@@ -150,7 +169,9 @@ void SimpleController::Update(void)
     //Power
     //
     //DRAM_BUS_WIDTH/2 because value accounts for DDR
+#ifndef BOBSIM_NO_LOG
     backgroundEnergy[r] += (bankOpen ? IDD3N : IDD2N) * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#endif
 
     //
     //Update
@@ -165,11 +186,11 @@ void SimpleController::Update(void)
     refreshCounters[r] -= (refreshCounters[r] > 0);
   }
 
-  //Send write data to data bus
+//Send write data to data bus
   for (unsigned i = 0; i < writeBurst.size(); i++) {
     writeBurst[i].first--;
   }
-  if (writeBurst.size() > 0 && (*writeBurst.begin()).first == 0) {
+  if (writeBurst.size() && (*writeBurst.begin()).first == 0) {
     if (DEBUG_CHANNEL) DEBUG("     == Sending Write Data : ");
     channel->ReceiveOnDataBus((*writeBurst.begin()).second, false);
     writeBurst.erase(writeBurst.begin());
@@ -177,7 +198,7 @@ void SimpleController::Update(void)
 
   bool issuingRefresh = false;
 
-  //Figure out if everyone who needs a refresh can actually receive one
+//Figure out if everyone who needs a refresh can actually receive one
   for (unsigned r = 0; r < this->ranks; r++) {
     if (!refreshCounters[r]) {
       if (DEBUG_CHANNEL) DEBUG("      !! -- Rank " << r << " needs refresh");
@@ -204,7 +225,9 @@ void SimpleController::Update(void)
         //make sure we don't send anythign else
         issuingRefresh = true;
 
+#ifndef BOBSIM_NO_LOG
         refreshEnergy[r] += (IDD5B - IDD3N) * tRFC * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#endif
 
         for (unsigned b = 0; b < NUM_BANKS; b++) {
           bankStates[r][b].currentBankState = REFRESHING;
@@ -226,7 +249,7 @@ void SimpleController::Update(void)
     }
   }
 
-  //If no refresh is being issued then do this block
+//If no refresh is being issued then do this block
   if (!issuingRefresh) {
     for (unsigned i = 0; i < commandQueue.size(); i++) {
       //make sure we don't send a command ahead of its own ACTIVATE
@@ -255,7 +278,9 @@ void SimpleController::Update(void)
           }
 
           //keep track of energy
+#ifndef BOBSIM_NO_LOG
           burstEnergy[rank] += (IDD4R - IDD3N) * BL / 2 * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#endif
 
           bankstate->lastCommand = commandQueue[i]->busPacketType;
           bankstate->stateChangeCountdown = (4 * tCK > 7.5) ? tRTP : ceil(7.5 / tCK); //4 clk or 7.5ns
@@ -290,7 +315,9 @@ void SimpleController::Update(void)
           }
 
           //keep track of energy
+#ifndef BOBSIM_NO_LOG
           burstEnergy[rank] += (IDD4W - IDD3N) * BL / 2 * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#endif
 
           BusPacket *writeData = new BusPacket(*commandQueue[i]);
           writeData->busPacketType = WRITE_DATA;
@@ -334,7 +361,9 @@ void SimpleController::Update(void)
             }
           }
 
+#ifndef BOBSIM_NO_LOG
           actpreEnergy[rank] += ((IDD0 * tRC) - ((IDD3N * tRAS) + (IDD2N * (tRC - tRAS)))) * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
+#endif
 
           bankstate->lastCommand = commandQueue[i]->busPacketType;
           bankstate->currentBankState = ROW_ACTIVE;
@@ -360,16 +389,10 @@ void SimpleController::Update(void)
     }
   }
 
-  //increment clock cycle
+//increment clock cycle
   currentClockCycle++;
 }
 
-void SimpleController::_update(void)
-{
-  for (unsigned j = 0; j < this->commandQueue.size(); j++) {
-    this->commandQueue[j]->queueWaitTime += (this->commandQueue[j]->busPacketType == ACTIVATE);
-  }
-}
 
 bool SimpleController::IsIssuable(BusPacket *busPacket)
 {
@@ -440,7 +463,9 @@ void SimpleController::AddTransaction(Transaction *trans)
   BusPacket *action, *activate = new BusPacket(ACTIVATE, trans->transactionID, mappedCol, mappedRow, mappedRank, mappedBank, trans->portID, trans->mappedChannel, trans->address, trans->originatedFromLogicOp, 0);
   switch (trans->transactionType) {
   case DATA_READ:
+#ifndef BOBSIM_NO_LOG
     readCounter++;
+#endif
     action = new BusPacket(READ_P, trans->transactionID, mappedCol, mappedRow, mappedRank, mappedBank, trans->portID, trans->mappedChannel, trans->address, trans->originatedFromLogicOp, trans->reqSizeInBytes() / DRAM_BUS_WIDTH, trans->respSizeInBytes() / DRAM_BUS_WIDTH);
 
 #ifdef HMCSIM_SUPPORT
@@ -448,7 +473,9 @@ void SimpleController::AddTransaction(Transaction *trans)
 #endif
     break;
   case DATA_WRITE:
+#ifndef BOBSIM_NO_LOG
     writeCounter++;
+#endif
     action = new BusPacket(WRITE_P, trans->transactionID, mappedCol, mappedRow, mappedRank, mappedBank, trans->portID, trans->mappedChannel, trans->address, trans->originatedFromLogicOp, trans->reqSizeInBytes() / DRAM_BUS_WIDTH, trans->respSizeInBytes() / DRAM_BUS_WIDTH);
 
 #ifdef HMCSIM_SUPPORT

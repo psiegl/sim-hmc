@@ -83,8 +83,10 @@ private:
     vector<unsigned> refreshCounters;
 
     //More bookkeeping
+#ifndef BOBSIM_NO_LOG
     unsigned readCounter;
     unsigned writeCounter;
+#endif
 
     //Work queue for pending requests (DRAM specific commands go here)
     deque<BusPacket*> commandQueue;
@@ -96,6 +98,7 @@ public:
     void Update(void); // this is called each tCK
     void AddTransaction(Transaction *trans);
 
+#ifndef BOBSIM_NO_LOG
     void _update(void); // this is called each clk
 
     //Fields
@@ -106,16 +109,19 @@ public:
     unsigned numActBanksAverage;
     unsigned numPreBanksAverage;
     unsigned numRefBanksAverage;
+#endif
 
     unsigned RRQFull;
     unsigned outstandingReads;
     int waitingACTS;
 
     //Power fields
+#ifndef BOBSIM_NO_LOG
     vector<uint64_t> backgroundEnergy;
     vector<uint64_t> burstEnergy;
     vector<uint64_t> actpreEnergy;
     vector<uint64_t> refreshEnergy;
+#endif
 };
 }
 

@@ -52,9 +52,7 @@ public:
     inFlightLink(0),
     inFlightLinkCountdowns(0),
     linkIdle(0)
-  {
-
-  }
+  {}
   ~bob_linkbus(void){}
 
   //SerDes buffer for holding incoming request packet
@@ -75,16 +73,20 @@ private:
     unsigned num_ranks;
 
     //Bookkeeping for the number of requests to each channel
+#ifndef BOBSIM_NO_LOG
     unsigned channelCounters[NUM_CHANNELS];
     uint64_t channelCountersLifetime[NUM_CHANNELS];
+#endif
 
     //Storage for pending read request information
     vector<Transaction*> pendingReads;
+#ifndef BOBSIM_NO_LOG
     unsigned pendingReadsBufferAvg;
 
     //Bookkeeping for port statistics
     vector<unsigned> portInputBufferAvg;
     vector<unsigned> portOutputBufferAvg;
+#endif
 
     //
     //Request Link Bus
@@ -104,10 +106,12 @@ private:
     vector<unsigned> priorityLinkBus;
 
     //Bookkeeping
+#ifndef BOBSIM_NO_LOG
     unsigned readCounter;
     unsigned writeCounter;
     unsigned committedWrites;
 //	unsigned logicOpCounter;
+#endif
 
     //Address mapping widths
 #ifndef HMCSIM_SUPPORT
@@ -133,7 +137,9 @@ public:
     BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned deviceWidth);
     ~BOB(void);
     void Update(void);
+#ifndef BOBSIM_NO_LOG
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
+#endif
     void ReportCallback(BusPacket *bp);
 
     //Ports used on main BOB controller to communicate with cache

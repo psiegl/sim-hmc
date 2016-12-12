@@ -46,6 +46,7 @@ BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks, unsigned deviceWi
   //Outgoing response packet fields (being sent back to cache)
   inFlightResponse(num_ports, clInFlightResponse()),
 
+#ifndef BOBSIM_NO_LOG
   returnedReads(0),
   returnedReadSize(0),
   totalReturnedReads(0),
@@ -60,26 +61,31 @@ BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks, unsigned deviceWi
   readsPerPort(num_ports, 0),
   writesPerPort(num_ports, 0),
   returnsPerPort(num_ports, 0),
+#endif
 
 #if 0
   readDoneCallback(NULL),
   writeDoneCallback(NULL),
   logicDoneCallback(NULL),
 #endif
+#ifndef BOBSIM_NO_LOG
   issuedLogicOperations(0),
   committedWrites(0),
   totalTransactionsServiced(0),
   totalLogicResponses(0),
+#endif
 #if 0
   portRoundRobin(0),
 #endif
   currentClockCycle(0),
-  num_ports(num_ports),
-  activatedPeriodPrintStates(true)
+  num_ports(num_ports)
+#ifndef BOBSIM_NO_LOG
+  , activatedPeriodPrintStates(true)
+#endif
 {
-#define TMP_STR_LEN 80
-
   //Initialize output files
+#ifndef BOBSIM_NO_LOG
+#define TMP_STR_LEN 80
   char *sim_desc;
   char tmp_str[TMP_STR_LEN];
   if ((sim_desc = getenv("SIM_DESC")) != NULL) {
@@ -104,11 +110,13 @@ BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks, unsigned deviceWi
     perChan[i].RRQ = 0;
     perChan[i].WorkQTimes = 0;
   }
+#endif
 
   //Write configuration stuff to output file
   //
   //System Parameters
   //
+#ifndef BOBSIM_NO_LOG
   statsOut << "!!SYSTEM_INI" << endl;
   statsOut << "NUM_RANKS=" << num_ranks << endl;
   statsOut << "NUM_CHANS=" << NUM_CHANNELS << endl;
@@ -176,7 +184,7 @@ BOBWrapper::BOBWrapper(unsigned num_ports, unsigned num_ranks, unsigned deviceWi
   //statsOut<<"IDD7="<<IDD7<<endl;
 
   statsOut << "!!EPOCH_DATA" << endl;
-
+#endif
 #ifdef HMCSIM_SUPPORT
   callback = 0;
   vault = 0;
@@ -193,8 +201,10 @@ BOBWrapper::~BOBWrapper(void)
 //      if(inFlightResponse[i].Cache)
 //        delete inFlightResponse[i].Cache;
 //  }
+#ifndef BOBSIM_NO_LOG
   powerOut.close();
   statsOut.close();
+#endif
 }
 
 #if 0
@@ -297,29 +307,37 @@ bool BOBWrapper::AddTransaction(Transaction *trans, unsigned port)
       bob.ports[port].inputBuffer.size() < PORT_QUEUE_DEPTH)
 #endif
   {
+#ifndef BOBSIM_NO_LOG
     requestCounterPerPort[port]++;
+#endif
 
     trans->portID = port;
     trans->cyclesReqPort = currentClockCycle;
+#ifndef BOBSIM_NO_LOG
     trans->fullStartTime = currentClockCycle;
+#endif
     inFlightRequest[port].Cache = trans;
     inFlightRequest[port].HeaderCounter = 1;
 
     switch (trans->transactionType) {
     case DATA_READ:
-//            std::cout << "read : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
+#ifndef BOBSIM_NO_LOG
       readsPerPort[port]++;
+#endif
       inFlightRequest[port].Counter = 1;
       break;
     case DATA_WRITE:
+#ifndef BOBSIM_NO_LOG
       issuedWrites++;
-//            std::cout << "write : " << std::dec << trans->reqSizeInBytes() << " Bytes, FLITS: " << ((trans->reqSizeInBytes() * 8) / FLIT_WIDTH) << std::endl;
       issuedWritesSize += trans->reqSizeInBytes();
       writesPerPort[port]++;
+#endif
       inFlightRequest[port].Counter = trans->reqSizeInBytes() / PORT_WIDTH;
       break;
     case LOGIC_OPERATION:
+#ifndef BOBSIM_NO_LOG
       issuedLogicOperations++;
+#endif
       inFlightRequest[port].Counter = trans->reqSizeInBytes() / PORT_WIDTH;
       break;
     default:
@@ -364,9 +382,11 @@ void BOBWrapper::Update(void)
         inFlightRequest[i].Cache = NULL;
       }
     }
+#ifndef BOBSIM_NO_LOG
     else {   //STATS
       requestPortEmptyCount[i]++;
     }
+#endif
 
     if (inFlightResponse[i].Counter) {
       if (!--inFlightResponse[i].Counter) {
@@ -382,9 +402,10 @@ void BOBWrapper::Update(void)
             (*readDoneCallback)(i, inFlightResponse[i].Cache->address);
           }
 #endif
+#ifndef BOBSIM_NO_LOG
           UpdateLatencyStats(inFlightResponse[i].Cache);
-
           returnsPerPort[i]++;
+#endif
           break;
 
         case LOGIC_RESPONSE:
@@ -398,9 +419,10 @@ void BOBWrapper::Update(void)
             (*logicDoneCallback)(inFlightResponse[i].Cache->mappedChannel, inFlightResponse[i].Cache->address);
           }
 #endif
+#ifndef BOBSIM_NO_LOG
           UpdateLatencyStats(inFlightResponse[i].Cache);
-
           totalLogicResponses++;
+#endif
           break;
 
         default:
@@ -412,9 +434,11 @@ void BOBWrapper::Update(void)
         delete inFlightResponse[i].Cache;
       }
     }
+#ifndef BOBSIM_NO_LOG
     else {   //STATS
       responsePortEmptyCount[i]++;
     }
+#endif
   }
 
   //NEW STUFF
@@ -438,17 +462,19 @@ void BOBWrapper::Update(void)
     }
   }
 
+#ifndef BOBSIM_NO_LOG
   if (activatedPeriodPrintStates
       && currentClockCycle % EPOCH_LENGTH == 0
       && currentClockCycle > 0) {
     PrintStats(false);
   }
-
+#endif
 
   currentClockCycle++;
 }
 
 
+#ifndef BOBSIM_NO_LOG
 void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
 {
   switch (returnedRead->transactionType) {
@@ -482,7 +508,6 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
     fullLatencies.push_back(returnedRead->fullTimeTotal);
     dramLatencies.push_back(returnedRead->dramTimeTotal);
     chanLatencies.push_back(returnedRead->channelTimeTotal);
-
     //latencies[((returnedRead->fullTimeTotal/10)*10)*CPU_CLK_PERIOD]++;
 
     returnedReads++;
@@ -493,10 +518,12 @@ void BOBWrapper::UpdateLatencyStats(Transaction *returnedRead)
     break;
   }
 }
+#endif
 
 //
 //Prints all statistics on epoch boundaries
 //
+#ifndef BOBSIM_NO_LOG
 void BOBWrapper::PrintStats(bool finalPrint)
 {
 #ifndef NO_OUTPUT
@@ -670,4 +697,5 @@ void BOBWrapper::WriteIssuedCallback(unsigned port, uint64_t address)
   }
 #endif
 }
+#endif
 } //namespace BOBSim

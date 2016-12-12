@@ -75,15 +75,16 @@ public:
       portID(0),
 //      coreID(0),
       logicOpContents(NULL),
-      originatedFromLogicOp(false),
+      originatedFromLogicOp(false)
 #ifdef HMCSIM_SUPPORT
-      payload(_payload),
+      , payload(_payload),
       row(0),
       col(0),
       bank(0),
-      rank(0),
+      rank(0)
 #endif
-      cyclesReqPort(0),
+#ifndef BOBSIM_NO_LOG
+      , cyclesReqPort(0),
       cyclesRspPort(0),
       cyclesReqLink(0),
       cyclesRspLink(0),
@@ -95,6 +96,7 @@ public:
       dramTimeTotal(0),
       channelStartTime(0),
       channelTimeTotal(0)
+#endif
     {
     }
 
@@ -125,15 +127,16 @@ public:
     unsigned rank;
 #endif
 
-	//Latency break-up
+    //Latency break-up
 	uint64_t cyclesReqPort; //add to Port until remove from port
     uint64_t cyclesRspPort; //add to port until remove from port
 
 	uint64_t cyclesReqLink; //add to request SerDe until remove from SerDe
 	uint64_t cyclesRspLink; //add to response SerDe until remove
 
-	unsigned cyclesInReadReturnQ;
-	unsigned cyclesInWorkQueue;
+#ifndef BOBSIM_NO_LOG
+    unsigned cyclesInReadReturnQ;
+    unsigned cyclesInWorkQueue;
 
 	uint64_t fullStartTime; //start sending out on port until...
 	uint64_t fullTimeTotal; //analyzed in TraceBasedSim
@@ -143,6 +146,7 @@ public:
 
 	uint64_t channelStartTime; //start sending on BOB Channel bus until...
 	uint64_t channelTimeTotal; //completely added to SerDeDownBuffer
+#endif
 
     unsigned reqSizeInBytes(void)
     {

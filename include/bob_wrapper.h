@@ -78,6 +78,7 @@ private:
     vector<clInFlightRequest> inFlightRequest;
     vector<clInFlightResponse> inFlightResponse;
 
+#ifndef BOBSIM_NO_LOG
     unsigned returnedReads;
     uint64_t returnedReadSize;
     unsigned totalReturnedReads;
@@ -119,12 +120,15 @@ private:
     //Output files
     ofstream statsOut;
     ofstream powerOut;
+#endif
 
     uint64_t currentClockCycle;
 
     unsigned num_ports;
 
+#ifndef BOBSIM_NO_LOG
     void UpdateLatencyStats(Transaction *trans);
+#endif
 
 #if 0
     //Round-robin counter
@@ -150,10 +154,10 @@ public:
         void (*writeDone)(unsigned, uint64_t),
         void (*logicDone)(unsigned, uint64_t));
 #endif
+#ifndef BOBSIM_NO_LOG
     void PrintStats(bool finalPrint);
-
     bool activatedPeriodPrintStates;
-
+#endif
     //Callback functions
 #if 0
     void (*readDoneCallback)(unsigned, uint64_t);
@@ -162,7 +166,9 @@ public:
 #endif
 
 	//Callback
+#ifndef BOBSIM_NO_LOG
     void WriteIssuedCallback(unsigned port, uint64_t address);
+#endif
 
 #ifdef HMCSIM_SUPPORT
     bool IsPortBusy(unsigned port);

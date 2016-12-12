@@ -94,17 +94,19 @@ enum PortHeuristicScheme
 	PER_CORE
 };
 
+#ifndef HMCSIM_SUPPORT
 enum AddressMappingScheme
 {
-	RW_BK_RK_CH_CL_BY, //row:bank:rank:chan:col:byte
-	RW_CH_BK_RK_CL_BY, //row:chan:bank:rank:col:byte
-	RW_BK_RK_CLH_CH_CLL_BY, //row:bank:rank:col_high:chan:col_low:byte
-	RW_CLH_BK_RK_CH_CLL_BY, //row:col_high:bank:rank:chan:col_low:byte
-	CH_RW_BK_RK_CL_BY, //chan:row:bank:rank:col:byte
-	RK_BK_RW_CLH_CH_CLL_BY, //chan:rank:bank:row:col:byte
-	CLH_RW_RK_BK_CH_CLL_BY, //col_high:row:rank:bank:chan:col_low:byte
-	BK_CLH_RW_RK_CH_CLL_BY //bank:col_high:row:rank:chan:col_low:byte
+    RW_BK_RK_CH_CL_BY, //row:bank:rank:chan:col:byte
+    RW_CH_BK_RK_CL_BY, //row:chan:bank:rank:col:byte
+    RW_BK_RK_CLH_CH_CLL_BY, //row:bank:rank:col_high:chan:col_low:byte
+    RW_CLH_BK_RK_CH_CLL_BY, //row:col_high:bank:rank:chan:col_low:byte
+    CH_RW_BK_RK_CL_BY, //chan:row:bank:rank:col:byte
+    RK_BK_RW_CLH_CH_CLL_BY, //chan:rank:bank:row:col:byte
+    CLH_RW_RK_BK_CH_CLL_BY, //col_high:row:rank:bank:chan:col_low:byte
+    BK_CLH_RW_RK_CH_CLL_BY //bank:col_high:row:rank:chan:col_low:byte
 };
+#endif
 
 //
 //Debug Flags
@@ -208,7 +210,7 @@ enum AddressMappingScheme
 //Alignment to determine width of DRAM bus, used in mapping
 #define BUS_ALIGNMENT_SIZE           8
 #ifndef HMCSIM_SUPPORT
-//Cache line size in bytes 
+//Cache line size in bytes
 #define CACHE_LINE_SIZE             64
 //Offset of channel ID
 #define CHANNEL_ID_OFFSET            0
