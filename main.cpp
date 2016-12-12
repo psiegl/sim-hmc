@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
   hmc_sim sim(cubes, 2, 4, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
   unsigned slidId = 0;
   unsigned destcub = 0; // 1
-  unsigned addr = 0b110000000000; // quad 3
+
   hmc_notify* slidnotify = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
 
   bool ret = sim.hmc_set_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[(17*FLIT_WIDTH) / 8];
 
-  unsigned issue = 1000; //6002;
+  unsigned issue = 20000; //6002;
   unsigned send_ctr = 0;
   unsigned skip = 0;
   unsigned recv_ctr = 0 + skip;
@@ -38,6 +38,21 @@ int main(int argc, char* argv[])
     {
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
 
+      unsigned addr;
+      switch(send_ctr & 0x3) {
+      case 0x0:
+        addr = 0b000000000000; // quad 0
+        break;
+      case 0x1:
+        addr = 0b010000000000; // quad 1
+        break;
+      case 0x2:
+        addr = 0b100000000000; // quad 2
+        break;
+      case 0x3:
+        addr = 0b110000000000; // quad 3
+        break;
+      }
       if(send_ctr < (issue /*- 2*/)) {
         unsigned dram_hi = (send_ctr & 0b111) << 4;
         unsigned dram_lo = (send_ctr >> 3) << (capacity == 8 ? 16 : 15);
@@ -82,8 +97,8 @@ int main(int argc, char* argv[])
   float freq = 0.8f; // we clk at the same frequency! otherwise: 0.8f
   std::cout << "done in " << clks << " clks, avg.: " << avg << std::endl;
   float bw = (((float)(256+16)*8*(issue-skip))/(clks*freq)); // Gbit/s
-  std::cout << "bw: " << bw << "GBit/s, " << (bw/8) << "GB/s"  << std::endl;
-  std::cout << "bw per lane: " << (((float)(256+16)*8*(issue-skip))/(clks*freq*16)) << "GBit/s" << std::endl;
+  std::cout << "bw: " << bw << "Gbit/s, " << (bw/8) << "GB/s"  << std::endl;
+  std::cout << "bw per lane: " << (((float)(256+16)*8*(issue-skip))/(clks*freq*16)) << "Gbit/s" << std::endl;
 
   return 0;
 }
