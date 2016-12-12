@@ -109,9 +109,10 @@ public:
     unsigned numActBanksAverage;
     unsigned numPreBanksAverage;
     unsigned numRefBanksAverage;
-#endif
+
 
     unsigned RRQFull;
+#endif
     unsigned outstandingReads;
     int waitingACTS;
 

@@ -50,9 +50,11 @@ DRAMChannel::DRAMChannel(unsigned id, BOB *_bob, unsigned num_ranks, unsigned de
   inFlightDataCountdown(0),
   simpleController(this, num_ranks, deviceWidth),
   channelID(id),
-  pendingLogicResponse(NULL),
-  readReturnQueueMax(0),
+  pendingLogicResponse(NULL)
+#ifndef BOBSIM_NO_LOG
+  , readReturnQueueMax(0),
   DRAMBusIdleCount(0)
+#endif
 {
   for (unsigned i = 0; i < num_ranks; i++) {
     ranks.push_back(new Rank(i, this));
@@ -84,7 +86,9 @@ void DRAMChannel::Update(void)
   }
 
   if (!inFlightDataCountdown) {
+#ifndef BOBSIM_NO_LOG
     DRAMBusIdleCount++;
+#endif
   }
   else if (!--inFlightDataCountdown) {
     switch (inFlightDataPacket->busPacketType) {
@@ -101,13 +105,15 @@ void DRAMChannel::Update(void)
 
         simpleController.outstandingReads--;
 
-        bob->ReportCallback(inFlightDataPacket);
         //inFlightDataPacket = nullptr;
+#ifndef BOBSIM_NO_LOG
+        bob->ReportCallback(inFlightDataPacket);
 
         //keep track of total number of entries in return queue
         if (readReturnQueue.size() > readReturnQueueMax) {
           readReturnQueueMax = readReturnQueue.size();
         }
+#endif
       }
       break;
     case WRITE_DATA:
@@ -169,6 +175,7 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
   }
 
   //Report the time we waited in the queue
+#ifndef BOBSIM_NO_LOG
   switch (busPacket->busPacketType) {
   case ACTIVATE:
   case WRITE_P:   //Report the WRITE is finally going
@@ -177,6 +184,7 @@ void DRAMChannel::ReceiveOnCmdBus(BusPacket *busPacket)
   default:
     break;
   }
+#endif
 
   inFlightCommandPacket = busPacket;
   inFlightCommandCountdown = tCMDS;
@@ -200,8 +208,5 @@ void DRAMChannel::ReceiveOnDataBus(BusPacket *busPacket, bool is_return)
   }
 
   inFlightDataPacket = busPacket;
-  if (is_return)
-    inFlightDataCountdown = busPacket->respBurstSize();
-  else
-    inFlightDataCountdown = busPacket->reqBurstSize();
+  inFlightDataCountdown = (is_return) ? busPacket->respBurstSize() : busPacket->reqBurstSize();
 }

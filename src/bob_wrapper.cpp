@@ -312,8 +312,8 @@ bool BOBWrapper::AddTransaction(Transaction *trans, unsigned port)
 #endif
 
     trans->portID = port;
-    trans->cyclesReqPort = currentClockCycle;
 #ifndef BOBSIM_NO_LOG
+    trans->cyclesReqPort = currentClockCycle;
     trans->fullStartTime = currentClockCycle;
 #endif
     inFlightRequest[port].Cache = trans;

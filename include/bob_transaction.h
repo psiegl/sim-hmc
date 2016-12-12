@@ -128,13 +128,13 @@ public:
 #endif
 
     //Latency break-up
+#ifndef BOBSIM_NO_LOG
 	uint64_t cyclesReqPort; //add to Port until remove from port
     uint64_t cyclesRspPort; //add to port until remove from port
 
 	uint64_t cyclesReqLink; //add to request SerDe until remove from SerDe
 	uint64_t cyclesRspLink; //add to response SerDe until remove
 
-#ifndef BOBSIM_NO_LOG
     unsigned cyclesInReadReturnQ;
     unsigned cyclesInWorkQueue;
 

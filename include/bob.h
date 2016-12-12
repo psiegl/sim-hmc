@@ -50,8 +50,10 @@ public:
   bob_linkbus(void) :
     serDesBuffer(0),
     inFlightLink(0),
-    inFlightLinkCountdowns(0),
-    linkIdle(0)
+    inFlightLinkCountdowns(0)
+#ifndef BOBSIM_NO_LOG
+    , linkIdle(0)
+#endif
   {}
   ~bob_linkbus(void){}
 
@@ -62,7 +64,9 @@ public:
   //Coutner to determine how long packet is to be sent
   unsigned inFlightLinkCountdowns;
   //Counts cycles that link bus is idle
+#ifndef BOBSIM_NO_LOG
   unsigned linkIdle;
+#endif
 };
 
 class BOB
@@ -131,7 +135,13 @@ private:
     uint64_t currentClockCycle;
     unsigned num_ports;
 
+#ifdef HMCSIM_SUPPORT
+    unsigned FindChannelID(Transaction *trans) {
+      return 0;
+    }
+#else
     unsigned FindChannelID(Transaction* trans);
+#endif
 public:
 	//Functions
     BOB(BOBWrapper *bobwrapper, unsigned num_ports, unsigned ranks, unsigned deviceWidth);
@@ -139,8 +149,8 @@ public:
     void Update(void);
 #ifndef BOBSIM_NO_LOG
 	void PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, unsigned elapsedCycles);
-#endif
     void ReportCallback(BusPacket *bp);
+#endif
 
     //Ports used on main BOB controller to communicate with cache
     vector<Port> ports;

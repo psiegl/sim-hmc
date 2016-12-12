@@ -167,13 +167,13 @@ void BOB::Update(void)
   for (unsigned i = 0; i < NUM_CHANNELS; i++) {
     this->channels[i]->simpleController._update();
   }
-#endif
 
   //keep track of idle link buses
   for (unsigned i = 0; i < NUM_LINK_BUSES; i++) {
     reqLinkBus[i].linkIdle += (reqLinkBus[i].inFlightLink == NULL);
     respLinkBus[i].linkIdle += (respLinkBus[i].inFlightLink == NULL);
   }
+#endif
 
   //keep track of average entries in port in/out-buffers
   for (unsigned i = 0; i < this->num_ports; i++) {
@@ -204,7 +204,9 @@ void BOB::Update(void)
     bob_linkbus *i_reqLinkBus = &reqLinkBus[i];
     if (i_reqLinkBus->inFlightLinkCountdowns && !--i_reqLinkBus->inFlightLinkCountdowns) {
       //compute total time in serDes and travel up channel
+#ifndef BOBSIM_NO_LOG
       i_reqLinkBus->inFlightLink->cyclesReqLink = currentClockCycle - i_reqLinkBus->inFlightLink->cyclesReqLink;
+#endif
 
       //add to channel
       channels[i_reqLinkBus->inFlightLink->mappedChannel]->AddTransaction(i_reqLinkBus->inFlightLink);       //0 is not used
@@ -232,7 +234,7 @@ void BOB::Update(void)
       BusPacket *front = *readReturnQueue->begin();
       readReturnQueue->erase(readReturnQueue->begin());
       delete front;
-      // psiegl ... here in the serdes buffer!
+
       i_respLinkBus->serDesBuffer = i_respLinkBus->inFlightLink;
       i_respLinkBus->inFlightLink = NULL;
     }
@@ -319,8 +321,10 @@ void BOB::Update(void)
       bob_linkbus *i_respLinkBus = &respLinkBus[priorityLinkBus[p]];
       if (i_respLinkBus->serDesBuffer != NULL &&
           i_respLinkBus->serDesBuffer->portID == p) {
+#ifndef BOBSIM_NO_LOG
         i_respLinkBus->serDesBuffer->cyclesRspLink = currentClockCycle - i_respLinkBus->serDesBuffer->cyclesRspLink;
         i_respLinkBus->serDesBuffer->cyclesRspPort = currentClockCycle;
+#endif
         ports[p].outputBuffer.push_back(i_respLinkBus->serDesBuffer);
         switch (i_respLinkBus->serDesBuffer->transactionType) {
         case RETURN_DATA:
@@ -362,8 +366,10 @@ void BOB::Update(void)
             channels[channelID]->simpleController.waitingACTS < CHANNEL_WORK_Q_MAX) {
           //put on channel bus
           i_reqLinkBus->serDesBuffer = ports[p].inputBuffer[i];
+#ifndef BOBSIM_NO_LOG
           i_reqLinkBus->serDesBuffer->cyclesReqLink = currentClockCycle;
           i_reqLinkBus->serDesBuffer->cyclesReqPort = currentClockCycle - i_reqLinkBus->serDesBuffer->cyclesReqPort;
+#endif
           i_reqLinkBus->serDesBuffer->mappedChannel = channelID;
 
           //keep track of requests
@@ -506,7 +512,9 @@ void BOB::Update(void)
               i_respLinkBus->inFlightLink = pendingReads[p];
 
               //note the time
+#ifndef BOBSIM_NO_LOG
               i_respLinkBus->inFlightLink->cyclesRspLink = currentClockCycle;
+#endif
 
               //remove pending queues
               pendingReads.erase(pendingReads.begin() + p);
@@ -542,7 +550,7 @@ void BOB::Update(void)
   //Channels update at DRAM speeds (whatever ratio is with CPU)
   //
 
-  if (currentClockCycle > 0 && currentClockCycle % DRAM_CPU_CLK_RATIO == 0) {
+  if (currentClockCycle && currentClockCycle % DRAM_CPU_CLK_RATIO == 0) {
     if (DEBUG_CHANNEL) DEBUG(" --------- Channel updates started ---------");
 
     //if there is an adjustment, we need to increment counter and handle clock differences
@@ -569,9 +577,9 @@ void BOB::Update(void)
   currentClockCycle++;
 }
 
+#ifndef HMCSIM_SUPPORT
 unsigned BOB::FindChannelID(Transaction *trans)
 {
-#ifndef HMCSIM_SUPPORT
   if (NUM_CHANNELS == 1)
     return 0;
 
@@ -606,15 +614,12 @@ unsigned BOB::FindChannelID(Transaction *trans)
     exit(1);
     break;
   }
-  ;
 
   //build channel id mask
   uint64_t channelMask = ((1 << ((unsigned)log2(NUM_CHANNELS))) - 1) << channelIDOffset;
   return ((trans->address & channelMask) >> channelIDOffset);
-#else
-  return 0;
-#endif
 }
+#endif
 
 //This is also kind of kludgey, but essentially this function always prints the power
 // stats to the output file, but supresses the print to cout until finalPrint is true
@@ -834,7 +839,6 @@ void BOB::PrintStats(ofstream &statsOut, ofstream &powerOut, bool finalPrint, un
   PRINT("    CPU Time : " << currentClockCycle * CPU_CLK_PERIOD << "ns");
   PRINT("   DRAM Time : " << (dram_channel_clk * tCK) << "ns");
 }
-#endif
 
 //
 //Callback shit
@@ -843,7 +847,6 @@ void BOB::ReportCallback(BusPacket *bp)
 {
   switch (bp->busPacketType) {
   case ACTIVATE:
-#ifndef BOBSIM_NO_LOG
     for (unsigned p = 0; p < pendingReads.size(); p++) {
       if (pendingReads[p]->transactionID == bp->transactionID) {
         pendingReads[p]->dramStartTime = currentClockCycle;
@@ -851,33 +854,27 @@ void BOB::ReportCallback(BusPacket *bp)
         break;
       }
     }
-#endif
     break;
   case WRITE_P:
-#ifndef BOBSIM_NO_LOG
     bobwrapper->WriteIssuedCallback(bp->port, bp->address);
-#endif
     break;
   case WRITE_DATA:
-#ifndef BOBSIM_NO_LOG
     committedWrites++;
-#endif
     break;
   case READ_DATA:
-#ifndef BOBSIM_NO_LOG
     for (unsigned p = 0; p < pendingReads.size(); p++) {
       if (pendingReads[p]->transactionID == bp->transactionID) {
         pendingReads[p]->dramTimeTotal = currentClockCycle - pendingReads[p]->dramStartTime;
         break;
       }
     }
-#endif
     break;
   default:
     ERROR("== Error - Wrong type of packet received in bob");
     exit(0);
   }
 }
+#endif
 } //namespace BOBSim
 
 

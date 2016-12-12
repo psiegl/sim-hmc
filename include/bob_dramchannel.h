@@ -81,12 +81,16 @@ public:
     Transaction *pendingLogicResponse;
 
     //Bookkeeping for maximum number of requests waiting in queue
+#ifndef BOBSIM_NO_LOG
     unsigned readReturnQueueMax;
+#endif
     //Storage for pending response data
     deque<BusPacket*> readReturnQueue;
 
     //Number of cycles there is no data on the DRAM bus
+#ifndef BOBSIM_NO_LOG
     unsigned DRAMBusIdleCount;
+#endif
 };
 }
 

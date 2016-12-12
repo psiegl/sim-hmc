@@ -74,8 +74,11 @@ SimpleController::SimpleController(DRAMChannel *parent, unsigned ranks, unsigned
   numRefBanksAverage(0),
 #endif
 
+  #ifndef BOBSIM_NO_LOG
   RRQFull(0),
+  #endif
   outstandingReads(0),
+
   waitingACTS(0)
 
 //init power fields
@@ -107,7 +110,7 @@ SimpleController::~SimpleController(void)
 void SimpleController::_update(void)
 {
   for (unsigned j = 0; j < this->commandQueue.size(); j++) {
-    this->commandQueue[j]->queueWaitTime += (this->commandQueue[j]->busPacketType == ACTIVATE); // ToDo
+    this->commandQueue[j]->queueWaitTime += (this->commandQueue[j]->busPacketType == ACTIVATE);
   }
 }
 #endif
@@ -418,7 +421,9 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
       return true;
     }
     else {
+#ifndef BOBSIM_NO_LOG
       RRQFull += ((channel->readReturnQueue.size() + outstandingReads) * (burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
+#endif
       return false;
     }
 
@@ -431,7 +436,9 @@ bool SimpleController::IsIssuable(BusPacket *busPacket)
       return true;
     }
     else {
+#ifndef BOBSIM_NO_LOG
       RRQFull += ((channel->readReturnQueue.size() + outstandingReads) * (burstLength * DRAM_BUS_WIDTH) >= CHANNEL_RETURN_Q_MAX);
+#endif
       return false;
     }
     break;
