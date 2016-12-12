@@ -27,7 +27,7 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigne
   bobsim(new BOBSim::BOBWrapper(num_ports, num_ranks, num_ranks)) // DEVICE_WIDTH == NUM_RANKS
 {
   BOBSim::SHOW_SIM_OUTPUT = 0;
-  this->bobsim->activatedPeriodPrintStates = periodPrintStats;
+  //this->bobsim->activatedPeriodPrintStates = periodPrintStats;
   this->bobsim->vault = this;
   this->bobsim->callback = callback;
 
@@ -38,7 +38,7 @@ hmc_bobsim::~hmc_bobsim(void)
 {
   if (this->bobnotify.get_notification()) {
     std::cout << "- HMC cube: " << this->cube->get_id() << ", quad: " << this->quadId << ", vault: " << this->id << " -" << std::endl;
-    this->bobsim->PrintStats(true);
+    //this->bobsim->PrintStats(true);
   }
 
   delete this->bobsim;
@@ -138,12 +138,12 @@ void hmc_bobsim::clock(void)
 
 void hmc_bobsim::bob_printStatsPeriodical(bool flag)
 {
-  this->bobsim->activatedPeriodPrintStates = flag;
+  //this->bobsim->activatedPeriodPrintStates = flag;
 }
 
 void hmc_bobsim::bob_printStats(void)
 {
-  this->bobsim->PrintStats(true);
+  //this->bobsim->PrintStats(true);
 }
 
 bool hmc_bobsim::notify_up(void)

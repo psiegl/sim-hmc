@@ -46,17 +46,20 @@ int main(int argc, char* argv[])
       else
         sim.hmc_encode_pkt(destcub, addr, 0, WR64, packet);
       next_available = true;
-
     }
     if(next_available == true && sim.hmc_send_pkt(slidId, packet)) {
       track[send_ctr] = clks;
       send_ctr++;
+      if(!(send_ctr % 100))
+        std::cout << "issued " << send_ctr << std::endl;
       next_available = false;
     }
     if(slidnotify->get_notification() && sim.hmc_recv_pkt(slidId, retpacket))
     {
       track[recv_ctr] = clks - track[recv_ctr];
       recv_ctr++;
+      if(!(recv_ctr % 100))
+        std::cout << "received " << recv_ctr << std::endl;
       if(recv_ctr >= issue)
         break;
     }

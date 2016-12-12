@@ -36,8 +36,8 @@ ifneq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
 BOBSRCDIR := extern/bobsim/src
 BOBSRC    := $(wildcard $(BOBSRCDIR)/*.cpp)
 BOBOBJ    := $(BOBSRC:$(BOBSRCDIR)/%.cpp=$(BLDDIR)/%.o)
-CFLAGS    += -DHMCSIM_SUPPORT=1
-CXXFLAGS  += -DHMCSIM_SUPPORT=1
+CFLAGS    += -DHMCSIM_SUPPORT=1 -DBOBSIM_NO_LOG=1
+CXXFLAGS  += -DHMCSIM_SUPPORT=1 -DBOBSIM_NO_LOG=1
 
 $(BOBOBJ): $(BLDDIR)/%.o : $(BOBSRCDIR)/%.cpp
 	@echo "[$(CXX)]" $@
@@ -79,7 +79,7 @@ bldall:
 	make clean
 	make $(TESTBIN)
 
-runall: bldall
+runall: 
 	./$(TESTBIN)
 	#gprof $(TESTBIN) gmon.out > $(TESTBIN).anal.txt
 	#gprof $(TESTBIN) | gprof2dot | dot -Tpng -o output.png
