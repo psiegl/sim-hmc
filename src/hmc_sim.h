@@ -120,6 +120,9 @@ public:
                       uint16_t tag, hmc_rqst_t cmd, char *packet);
 
   void clock(void);
+  uint64_t hmc_get_clock(void) {
+    return this->clk;
+  }
 };
 
 #endif /* #ifndef _HMC_SIM_H_ */

@@ -36,8 +36,12 @@ ifneq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
 BOBSRCDIR := extern/bobsim/src
 BOBSRC    := $(wildcard $(BOBSRCDIR)/*.cpp)
 BOBOBJ    := $(BOBSRC:$(BOBSRCDIR)/%.cpp=$(BLDDIR)/%.o)
-CFLAGS    += -DHMCSIM_SUPPORT=1 #-DBOBSIM_NO_LOG=1
-CXXFLAGS  += -DHMCSIM_SUPPORT=1 #-DBOBSIM_NO_LOG=1
+CFLAGS    += -DHMCSIM_SUPPORT=1
+CXXFLAGS  += -DHMCSIM_SUPPORT=1
+ifneq (,$(findstring HMC_FAST_BOBSIM, $(HMCSIM_MACROS)))
+CFLAGS    += -DBOBSIM_NO_LOG=1
+CXXFLAGS  += -DBOBSIM_NO_LOG=1
+endif
 
 $(BOBOBJ): $(BLDDIR)/%.o : $(BOBSRCDIR)/%.cpp
 	@echo "[$(CXX)]" $@
@@ -69,6 +73,7 @@ $(TARGET): $(BLDDIR) $(OBJ) $(LIBS) $(BOBOBJ)
 	@echo "END" >> $(TARGET).ar
 	@$(AR) -M < $(TARGET).ar
 	@-$(RM) -f $(TARGET).ar
+	@cp $(TARGET) wrapper-gc64hmcsim2.0/lib/.
 
 
 TESTBIN := main.elf
