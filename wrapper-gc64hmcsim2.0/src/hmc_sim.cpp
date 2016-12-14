@@ -1,8 +1,11 @@
-#include <assert.h>
+#include <cassert>
+#include <iostream>
 #include "../../src/hmc_sim.h" // C++
 #include "../include/hmc_sim.h" // C Wrapper
 
 extern "C" {
+hmc_notify *slid_notifier;
+
 extern int hmcsim_init(	struct hmcsim_t *hmc, 
 				uint32_t num_devs, 
 				uint32_t num_links, 
@@ -33,7 +36,11 @@ extern int hmcsim_link_config( struct hmcsim_t *hmc,
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
   if( type == HMC_LINK_HOST_DEV ) { // host to dev
-    return !! hmcsim->hmc_define_slid(dest_link, dest_dev, dest_link, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
+    hmc_notify *slid_not = hmcsim->hmc_define_slid(dest_link, dest_dev, dest_link, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
+    if(slid_not == nullptr)
+      return -1;
+    slid_notifier = slid_not;
+    return 0;
   }
   else { // dev to dev
     return ! hmcsim->hmc_set_link_config(src_dev, src_link, dest_dev, dest_link, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
@@ -108,7 +115,8 @@ extern int hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet 
 extern int hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
-  return ! hmcsim->hmc_recv_pkt(link, (char*)packet);
+  return ! ((slid_notifier->get_notification() & (1 << link))
+            && hmcsim->hmc_recv_pkt(link, (char*)packet));
 }
 
 extern int hmcsim_clock( struct hmcsim_t *hmc )

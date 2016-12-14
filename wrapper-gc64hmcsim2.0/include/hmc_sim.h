@@ -33,6 +33,8 @@ extern "C" {
 #include <stdio.h>
 #include <sys/types.h>
 #include "hmc_sim_types.h"
+#include "../../src/hmc_sim_t.h"
+#include "../../src/config.h"
 //#include "hmc_sim_macros.h"
 
 /* -------------------------------------------- FUNCTION PROTOTYPES */

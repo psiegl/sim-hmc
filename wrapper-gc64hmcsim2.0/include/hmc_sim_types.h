@@ -28,6 +28,12 @@ struct hmcsim_t {
   void * hmcsim;
 };
 
+/* -------------------------------------------- RETURN CODES */
+#define		HMC_ERROR_PARAMS	-3
+#define		HMC_ERROR_DEV_INIT	-2
+#define		HMC_ERROR		-1
+#define		HMC_OK			0
+#define		HMC_STALL		2
 
 /* -------------------------------------------------- ENUMERATED TYPES */
 typedef enum{

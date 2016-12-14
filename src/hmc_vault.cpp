@@ -87,9 +87,7 @@ bool hmc_vault::hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len)
 bool hmc_vault::hmcsim_process_rqst(void *packet)
 {
   uint64_t rsp_payload[FLIT_WIDTH / 2 * HMC_MAX_FLITS_PER_PACKET];
-
   uint32_t error = 0x00;
-
 
   /*
    * Step 1: get the request

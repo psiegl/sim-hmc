@@ -38,7 +38,7 @@ unsigned hmc_ring::decode_link_of_packet(char *packet)
   uint64_t header = HMC_PACKET_HEADER(packet);
   unsigned p_cubId;
   if (HMCSIM_PACKET_IS_RESPONSE(header)) {
-    unsigned slid = (unsigned)HMCSIM_PACKET_RESPONSE_SET_SLID(header);
+    unsigned slid = (unsigned)HMCSIM_PACKET_RESPONSE_GET_SLID(header);
     p_cubId = this->cub->slid_to_cubid(slid);
     if (p_cubId == this->cub->get_id()) {
       unsigned p_quadId = this->cub->slid_to_quadid(slid);

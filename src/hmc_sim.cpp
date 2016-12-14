@@ -31,7 +31,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     throw false;
   }
 
-  if (num_slids >= HMC_MAX_LINKS) {
+  if (num_slids > HMC_MAX_LINKS) {
     std::cerr << "INSUFFICIENT NUMBER SLIDS: between " << HMC_MIN_LINKS << " to " << HMC_MAX_LINKS << " (" << num_links << ")" << std::endl;
     throw false;
   }
