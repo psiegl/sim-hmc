@@ -9,7 +9,7 @@ LIBNAME  := hmcsim
 SRCDIR   := src
 BLDDIR   := build
 LIBS     :=
-TARGET   := lib$(LIBNAME).a
+TARGET   := lib/lib$(LIBNAME).a
 
 .PHONY   : $(TARGET)
 
