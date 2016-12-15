@@ -73,7 +73,6 @@ $(TARGET): $(BLDDIR) $(OBJ) $(LIBS) $(BOBOBJ)
 	@echo "END" >> $(TARGET).ar
 	@$(AR) -M < $(TARGET).ar
 	@-$(RM) -f $(TARGET).ar
-	@cp $(TARGET) wrapper-gc64hmcsim2.0/lib/.
 
 
 TESTBIN := main.elf
@@ -90,4 +89,4 @@ runall:
 	#gprof $(TESTBIN) | gprof2dot | dot -Tpng -o output.png
 
 clean:
-	rm -rf $(TARGET) $(BLDDIR)
+	rm -rf $(TARGET) $(BLDDIR) lib/*

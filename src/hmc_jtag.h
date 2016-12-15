@@ -10,7 +10,7 @@ private:
   hmc_cube *cube;
 
 public:
-  hmc_jtag(hmc_cube *cube);
+  explicit hmc_jtag(hmc_cube *cube);
   ~hmc_jtag(void);
 
   int jtag_reg_read(unsigned reg, uint64_t* result);

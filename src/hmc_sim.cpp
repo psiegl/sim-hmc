@@ -325,7 +325,7 @@ void hmc_sim::clock(void)
 
   notifymap = this->slidnotify.get_notification();
   lid = __builtin_ctzl(notifymap);
-  for (unsigned slidId = 0; slidId < this->num_slids; slidId++)
+  for (unsigned slidId = lid; slidId < this->num_slids; slidId++)
     if ((0x1 << slidId) & notifymap)
       this->slids[slidId]->clock(); // ToDo
 }
