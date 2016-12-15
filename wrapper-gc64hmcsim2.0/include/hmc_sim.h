@@ -285,7 +285,7 @@ extern int	hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, ui
 	\param bsize is the target block size [32,64,128]
 	\return 0 on success, nonzero otherwise 
 */
-extern int	hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, uint32_t bsize );
+extern int	hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize );
 
 
 /*!	\fn int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize )

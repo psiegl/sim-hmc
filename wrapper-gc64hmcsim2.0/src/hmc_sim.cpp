@@ -151,22 +151,80 @@ extern int hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t r
   return hmcsim->hmc_get_jtag_interface(dev)->jtag_reg_write(reg, value);
 }
 
+/* ----------------------------------------------------- HMCSIM_UTIL_SET_MAX_BLOCKSIZE */
+/*
+ * HMCSIM_UTIL_SET_MAX_BLOCKSIZE
+ * See Table38 in the HMC Spec : pg 58
+ *
+ */
 extern int hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t bsize )
 {
+  uint64_t res;
+  if (hmcsim_jtag_reg_read(hmc, dev, HMC_REG_AC, &res))
+    return -1;
 
-  return 0;
+  unsigned v;
+  switch (bsize) {
+  case 32:
+    v = 0x0;
+    break;
+  case 64:
+    v = 0x1;
+    break;
+  case 128:
+    v = 0x2;
+    break;
+  case 256:               // HMC spec v2.1 doesn't provide details about registers anymore, while 1.0, 1.1 don't contain 256
+    v = 0x3;
+    break;
+  default:
+    printf("ERROR: No supported BSIZE given %d\n", bsize);
+    return -1;
+  }
+
+  res &= ~0xF;       // mask out Adress Mapping Mode of Address Configuration Register
+  res |= v;
+
+  return hmcsim_jtag_reg_write(hmc, dev, HMC_REG_AC, res);
 }
 
-extern int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, uint32_t bsize )
+/* ----------------------------------------------------- HMCSIM_UTIL_SET_ALL_MAX_BLOCKSIZE */
+/*
+ * HMCSIM_UTIL_SET_ALL_MAX_BLOCKSIZE
+ * See Table38 in the HMC Spec : pg 58
+ *
+ */
+extern int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize )
 {
-
+  unsigned i;
+  for (i = 0; i < devs; i++) {
+    if (hmcsim_util_set_max_blocksize(hmc, i, bsize))
+      return -1;
+  }
   return 0;
 }
 
 extern int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize )
 {
+  uint64_t res;
+  if (hmcsim_jtag_reg_read(hmc, dev, HMC_REG_AC, &res))
+    return -1;
 
-  return 0;
+  res &= 0xF;       // mask out Adress Mapping Mode of Address Configuration Register
+
+  switch (res) {
+  case 0x0:
+    return 32;
+  case 0x1:
+    return 64;
+  case 0x2:
+    return 128;
+  case 0x3:               // HMC spec v2.1 doesn't provide details about registers anymore, while 1.0, 1.1 don't contain 256
+    return 256;
+  default:
+    printf("ERROR: No supported res given %d\n", res);
+    return -1;
+  }
 }
 
 extern int hmcsim_load_cmc( struct hmcsim_t *hmc, char *cmc_lib )
