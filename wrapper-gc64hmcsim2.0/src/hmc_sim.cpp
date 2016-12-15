@@ -102,21 +102,28 @@ extern int hmcsim_decode_memresponse( struct hmcsim_t *hmc,
   hmcsim->hmc_decode_pkt((char*)packet, response_head, response_tail,
                          type, &flits, tag, src_link, rrp, frp,
                          seq, dinv, errstat, rtc, crc);
-  *length = flits;
+  if(length != NULL)
+    *length = flits;
   return 0;
 }
 
 extern int hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
-  return ! hmcsim->hmc_send_pkt(slidId, (char*)packet);
+  if( hmcsim->hmc_send_pkt(slidId, (char*)packet) )
+    return HMC_OK;
+  else
+    return HMC_STALL;
 }
 
 extern int hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
-  return ! ((slid_notifier->get_notification() & (1 << link))
-            && hmcsim->hmc_recv_pkt(link, (char*)packet));
+  if((slid_notifier->get_notification() & (1 << link))
+     && hmcsim->hmc_recv_pkt(link, (char*)packet))
+    return HMC_OK;
+  else
+    return HMC_STALL;
 }
 
 extern int hmcsim_clock( struct hmcsim_t *hmc )
@@ -134,14 +141,14 @@ extern uint64_t hmcsim_get_clock( struct hmcsim_t *hmc )
 
 extern int hmcsim_jtag_reg_read( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t *result )
 {
-
-  return 0;
+  hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
+  return hmcsim->hmc_get_jtag_interface(dev)->jtag_reg_read(reg, result);
 }
 
 extern int hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t value )
 {
-
-  return 0;
+  hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
+  return hmcsim->hmc_get_jtag_interface(dev)->jtag_reg_write(reg, value);
 }
 
 extern int hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t bsize )
