@@ -214,17 +214,18 @@ extern int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, ui
 
   switch (res) {
   case 0x0:
-    return 32;
+    *bsize = 32;
   case 0x1:
-    return 64;
+    *bsize = 64;
   case 0x2:
-    return 128;
+    *bsize = 128;
   case 0x3:               // HMC spec v2.1 doesn't provide details about registers anymore, while 1.0, 1.1 don't contain 256
-    return 256;
+    *bsize = 256;
   default:
     printf("ERROR: No supported res given %d\n", res);
     return -1;
   }
+  return 0;
 }
 
 extern int hmcsim_load_cmc( struct hmcsim_t *hmc, char *cmc_lib )
