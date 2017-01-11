@@ -1,9 +1,9 @@
 #include "hmc_link.h"
 
-hmc_link::hmc_link(uint64_t *i_cur_cycle, unsigned type) :
+hmc_link::hmc_link(uint64_t *i_cur_cycle) :
   hmc_notify_cl(),
   not_rx_q(-1, nullptr, this),
-  rx_q(i_cur_cycle, &rx_buf, &not_rx_q, this, type),
+  rx_q(i_cur_cycle, &rx_buf, &not_rx_q, this),
   not_rx_buf(-1, nullptr, this),
   rx_buf(&not_rx_buf),
   tx(nullptr),

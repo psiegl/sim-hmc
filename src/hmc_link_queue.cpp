@@ -14,7 +14,7 @@
 // everything related to occupation will be in Mega instead of Giga!
 // therewith we can use safer unsigned, instead of float
 hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf, hmc_notify *notify,
-                               hmc_link *link, unsigned type) :
+                               hmc_link *link) :
   id(-1),
   notifyid(-1),
   cur_cycle(cur_cycle),
@@ -23,12 +23,9 @@ hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf, hmc_notif
   bitwidth(0),
   bitrate(0),
   notify(notify),
-  buf(buf)
+  buf(buf),
+  link(link)
 {
-#ifdef HMC_LOGGING
-  this->type = type;
-  this->link = link;
-#endif /* #ifdef HMC_LOGGING */
 }
 
 hmc_link_queue::~hmc_link_queue(void)

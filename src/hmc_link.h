@@ -20,8 +20,7 @@ private:
   hmc_link *binding;
 
 public:
-  hmc_link(uint64_t *i_cur_cycle,
-           unsigned type = ~0x0);
+  hmc_link(uint64_t *i_cur_cycle);
   virtual ~hmc_link(void);
 
   // ToDo: tx buf!

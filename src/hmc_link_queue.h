@@ -10,6 +10,7 @@
 class hmc_link;
 class hmc_link_buf;
 class hmc_notify;
+class hmc_module;
 
 // tuple( packetptr, amount of cycles, totalsizeinbits );
 class hmc_link_queue {
@@ -28,14 +29,13 @@ private:
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
   hmc_link_buf *buf;
 
-#ifdef HMC_LOGGING
-  unsigned type;
+  // provides pointers to next module
   hmc_link *link;
-#endif /* #ifdef HMC_LOGGING */
+  hmc_module *link_end;
 
 public:
   hmc_link_queue(uint64_t* cur_cycle, hmc_link_buf *buf, hmc_notify *notify,
-                 hmc_link *link = nullptr, unsigned type = ~0x0);
+                 hmc_link *link);
   ~hmc_link_queue(void);
 
   void set_notifyid(unsigned notifyid, unsigned id);
