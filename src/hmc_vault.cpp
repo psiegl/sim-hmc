@@ -12,7 +12,7 @@ hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify, hmc_link *
   link(link),
   cube(cube)
 {
-  this->link->set_ilink_notify(id, notify);
+  this->link->set_ilink_notify(id, id, notify);
 
   for (unsigned i = 0; i < elemsof(this->jtl); i++)
     this->jtl[i] = nullptr; // is CMC

@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[(17*FLIT_WIDTH) / 8];
 
-  unsigned issue = 1000; //6002;
+  unsigned issue = 4; //6002;
   unsigned send_ctr = 0;
   unsigned skip = 0;
   unsigned recv_ctr = 0 + skip;
@@ -56,10 +56,10 @@ int main(int argc, char* argv[])
       if(send_ctr < (issue /*- 2*/)) {
         unsigned dram_hi = (send_ctr & 0b111) << 4;
         unsigned dram_lo = (send_ctr >> 3) << (capacity == 8 ? 16 : 15);
-        sim.hmc_encode_pkt(destcub, addr+dram_hi+dram_lo, 0, RD256, packet);
+        sim.hmc_encode_pkt(destcub, addr+dram_hi+dram_lo, send_ctr /* tag */, RD256, packet);
       }
       else
-        sim.hmc_encode_pkt(destcub, addr, 0, WR64, packet);
+        sim.hmc_encode_pkt(destcub, addr, send_ctr /* tag */, WR64, packet);
       next_available = true;
     }
     if(next_available == true && sim.hmc_send_pkt(slidId, packet)) {

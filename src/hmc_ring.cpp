@@ -23,11 +23,11 @@ hmc_ring::~hmc_ring(void)
 {
 }
 
-bool hmc_ring::set_link(unsigned lid, hmc_link *link)
+bool hmc_ring::set_link(unsigned notifyid, unsigned id, hmc_link *link)
 {
-  if (this->links[lid] == nullptr) {
-    this->links[lid] = link;
-    link->set_ilink_notify(lid, &this->links_notify);
+  if (this->links[notifyid] == nullptr) {
+    this->links[notifyid] = link;
+    link->set_ilink_notify(notifyid, id, &this->links_notify);
     return true;
   }
   return false;

@@ -4,7 +4,10 @@
 #include <list>
 #include <stdint.h>
 #include <tuple>
+#include "config.h"
+#include "hmc_macros.h"
 
+class hmc_link;
 class hmc_link_buf;
 class hmc_notify;
 
@@ -12,6 +15,7 @@ class hmc_notify;
 class hmc_link_queue {
 private:
   unsigned id;
+  unsigned notifyid;
   uint64_t *cur_cycle;
 
   unsigned bitoccupation;
@@ -24,11 +28,21 @@ private:
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
   hmc_link_buf *buf;
 
+#ifdef HMC_LOGGING
+  unsigned type;
+  hmc_link *link;
+#endif /* #ifdef HMC_LOGGING */
+
 public:
-  hmc_link_queue(uint64_t* cur_cycle, hmc_link_buf *buf, hmc_notify *notify);
+  hmc_link_queue(uint64_t* cur_cycle, hmc_link_buf *buf, hmc_notify *notify,
+                 hmc_link *link = nullptr, unsigned type = ~0x0);
   ~hmc_link_queue(void);
 
-  void set_id(unsigned id);
+  void set_notifyid(unsigned notifyid, unsigned id);
+  ALWAYS_INLINE unsigned get_id(void)
+  {
+    return this->id;
+  }
 
   void re_adjust(unsigned link_bitwidth, float link_bitrate);
 

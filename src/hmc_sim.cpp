@@ -7,6 +7,9 @@
 #include "hmc_link_queue.h"
 #include "hmc_link_buf.h"
 #include "hmc_vault.h"
+#include "hmc_sqlite3.h"
+
+extern hmc_sqlite3 **hmc_trace_init;
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
@@ -45,6 +48,9 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     throw false;
   }
 
+  if (!*hmc_trace_init)
+    *hmc_trace_init = new hmc_sqlite3("hmcsim.db");
+
   for (unsigned i = 0; i < num_hmcs; i++) {
     this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbus_bitwidth, ringbus_bitrate, capacity, &this->cubes, num_hmcs, &this->clk);
     this->jtags[i] = new hmc_jtag(this->cubes[i]);
@@ -53,10 +59,13 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 
 hmc_sim::~hmc_sim(void)
 {
-//  unsigned i = 0;
+  if (*hmc_trace_init)
+    delete *hmc_trace_init;
+
+  unsigned i = 0;
   for (std::map<unsigned, hmc_cube*>::iterator it = this->cubes.begin(); it != this->cubes.end(); ++it) {
     delete (*it).second;
-//    delete this->jtags[i++];
+    delete this->jtags[i++];
   }
 
   for (std::list<hmc_link*>::iterator it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {
@@ -108,7 +117,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
   linkend1->re_adjust_links(bitwidth, bitrate);
-  linkend1->set_ilink_notify(slidId, &this->slidnotify); // important 1!! -> will be return for slid
+  linkend1->set_ilink_notify(slidId, slidId, &this->slidnotify); // important 1!! -> will be return for slid
 
   // notify all!
   for (unsigned i = 0; i < this->cubes.size(); i++)

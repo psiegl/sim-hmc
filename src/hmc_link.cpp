@@ -1,9 +1,9 @@
 #include "hmc_link.h"
 
-hmc_link::hmc_link(uint64_t *i_cur_cycle) :
+hmc_link::hmc_link(uint64_t *i_cur_cycle, unsigned type) :
   hmc_notify_cl(),
   not_rx_q(-1, nullptr, this),
-  rx_q(i_cur_cycle, &rx_buf, &not_rx_q),
+  rx_q(i_cur_cycle, &rx_buf, &not_rx_q, this, type),
   not_rx_buf(-1, nullptr, this),
   rx_buf(&not_rx_buf),
   tx(nullptr),
@@ -20,12 +20,12 @@ hmc_link_queue* hmc_link::__get_rx_q(void)
   return &this->rx_q;
 }
 
-void hmc_link::set_ilink_notify(unsigned id, hmc_notify *notify)
+void hmc_link::set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify)
 {
-  this->not_rx_q.set(id, notify);
-  this->not_rx_buf.set(id, notify);
+  this->not_rx_q.set(notifyid, notify);
+  this->not_rx_buf.set(notifyid, notify);
 
-  this->rx_q.set_id(id);
+  this->rx_q.set_notifyid(notifyid, id);
 }
 
 
@@ -34,11 +34,11 @@ void hmc_link::re_adjust_links(unsigned link_bitwidth, float link_bitrate)
   this->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
   this->binding->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
 
-  this->re_adjust_size(128 * 17); // ToDo!
-  this->binding->re_adjust_size(128 * 17); // ToDo!
+  this->re_adjust_bufsize(128 * 17); // ToDo!
+  this->binding->re_adjust_bufsize(128 * 17); // ToDo!
 }
 
-void hmc_link::re_adjust_size(unsigned buf_bitsize)
+void hmc_link::re_adjust_bufsize(unsigned buf_bitsize)
 {
   this->rx_buf.adjust_size(buf_bitsize);
 }

@@ -20,7 +20,8 @@ private:
   hmc_link *binding;
 
 public:
-  hmc_link(uint64_t *i_cur_cycle);
+  hmc_link(uint64_t *i_cur_cycle,
+           unsigned type = ~0x0);
   virtual ~hmc_link(void);
 
   // ToDo: tx buf!
@@ -35,10 +36,10 @@ public:
     return this->tx;
   }
 
-  void set_ilink_notify(unsigned id, hmc_notify *notify);
+  void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify);
 
   void re_adjust_links(unsigned link_bitwidth, float link_bitrate);
-  void re_adjust_size(unsigned buf_bitsize);
+  void re_adjust_bufsize(unsigned buf_bitsize);
 
   // setup of two parts of hmc_link to form ONE link
   void connect_linkports(hmc_link *part);

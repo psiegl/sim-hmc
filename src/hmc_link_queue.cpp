@@ -1,13 +1,22 @@
 #include <cassert>
+#include "hmc_link.h"
 #include "hmc_link_buf.h"
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
 #include "config.h"
+#ifdef HMC_LOGGING
+#include <iostream>
+#include "hmc_packet.h"
+#include "hmc_decode.h"
+#include "hmc_sqlite3.h"
+#endif /* #ifdef HMC_LOGGING */
 
 // everything related to occupation will be in Mega instead of Giga!
 // therewith we can use safer unsigned, instead of float
-hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf, hmc_notify *notify) :
+hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf, hmc_notify *notify,
+                               hmc_link *link, unsigned type) :
   id(-1),
+  notifyid(-1),
   cur_cycle(cur_cycle),
   bitoccupation(0),
   bitoccupationmax(0),
@@ -16,14 +25,19 @@ hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf, hmc_notif
   notify(notify),
   buf(buf)
 {
+#ifdef HMC_LOGGING
+  this->type = type;
+  this->link = link;
+#endif /* #ifdef HMC_LOGGING */
 }
 
 hmc_link_queue::~hmc_link_queue(void)
 {
 }
 
-void hmc_link_queue::set_id(unsigned id)
+void hmc_link_queue::set_notifyid(unsigned notifyid, unsigned id)
 {
+  this->notifyid = notifyid;
   this->id = id;
 }
 
@@ -45,13 +59,32 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 {
   if ((this->bitoccupation / 1000) /* + packetleninbit */ < this->bitoccupationmax) {
     if (!this->bitoccupation)
-      this->notify->notify_add(this->id);
+      this->notify->notify_add(this->notifyid);
 
     this->bitoccupation += ((packetleninbit / this->bitwidth) * 1000);
     float UI = packetleninbit / this->bitwidth;
     this->list.push_back(std::make_tuple(packet, UI, packetleninbit, *this->cur_cycle));
+#ifdef HMC_LOGGING
+    uint64_t header = HMC_PACKET_HEADER(packet);
+    if (HMCSIM_PACKET_IS_REQUEST(header)) {
+      uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+      unsigned tag = HMCSIM_PACKET_REQUEST_GET_TAG(header);
+      unsigned fromId = this->link->get_tx()->get_id();
+      unsigned toId = this->id;
+      std::cout << std::dec << *cur_cycle << " IN  pkt " << tag << " (addr " << addr << "): from: " << fromId << ", to: " << toId << std::endl;
+      hmc_trace::trace_rqst(*cur_cycle, tag, addr, 0, fromId, toId);
+    }
+    else {
+      unsigned tag = HMCSIM_PACKET_RESPONSE_GET_TAG(header);
+      unsigned fromId = this->link->get_tx()->get_id();
+      unsigned toId = this->id;
+      std::cout << std::dec << *cur_cycle << " IN  pkt " << tag << ": from: " << fromId << ", to: " << toId << std::endl;
+      hmc_trace::trace_rsp(*cur_cycle, tag, 0, fromId, toId);
+    }
+#endif /* #ifdef HMC_LOGGING */
     return true;
   }
+  // ToDo: shouldn't happen
   return false;
 }
 
@@ -88,9 +121,22 @@ void hmc_link_queue::clock(void)
 
   auto front = this->list.front();
   if (std::get<1>(front) == 0.0f) {
-    this->buf->push_back_set_avail(std::get<0>(front), std::get<2>(front));
+    char *packet = std::get<0>(front);
+#ifdef HMC_LOGGING
+    uint64_t header = HMC_PACKET_HEADER(packet);
+    if (HMCSIM_PACKET_IS_REQUEST(header)) {
+      uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+      unsigned tag = HMCSIM_PACKET_REQUEST_GET_TAG(header);
+      std::cout << std::dec << *cur_cycle << " OUT pkt " << tag << " (addr " << addr << "): from: " << this->link->get_tx()->get_id() << ", to: " << this->id << std::endl;
+    }
+    else {
+      unsigned tag = HMCSIM_PACKET_RESPONSE_GET_TAG(header);
+      std::cout << std::dec << *cur_cycle << " OUT pkt " << tag << ": from: " << this->link->get_tx()->get_id() << ", to: " << this->id << std::endl;
+    }
+#endif /* #ifdef HMC_LOGGING */
+    this->buf->push_back_set_avail(packet, std::get<2>(front));
     this->list.pop_front();
     if (!this->list.size())
-      this->notify->notify_del(this->id);
+      this->notify->notify_del(this->notifyid);
   }
 }

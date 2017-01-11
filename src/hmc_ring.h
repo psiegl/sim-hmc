@@ -24,7 +24,7 @@ private:
   std::vector<hmc_link*> links;
 
   unsigned decode_link_of_packet(char* packet);
-  bool set_link(unsigned lid, hmc_link *link);
+  bool set_link(unsigned notifyid, unsigned id, hmc_link *link);
 
   ALWAYS_INLINE unsigned routing(unsigned nextquad)
   {
@@ -51,17 +51,17 @@ public:
 
   ALWAYS_INLINE bool set_ring_link(unsigned id, hmc_link* link)
   {
-    return this->set_link(HMC_JTL_RING_LINK(id), link);
+    return this->set_link(HMC_JTL_RING_LINK(id), this->id, link);
   }
 
   ALWAYS_INLINE bool set_vault_link(unsigned id, hmc_link* link)
   {
-    return this->set_link(HMC_JTL_VAULT_LINK(id), link);
+    return this->set_link(HMC_JTL_VAULT_LINK(id), this->id, link);
   }
 
   ALWAYS_INLINE bool set_ext_link(hmc_link* link)
   {
-    return this->set_link(HMC_JTL_EXT_LINK, link);
+    return this->set_link(HMC_JTL_EXT_LINK, this->id, link);
   }
 
   void clock(void);

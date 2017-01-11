@@ -33,7 +33,7 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigne
   this->bobsim->vault = this;
   this->bobsim->callback = callback;
 
-  this->link->set_ilink_notify(0, &linknotify);
+  this->link->set_ilink_notify(0, 0, &linknotify);
 }
 
 hmc_bobsim::~hmc_bobsim(void)

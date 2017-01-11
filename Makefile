@@ -77,7 +77,7 @@ $(TARGET): $(BLDDIR) $(OBJ) $(LIBS) $(BOBOBJ)
 
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
-	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc
+	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc -lsqlite3
 
 bldall:
 	make clean
