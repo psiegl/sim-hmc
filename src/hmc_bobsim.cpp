@@ -91,52 +91,53 @@ void hmc_bobsim::clock(void)
     }
   }
 
-  if (this->linknotify.get_notification())
+  if (this->linknotify.get_notification()) {
     this->link->clock();
 
-  if (this->linknotify.get_notification() && !this->bobsim->IsPortBusy(0 /* port */)) {
-    unsigned packetleninbit;
-    char *packet = this->link->get_rx()->front(&packetleninbit);
-    if (packet == nullptr)
-      return;
+    if (!this->bobsim->IsPortBusy(0 /* port */)) {
+      unsigned packetleninbit;
+      char *packet = this->link->get_rx()->front(&packetleninbit);
+      if (packet == nullptr)
+        return;
 
-    uint64_t header = HMC_PACKET_HEADER(packet);
-    uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
-    uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
-    hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
+      uint64_t header = HMC_PACKET_HEADER(packet);
+      uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
+      uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+      hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
 
-    enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd);
-    //std::cout << "rqstlen: " << std::dec << rqstlen << " Byte ! " << std::endl;
+      enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd);
+      //std::cout << "rqstlen: " << std::dec << rqstlen << " Byte ! " << std::endl;
 
 
-    unsigned rsp_lenInFlits;
-    this->hmcsim_packet_resp_len(cmd, &rsp_lenInFlits);
+      unsigned rsp_lenInFlits;
+      this->hmcsim_packet_resp_len(cmd, &rsp_lenInFlits);
 
-    unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
-    rsp_lenInFlits -= (rsp_lenInFlits > 0); // netto! without overhead!
-    flits -= (flits > 0); // netto! without overhead!
-    BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, 0 /* addr */, flits, rsp_lenInFlits, packet);
+      unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
+      rsp_lenInFlits -= (rsp_lenInFlits > 0); // netto! without overhead!
+      flits -= (flits > 0); // netto! without overhead!
+      BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, 0 /* addr */, flits, rsp_lenInFlits, packet);
 
-    unsigned long gl_bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
-    bobtrans->bank = gl_bank % HMC_NUM_BANKS_PER_RANK;
-    bobtrans->rank = (gl_bank - bobtrans->bank) / HMC_NUM_BANKS_PER_RANK;
-    this->cube->HMC_UTIL_DECODE_COL_AND_ROW(addr, &bobtrans->col, &bobtrans->row);
-    bobtrans->transactionID = HMCSIM_PACKET_REQUEST_GET_SEQ(tail);
+      unsigned long gl_bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
+      bobtrans->bank = gl_bank % HMC_NUM_BANKS_PER_RANK;
+      bobtrans->rank = (gl_bank - bobtrans->bank) / HMC_NUM_BANKS_PER_RANK;
+      this->cube->HMC_UTIL_DECODE_COL_AND_ROW(addr, &bobtrans->col, &bobtrans->row);
+      bobtrans->transactionID = HMCSIM_PACKET_REQUEST_GET_SEQ(tail);
 
-    if (!this->bobsim->AddTransaction(bobtrans, 0 /* port */)) {
-      exit(0);
-    }
+      if (!this->bobsim->AddTransaction(bobtrans, 0 /* port */)) {
+        exit(0);
+      }
 #ifdef ALWAYS_NOTIFY_BOBSIM
-    else if (!this->bobnotify.get_notification()) {
-      // only add forever, if there is something in it
-      this->bobnotify.notify_add(0);
-    }
+      else if (!this->bobnotify.get_notification()) {
+        // only add forever, if there is something in it
+        this->bobnotify.notify_add(0);
+      }
 #else
-    if (!(this->bobnotify_ctr++)) {
-      this->bobnotify.notify_add(0);
-    }
+      if (!(this->bobnotify_ctr++)) {
+        this->bobnotify.notify_add(0);
+      }
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
-    this->link->get_rx()->pop_front();
+      this->link->get_rx()->pop_front();
+    }
   }
 }
 
