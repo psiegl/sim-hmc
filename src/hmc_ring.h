@@ -5,9 +5,9 @@
 #include "config.h"
 #include "hmc_notify.h"
 #include "hmc_macros.h"
+#include "hmc_link.h"
 
 class hmc_cube;
-class hmc_link;
 class hmc_quad;
 
 #define HMC_JTL_ALL_LINKS         ( HMC_MAX_LINKS/HMC_NUM_QUADS + HMC_NUM_QUADS + HMC_NUM_VAULTS / HMC_NUM_QUADS )
@@ -24,7 +24,7 @@ private:
   std::vector<hmc_link*> links;
 
   unsigned decode_link_of_packet(char* packet);
-  bool set_link(unsigned notifyid, unsigned id, hmc_link *link);
+  bool _set_link(unsigned notifyid, unsigned id, hmc_link *link);
 
   ALWAYS_INLINE unsigned routing(unsigned nextquad)
   {
@@ -39,7 +39,7 @@ private:
 
        scheme routes first among x-axis, than y-axis
      */
-    unsigned shift = ((nextquad ^ this->id) & 0b01);
+    unsigned shift = (nextquad ^ this->id) & 0b01;
     return this->id ^ (0b10 >> shift);
   }
 
@@ -49,19 +49,19 @@ public:
   hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub);
   ~hmc_ring(void);
 
-  ALWAYS_INLINE bool set_ring_link(unsigned id, hmc_link* link)
+  bool set_link(unsigned id, hmc_link* link, enum hmc_link_type type)
   {
-    return this->set_link(HMC_JTL_RING_LINK(id), this->id, link);
-  }
-
-  ALWAYS_INLINE bool set_vault_link(unsigned id, hmc_link* link)
-  {
-    return this->set_link(HMC_JTL_VAULT_LINK(id), this->id, link);
-  }
-
-  ALWAYS_INLINE bool set_ext_link(hmc_link* link)
-  {
-    return this->set_link(HMC_JTL_EXT_LINK, this->id, link);
+    switch(type){
+    case HMC_LINK_RING:
+      return this->_set_link(HMC_JTL_RING_LINK(id), this->id, link);
+    case HMC_LINK_VAULT:
+      return this->_set_link(HMC_JTL_VAULT_LINK(id), this->id, link);
+    case HMC_LINK_EXTERN:
+      return this->_set_link(HMC_JTL_EXT_LINK, this->id, link);
+    case HMC_LINK_UNDEFINED:
+      break;
+    }
+    return false;
   }
 
   void clock(void);

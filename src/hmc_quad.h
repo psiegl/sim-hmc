@@ -6,6 +6,7 @@
 #include "config.h"
 #include "hmc_ring.h"
 #include "hmc_notify.h"
+#include "hmc_module.h"
 
 #ifdef HMC_USES_BOBSIM
 class hmc_bobsim;
@@ -15,7 +16,7 @@ class hmc_vault;
 class hmc_cube;
 class hmc_link;
 
-class hmc_quad : private hmc_notify_cl {
+class hmc_quad : private hmc_notify_cl, public hmc_module {
 
   hmc_notify ring_notify;
   hmc_ring ring;
@@ -37,8 +38,7 @@ public:
 
   void clock(void);
 
-  bool set_ext_link(hmc_link* link);
-  bool set_ring_link(unsigned id, hmc_link* link);
+  bool set_link(unsigned id, hmc_link* link, enum hmc_link_type type);
 };
 
 #endif /* #ifndef _HMC_QUAD_H_ */

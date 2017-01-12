@@ -23,7 +23,7 @@ hmc_ring::~hmc_ring(void)
 {
 }
 
-bool hmc_ring::set_link(unsigned notifyid, unsigned id, hmc_link *link)
+bool hmc_ring::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
 {
   if (this->links[notifyid] == nullptr) {
     this->links[notifyid] = link;

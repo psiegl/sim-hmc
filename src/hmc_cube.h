@@ -7,15 +7,13 @@
 #include "hmc_route.h"
 #include "hmc_notify.h"
 #include "hmc_register.h"
-#include "hmc_module.h"
 
 class hmc_quad;
 class hmc_link;
 
 class hmc_cube : public hmc_route,
                  private hmc_notify_cl,
-                 public hmc_register,
-                 private hmc_module {
+                 public hmc_register {
 private:
   unsigned id;
 
@@ -42,6 +40,8 @@ public:
   {
     return this->quads[id];
   }
+
+
 
   void clock(void);
 };

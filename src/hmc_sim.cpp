@@ -82,30 +82,23 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
                                   unsigned dst_hmcId, unsigned dst_linkId,
                                   unsigned bitwidth, float bitrate)
 {
-  hmc_link *linkend0 = new hmc_link(&this->clk);
-  hmc_link *linkend1 = new hmc_link(&this->clk);
-  linkend0->connect_linkports(linkend1);
-  linkend0->re_adjust_links(bitwidth, bitrate);
-
   hmc_quad *src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
   hmc_quad *dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
 
-  bool ret = src_quad->set_ext_link(linkend0);
-  ret &= dst_quad->set_ext_link(linkend1);
-  if (ret) {
-    this->cubes[src_hmcId]->get_partial_link_graph(dst_hmcId)->links |= (0x1 << src_linkId);
-    this->cubes[dst_hmcId]->get_partial_link_graph(src_hmcId)->links |= (0x1 << dst_linkId);
-    this->cubes[src_hmcId]->hmc_routing_tables_update(); // just one needed ...
-    this->cubes[src_hmcId]->hmc_routing_tables_visualize();
-    this->link_garbage.push_back(linkend0);
-    this->link_garbage.push_back(linkend1);
-    return true;
-  }
-  else {
-    delete linkend0;
-    delete linkend1;
-    return false;
-  }
+  hmc_link *linkend0 = new hmc_link(&this->clk, src_quad, HMC_LINK_EXTERN);
+  hmc_link *linkend1 = new hmc_link(&this->clk, dst_quad, HMC_LINK_EXTERN);
+  linkend0->connect_linkports(linkend1);
+  linkend0->adjust_both_linkends(bitwidth, bitrate);
+
+  // adjust routing as of multiple HMCs
+  this->cubes[src_hmcId]->get_partial_link_graph(dst_hmcId)->links |= (0x1 << src_linkId);
+  this->cubes[dst_hmcId]->get_partial_link_graph(src_hmcId)->links |= (0x1 << dst_linkId);
+  this->cubes[src_hmcId]->hmc_routing_tables_update(); // just one needed ...
+  this->cubes[src_hmcId]->hmc_routing_tables_visualize();
+
+  this->link_garbage.push_back(linkend0);
+  this->link_garbage.push_back(linkend1);
+  return true;
 }
 
 hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned linkId,
@@ -113,27 +106,21 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 
-  hmc_link *linkend0 = new hmc_link(&this->clk);
+  hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
-  linkend1->re_adjust_links(bitwidth, bitrate);
+  linkend0->adjust_both_linkends(bitwidth, bitrate);
   linkend1->set_ilink_notify(slidId, slidId, &this->slidnotify); // important 1!! -> will be return for slid
+
+  this->link_garbage.push_back(linkend0);
+  this->link_garbage.push_back(linkend1);
 
   // notify all!
   for (unsigned i = 0; i < this->cubes.size(); i++)
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
 
-  if (quad->set_ext_link(linkend0)) {
-    this->link_garbage.push_back(linkend0);
-    this->link_garbage.push_back(linkend1);
-    this->slids[slidId] = linkend1;
-    return &this->slidnotify; // ToDo: maybe just a ptr to it ...
-  }
-  else {
-    delete linkend0;
-    delete linkend1;
-    return nullptr;
-  }
+  this->slids[slidId] = linkend1;
+  return &this->slidnotify;
 }
 
 bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)

@@ -1,7 +1,10 @@
 #include "hmc_link.h"
+#include "hmc_module.h"
 
-hmc_link::hmc_link(uint64_t *i_cur_cycle) :
+hmc_link::hmc_link(uint64_t *i_cur_cycle, hmc_module *module,
+                   enum hmc_link_type type, unsigned linkId_in_module) :
   hmc_notify_cl(),
+  module(module),
   not_rx_q(-1, nullptr, this),
   rx_q(i_cur_cycle, &rx_buf, &not_rx_q, this),
   not_rx_buf(-1, nullptr, this),
@@ -9,6 +12,8 @@ hmc_link::hmc_link(uint64_t *i_cur_cycle) :
   tx(nullptr),
   binding(nullptr)
 {
+  if (module != nullptr)
+    module->set_link(linkId_in_module, this, type); // ToDo: if false!
 }
 
 hmc_link::~hmc_link(void)
@@ -29,12 +34,12 @@ void hmc_link::set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *noti
 }
 
 
-void hmc_link::re_adjust_links(unsigned link_bitwidth, float link_bitrate)
+void hmc_link::adjust_both_linkends(unsigned link_bitwidth, float link_bitrate)
 {
   this->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
   this->binding->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
 
-  this->re_adjust_bufsize(128 * 17); // ToDo!
+  this->re_adjust_bufsize(128 * 17); // ToDo! Buffer - Sizes .. lookup documentation!
   this->binding->re_adjust_bufsize(128 * 17); // ToDo!
 }
 

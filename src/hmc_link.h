@@ -7,20 +7,31 @@
 #include "hmc_notify.h"
 #include "hmc_macros.h"
 
+class hmc_module;
+
+enum hmc_link_type {
+  HMC_LINK_EXTERN, /* HOST <-> DEV (SLID) or DEV <-> DEV */
+  HMC_LINK_RING,
+  HMC_LINK_VAULT,
+  HMC_LINK_UNDEFINED
+};
+
 class hmc_link : private hmc_notify_cl {
 private:
+  hmc_module *module;
   hmc_notify not_rx_q;
   hmc_link_queue rx_q;
 
   hmc_notify not_rx_buf;
   hmc_link_buf rx_buf;
 
+  // to bind the other end ...
   hmc_link_queue *tx;
-
   hmc_link *binding;
 
 public:
-  hmc_link(uint64_t *i_cur_cycle);
+  hmc_link(uint64_t *i_cur_cycle, hmc_module *module = nullptr,
+           enum hmc_link_type type = HMC_LINK_UNDEFINED, unsigned linkId_in_module = ~0x0);
   virtual ~hmc_link(void);
 
   // ToDo: tx buf!
@@ -37,7 +48,7 @@ public:
 
   void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify);
 
-  void re_adjust_links(unsigned link_bitwidth, float link_bitrate);
+  void adjust_both_linkends(unsigned link_bitwidth, float link_bitrate);
   void re_adjust_bufsize(unsigned buf_bitsize);
 
   // setup of two parts of hmc_link to form ONE link

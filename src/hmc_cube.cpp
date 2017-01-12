@@ -17,18 +17,14 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
     this->quads[i] = new hmc_quad(i, num_ranks, &this->quad_notify, this, clk);
 
+  // first create quads above so that there is no nullptr conflict when connecting them below
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
     unsigned map[] = { 0x2, 0x0, 0x3, 0x1 };
-
     unsigned neighbour = map[i];
-    hmc_quad *quad0 = this->quads[i];
-    hmc_quad *quad1 = this->quads[neighbour];
-    hmc_link *linkend0 = new hmc_link(clk);
-    hmc_link *linkend1 = new hmc_link(clk);
+    hmc_link *linkend0 = new hmc_link(clk, this->quads[i], HMC_LINK_RING, neighbour);
+    hmc_link *linkend1 = new hmc_link(clk, this->quads[neighbour], HMC_LINK_RING, i);
     linkend0->connect_linkports(linkend1);
-    linkend1->re_adjust_links(ringbus_bitwidth, ringbus_bitrate);
-    quad0->set_ring_link(neighbour, linkend0);
-    quad1->set_ring_link(i, linkend1);
+    linkend0->adjust_both_linkends(ringbus_bitwidth, ringbus_bitrate);
     this->link_garbage.push_back(linkend0);
     this->link_garbage.push_back(linkend1);
   }
