@@ -45,6 +45,14 @@ public:
   {
     return this->tx;
   }
+  ALWAYS_INLINE hmc_module* get_module(void)
+  {
+    return this->module;
+  }
+  ALWAYS_INLINE hmc_link* get_binding(void)
+  {
+    return this->binding;
+  }
 
   void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify);
 

@@ -49,13 +49,13 @@ public:
   hmc_ring(unsigned id, hmc_notify *notify, hmc_cube* cub);
   ~hmc_ring(void);
 
-  bool set_link(unsigned id, hmc_link* link, enum hmc_link_type type)
+  bool set_link(unsigned linkId, hmc_link* link, enum hmc_link_type linkType)
   {
-    switch(type){
+    switch(linkType) {
     case HMC_LINK_RING:
-      return this->_set_link(HMC_JTL_RING_LINK(id), this->id, link);
+      return this->_set_link(HMC_JTL_RING_LINK(linkId), this->id, link);
     case HMC_LINK_VAULT:
-      return this->_set_link(HMC_JTL_VAULT_LINK(id), this->id, link);
+      return this->_set_link(HMC_JTL_VAULT_LINK(linkId), this->id, link);
     case HMC_LINK_EXTERN:
       return this->_set_link(HMC_JTL_EXT_LINK, this->id, link);
     case HMC_LINK_UNDEFINED:

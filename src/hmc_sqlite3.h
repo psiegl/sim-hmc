@@ -18,8 +18,10 @@ public:
 
 class hmc_trace {
 public:
-  static void trace_rqst(uint64_t cycle, unsigned pktTag, uint64_t pktAddr, unsigned typeId, unsigned fromId, unsigned toId);
-  static void trace_rsp(uint64_t cycle, unsigned pktTag, unsigned typeId, unsigned fromId, unsigned toId);
+  static void trace_rqst(uint64_t cycle, uint64_t phyPktAddr, unsigned pktTag,
+                         uint64_t pktAddr, unsigned typeId, int fromId, int toId);
+  static void trace_rsp(uint64_t cycle, uint64_t phyPktAddr, unsigned pktTag,
+                        unsigned typeId, int fromId, int toId);
 };
 
 

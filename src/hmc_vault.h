@@ -7,6 +7,7 @@
 #include <zlib.h>
 #endif
 #include "hmc_macros.h"
+//#include "hmc_module.h"
 #include "hmc_sim_t.h"
 
 class hmc_link;
@@ -20,8 +21,9 @@ struct jtl_t {
   bool rsp;
 };
 
-class hmc_vault {
+class hmc_vault /*: public hmc_module*/ {
 private:
+  unsigned id;
   hmc_link *link;
   hmc_cube *cube;
 
@@ -112,6 +114,7 @@ public:
 #ifndef HMC_USES_BOBSIM
   void clock(void);
 #endif /* #ifndef HMC_USES_BOBSIM */
+  unsigned get_id(void) { return this->id; }
 };
 
 #endif /* #ifndef _HMC_VAULT_H_ */

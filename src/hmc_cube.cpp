@@ -43,11 +43,9 @@ void hmc_cube::clock(void)
   uint32_t notifymap = this->quad_notify.get_notification();
   if (notifymap) {
     unsigned lid = __builtin_ctzl(notifymap);
-    for (unsigned q = lid; q < HMC_NUM_QUADS; q++) {
-      if ((0x1 << q) & notifymap) {
+    for (unsigned q = lid; q < HMC_NUM_QUADS; q++)
+      if ((0x1 << q) & notifymap)
         this->quads[q]->clock();
-      }
-    }
   }
 }
 

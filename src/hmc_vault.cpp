@@ -9,6 +9,7 @@
 #include "hmc_vault.h"
 
 hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
+  id(id),
   link(link),
   cube(cube)
 {

@@ -16,7 +16,10 @@ class hmc_vault;
 class hmc_cube;
 class hmc_link;
 
-class hmc_quad : private hmc_notify_cl, public hmc_module {
+class hmc_quad : private hmc_notify_cl,
+                 public hmc_module {
+private:
+  unsigned id;
 
   hmc_notify ring_notify;
   hmc_ring ring;
@@ -38,7 +41,8 @@ public:
 
   void clock(void);
 
-  bool set_link(unsigned id, hmc_link* link, enum hmc_link_type type);
+  unsigned get_id(void) { return this->id; }
+  bool set_link(unsigned linkId, hmc_link* link, enum hmc_link_type linkType);
 };
 
 #endif /* #ifndef _HMC_QUAD_H_ */

@@ -4,6 +4,7 @@
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
 #include "config.h"
+#include "hmc_module.h"
 #ifdef HMC_LOGGING
 #include <iostream>
 #include "hmc_packet.h"
@@ -63,20 +64,21 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
     this->list.push_back(std::make_tuple(packet, UI, packetleninbit, *this->cur_cycle));
 #ifdef HMC_LOGGING
     uint64_t header = HMC_PACKET_HEADER(packet);
+    hmc_module *fromModule = this->link->get_binding()->get_module();
+    int fromId = (fromModule) ? fromModule->get_id() : -1;
+    hmc_module *toModule = this->link->get_module();
+    int toId = (toModule) ? toModule->get_id() : -1;
+
     if (HMCSIM_PACKET_IS_REQUEST(header)) {
       uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
       unsigned tag = HMCSIM_PACKET_REQUEST_GET_TAG(header);
-      unsigned fromId = this->link->get_tx()->get_id();
-      unsigned toId = this->id;
-      std::cout << std::dec << *cur_cycle << " IN  pkt " << tag << " (addr " << addr << "): from: " << fromId << ", to: " << toId << std::endl;
-      hmc_trace::trace_rqst(*cur_cycle, tag, addr, 0, fromId, toId);
+      std::cout << std::dec << *cur_cycle << " IN_RQST  pkt " << tag << " (addr " << addr << "): from: " << fromId << ", to: " << toId << std::endl;
+      hmc_trace::trace_rqst(*cur_cycle, (uint64_t)packet, tag, addr, 0, fromId, toId);
     }
     else {
       unsigned tag = HMCSIM_PACKET_RESPONSE_GET_TAG(header);
-      unsigned fromId = this->link->get_tx()->get_id();
-      unsigned toId = this->id;
-      std::cout << std::dec << *cur_cycle << " IN  pkt " << tag << ": from: " << fromId << ", to: " << toId << std::endl;
-      hmc_trace::trace_rsp(*cur_cycle, tag, 0, fromId, toId);
+      std::cout << std::dec << *cur_cycle << " IN_RSP  pkt " << tag << ": from: " << fromId << ", to: " << toId << std::endl;
+      hmc_trace::trace_rsp(*cur_cycle, (uint64_t)packet, tag, 0, fromId, toId);
     }
 #endif /* #ifdef HMC_LOGGING */
     return true;
@@ -119,6 +121,7 @@ void hmc_link_queue::clock(void)
   auto front = this->list.front();
   if (std::get<1>(front) == 0.0f) {
     char *packet = std::get<0>(front);
+#if 0
 #ifdef HMC_LOGGING
     uint64_t header = HMC_PACKET_HEADER(packet);
     if (HMCSIM_PACKET_IS_REQUEST(header)) {
@@ -131,6 +134,7 @@ void hmc_link_queue::clock(void)
       std::cout << std::dec << *cur_cycle << " OUT pkt " << tag << ": from: " << this->link->get_tx()->get_id() << ", to: " << this->id << std::endl;
     }
 #endif /* #ifdef HMC_LOGGING */
+#endif
     this->buf->push_back_set_avail(packet, std::get<2>(front));
     this->list.pop_front();
     if (!this->list.size())

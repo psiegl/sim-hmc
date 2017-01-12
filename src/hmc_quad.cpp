@@ -13,6 +13,7 @@ hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
                    hmc_cube *cube, uint64_t *clk) :
   hmc_notify_cl(),
   hmc_module(),
+  id(id),
   ring_notify(id, notify, this),
   ring(id, &this->ring_notify, cube),
   vault_notify(id, notify, this)
@@ -68,8 +69,8 @@ bool hmc_quad::notify_up(void)
           !this->ring_notify.get_notification());
 }
 
-bool hmc_quad::set_link(unsigned id, hmc_link *link, enum hmc_link_type type)
+bool hmc_quad::set_link(unsigned linkId, hmc_link *link, enum hmc_link_type linkType)
 {
-  return this->ring.set_link(id, link, type);
+  return this->ring.set_link(linkId, link, linkType);
 }
 
