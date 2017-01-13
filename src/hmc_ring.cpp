@@ -43,7 +43,7 @@ unsigned hmc_ring::decode_link_of_packet(char *packet)
     if (p_cubId == this->cub->get_id()) {
       unsigned p_quadId = this->cub->slid_to_quadid(slid);
       if (p_quadId == this->id) {
-        return HMC_JTL_EXT_LINK;
+        return HMC_JTL_EXT_LINK(0);
       }
       else {
         return HMC_JTL_RING_LINK(this->routing(p_quadId));

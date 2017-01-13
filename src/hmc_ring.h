@@ -11,7 +11,7 @@ class hmc_cube;
 class hmc_quad;
 
 #define HMC_JTL_ALL_LINKS         ( HMC_MAX_LINKS/HMC_NUM_QUADS + HMC_NUM_QUADS + HMC_NUM_VAULTS / HMC_NUM_QUADS )
-#define HMC_JTL_EXT_LINK          ( 0 )
+#define HMC_JTL_EXT_LINK( x )     ( x )
 #define HMC_JTL_RING_LINK( x )    ( HMC_MAX_LINKS/HMC_NUM_QUADS + (x) )
 #define HMC_JTL_VAULT_LINK( x )   ( HMC_MAX_LINKS/HMC_NUM_QUADS + HMC_NUM_QUADS + (x) )
 
@@ -57,7 +57,7 @@ public:
     case HMC_LINK_VAULT:
       return this->_set_link(HMC_JTL_VAULT_LINK(linkId), this->id, link);
     case HMC_LINK_EXTERN:
-      return this->_set_link(HMC_JTL_EXT_LINK, this->id, link);
+      return this->_set_link(HMC_JTL_EXT_LINK(linkId), this->id, link);
     case HMC_LINK_UNDEFINED:
       break;
     }

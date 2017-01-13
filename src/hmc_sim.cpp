@@ -85,8 +85,8 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
   hmc_quad *src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
   hmc_quad *dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
 
-  hmc_link *linkend0 = new hmc_link(&this->clk, src_quad, HMC_LINK_EXTERN);
-  hmc_link *linkend1 = new hmc_link(&this->clk, dst_quad, HMC_LINK_EXTERN);
+  hmc_link *linkend0 = new hmc_link(&this->clk, src_quad, HMC_LINK_EXTERN, 0);
+  hmc_link *linkend1 = new hmc_link(&this->clk, dst_quad, HMC_LINK_EXTERN, 0);
   linkend0->connect_linkports(linkend1);
   linkend0->adjust_both_linkends(bitwidth, bitrate);
 
@@ -106,7 +106,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
 {
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 
-  hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN);
+  hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN, 0);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
   linkend0->adjust_both_linkends(bitwidth, bitrate);
