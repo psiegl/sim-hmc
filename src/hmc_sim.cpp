@@ -18,7 +18,8 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   clk(0),
   cubes_notify(0, nullptr, this),
   slidnotify(),
-  num_slids(num_slids)
+  num_slids(num_slids),
+  num_links(num_links)
 {
   if ((num_hmcs > HMC_MAX_DEVS) || (!num_hmcs)) {
     std::cerr << "INSUFFICIENT NUMBER DEVICES: between 1 to " << HMC_MAX_DEVS << " (" << num_hmcs << ")" << std::endl;
@@ -82,6 +83,23 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
                                   unsigned dst_hmcId, unsigned dst_linkId,
                                   unsigned bitwidth, float bitrate)
 {
+  if (src_linkId >= this->num_links) {
+    std::cerr << "(SRC) Defined link heigher than amount of links defined (" << src_linkId << " / " << this->num_links << ")" << std::endl;
+    return false;
+  }
+  if (src_hmcId >= this->cubes.size()) {
+    std::cerr << "(SRC) Defined hmc heigher than amount of hmcs defined (" << src_hmcId << " / " << this->cubes.size() << ")" << std::endl;
+    return false;
+  }
+  if (dst_linkId >= this->num_links) {
+    std::cerr << "(DST) Defined link heigher than amount of links defined (" << dst_linkId << " / " << this->num_links << ")" << std::endl;
+    return false;
+  }
+  if (dst_hmcId >= this->cubes.size()) {
+    std::cerr << "(DST) Defined hmc heigher than amount of hmcs defined (" << dst_hmcId << " / " << this->cubes.size() << ")" << std::endl;
+    return false;
+  }
+
   hmc_quad *src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
   hmc_quad *dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
 
@@ -104,6 +122,19 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
 hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned linkId,
                                      unsigned bitwidth, float bitrate)
 {
+  if (slidId >= this->num_slids) {
+    std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    return nullptr;
+  }
+  if (linkId >= this->num_links) {
+    std::cerr << "Defined link heigher than amount of links defined (" << linkId << " / " << this->num_links << ")" << std::endl;
+    return nullptr;
+  }
+  if (hmcId >= this->cubes.size()) {
+    std::cerr << "Defined hmc heigher than amount of hmcs defined (" << hmcId << " / " << this->cubes.size() << ")" << std::endl;
+    return nullptr;
+  }
+
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 
   hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN, 0);
@@ -125,6 +156,11 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
 
 bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
 {
+  if (slidId >= this->num_slids) {
+    std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    return false;
+  }
+
   uint64_t header = HMC_PACKET_HEADER(pkt);
 
   assert(HMCSIM_PACKET_REQUEST_GET_CUB(header) < this->cubes.size());
@@ -149,6 +185,11 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
 
 bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
 {
+  if (slidId >= this->num_slids) {
+    std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    return false;
+  }
+
   assert(this->slids.find(slidId) != this->slids.end());
   assert(pkt != nullptr);
 

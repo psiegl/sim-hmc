@@ -33,6 +33,7 @@ bool hmc_ring::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
   return false;
 }
 
+#include <iostream>
 unsigned hmc_ring::decode_link_of_packet(char *packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
@@ -42,12 +43,10 @@ unsigned hmc_ring::decode_link_of_packet(char *packet)
     p_cubId = this->cub->slid_to_cubid(slid);
     if (p_cubId == this->cub->get_id()) {
       unsigned p_quadId = this->cub->slid_to_quadid(slid);
-      if (p_quadId == this->id) {
+      if (p_quadId == this->id)
         return HMC_JTL_EXT_LINK(0);
-      }
-      else {
+      else
         return HMC_JTL_RING_LINK(this->routing(p_quadId));
-      }
     }
   }
   else {
@@ -59,9 +58,8 @@ unsigned hmc_ring::decode_link_of_packet(char *packet)
         unsigned p_vaultId = (unsigned)this->cub->HMCSIM_UTIL_DECODE_VAULT(addr);
         return HMC_JTL_VAULT_LINK(p_vaultId);
       }
-      else {
+      else
         return HMC_JTL_RING_LINK(this->routing(p_quadId));
-      }
     }
   }
   unsigned ext_id = this->cub->ext_routing(p_cubId, this->id);

@@ -22,6 +22,7 @@ hmc_route::~hmc_route(void)
 
 void hmc_route::set_slid(unsigned slid, unsigned cubId, unsigned quadId)
 {
+  std::cout << "slid : " << slid << " cub " << cubId << " quad " << quadId << std::endl;
   this->slidToCube[slid] = std::make_pair(cubId, quadId);
 }
 

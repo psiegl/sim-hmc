@@ -7,8 +7,8 @@ int main(int argc, char* argv[])
 {
   unsigned cubes = 2;
   unsigned capacity = 4;
-  hmc_sim sim(cubes, 2, 4, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
-  unsigned slidId = 0;
+  hmc_sim sim(cubes, 4, 4, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
+  unsigned slidId = 3;
   unsigned destcub = 0; // 1
 
   hmc_notify* slidnotify = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
