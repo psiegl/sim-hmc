@@ -15,7 +15,7 @@ class hmc_link_buf {
   hmc_notify *notify;
 
 public:
-  hmc_link_buf(hmc_notify *notify);
+  explicit hmc_link_buf(hmc_notify *notify);
   ~hmc_link_buf(void);
 
   void adjust_size(unsigned bitsize);

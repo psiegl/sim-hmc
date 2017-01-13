@@ -12,7 +12,7 @@ public:
   sqlite3_stmt *sql_rqst;
   sqlite3_stmt *sql_rsp;
 
-  hmc_sqlite3(const char *dbname);
+  explicit hmc_sqlite3(const char *dbname);
   ~hmc_sqlite3(void);
 };
 

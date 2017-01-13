@@ -25,7 +25,8 @@ hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf, hmc_notif
   bitrate(0),
   notify(notify),
   buf(buf),
-  link(link)
+  link(link),
+  link_end(nullptr)
 {
 }
 
