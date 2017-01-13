@@ -8,13 +8,11 @@
 #include "hmc_notify.h"
 #include "hmc_vault.h"
 
-hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
+hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify) :
   id(id),
-  link(link),
+  link_notify(id, notify, this),
   cube(cube)
 {
-  this->link->set_ilink_notify(id, id, notify);
-
   for (unsigned i = 0; i < elemsof(this->jtl); i++)
     this->jtl[i] = nullptr; // is CMC
 

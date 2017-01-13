@@ -12,14 +12,13 @@ bool callback(void *bobsim, void *packet)
 int BOBSim::SHOW_SIM_OUTPUT = 1;
 
 hmc_bobsim::hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
-                       hmc_cube *cube, hmc_notify *notify, hmc_link *link) :
+                       hmc_cube *cube, hmc_notify *notify) :
   hmc_notify_cl(),
-  hmc_vault(id, cube, &linknotify, link),
   id(id),
   quadId(quadId),
   cube(cube),
   linknotify(id, notify, this),
-  link(link),
+  vault(id, cube, &linknotify),
 #ifndef ALWAYS_NOTIFY_BOBSIM
   bobnotify_ctr(0),
 #endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
@@ -51,7 +50,7 @@ hmc_bobsim::~hmc_bobsim(void)
 
 bool hmc_bobsim::bob_feedback(char *packet)
 {
-  if (this->hmcsim_process_rqst(packet)) {
+  if (this->vault.hmcsim_process_rqst(packet)) {
 #ifndef ALWAYS_NOTIFY_BOBSIM
     if (!--this->bobnotify_ctr)
       this->bobnotify.notify_del(0);
@@ -110,7 +109,7 @@ void hmc_bobsim::clock(void)
 
 
       unsigned rsp_lenInFlits;
-      this->hmcsim_packet_resp_len(cmd, &rsp_lenInFlits);
+      this->vault.hmcsim_packet_resp_len(cmd, &rsp_lenInFlits);
 
       unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
       rsp_lenInFlits -= (rsp_lenInFlits > 0); // netto! without overhead!

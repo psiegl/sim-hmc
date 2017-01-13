@@ -8,6 +8,7 @@
 #include "hmc_vault.h"
 #include "../extern/bobsim/include/bob_transaction.h"
 #include "../extern/bobsim/include/bob_wrapper.h"
+#include "hmc_module.h"
 
 class hmc_link;
 class hmc_cube;
@@ -16,14 +17,16 @@ class hmc_cube;
 // ToDo: clock bobsim just a few 100s of cycles further (if all packets went out), then turn it off
 // if so, turn off the printing in bobsim!
 
-class hmc_bobsim : private hmc_notify_cl, private hmc_vault {
+class hmc_bobsim : private hmc_notify_cl, public hmc_module {
 private:
   unsigned id;
   unsigned quadId;
   hmc_cube *cube;
 
-  hmc_notify linknotify;
   hmc_link *link;
+  hmc_notify linknotify;
+
+  hmc_vault vault;
 
 #ifndef ALWAYS_NOTIFY_BOBSIM
   unsigned bobnotify_ctr;
@@ -119,11 +122,19 @@ private:
 
 public:
   hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
-             hmc_cube *cube, hmc_notify *notify, hmc_link *link);
+             hmc_cube *cube, hmc_notify *notify);
   virtual ~hmc_bobsim(void);
 
   void clock(void);
   bool bob_feedback(char *packet);
+
+  unsigned get_id(void) { return this->id; }
+  bool set_link(unsigned linkId, hmc_link *link, hmc_link_type linkType) {
+    this->link = link;
+    this->vault.set_link(linkId, link, linkType);
+    return true;
+  }
+
 };
 
 #endif /* #ifdef HMC_USES_BOBSIM */

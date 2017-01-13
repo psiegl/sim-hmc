@@ -7,12 +7,12 @@
 #include <zlib.h>
 #endif
 #include "hmc_macros.h"
-//#include "hmc_module.h"
+#include "hmc_notify.h"
 #include "hmc_sim_t.h"
+#include "hmc_link.h"
+#include "hmc_module.h"
 
-class hmc_link;
 class hmc_cube;
-class hmc_notify;
 
 struct jtl_t {
   hmc_rqst_t rsqt;
@@ -21,10 +21,11 @@ struct jtl_t {
   bool rsp;
 };
 
-class hmc_vault /*: public hmc_module*/ {
+class hmc_vault : public hmc_module, private hmc_notify_cl {
 private:
   unsigned id;
   hmc_link *link;
+  hmc_notify link_notify;
   hmc_cube *cube;
 
   ALWAYS_INLINE uint32_t hmcsim_crc32(void *packet, unsigned flits)
@@ -104,17 +105,26 @@ private:
     { SWAP16, 2, RD_RS, true }
   };
 
-protected:
-  bool hmcsim_process_rqst(void *packet);
-  bool hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len);
+  bool notify_up(void) {
+    return (!this->link_notify.get_notification());
+  }
 
 public:
-  hmc_vault(unsigned id, hmc_cube *cube, hmc_notify* notify, hmc_link *link);
+  hmc_vault(unsigned id, hmc_cube *cube, hmc_notify* notify);
   ~hmc_vault(void);
-#ifndef HMC_USES_BOBSIM
+#ifdef HMC_USES_BOBSIM
+  void clock(void) {}
+#else
   void clock(void);
 #endif /* #ifndef HMC_USES_BOBSIM */
   unsigned get_id(void) { return this->id; }
+  bool set_link(unsigned linkId, hmc_link* link, enum hmc_link_type linkType) {
+    this->link = link;
+    this->link->set_ilink_notify(linkId, linkId, &this->link_notify);
+    return true;
+  }
+  bool hmcsim_process_rqst(void *packet);
+  bool hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len);
 };
 
 #endif /* #ifndef _HMC_VAULT_H_ */

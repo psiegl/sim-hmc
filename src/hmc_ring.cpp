@@ -87,7 +87,8 @@ void hmc_ring::clock(void)
       if (packet == nullptr)
         continue;
 
-      hmc_link *next_link = this->links[decode_link_of_packet(packet)];
+      unsigned linkId = decode_link_of_packet(packet);
+      hmc_link *next_link = this->links[linkId];
       assert(next_link != nullptr);
       hmc_link_queue *tx = next_link->get_tx();
       assert(tx != nullptr);

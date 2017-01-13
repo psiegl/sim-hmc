@@ -44,7 +44,7 @@ void hmc_link_queue::re_adjust(unsigned link_bitwidth, float link_bitrate)
 {
   this->bitrate = link_bitrate / (1.0f / (float)HMC_CLK_PERIOD_NS);
   this->bitwidth = link_bitwidth;
-  this->bitoccupationmax = link_bitrate / (1.0f / (float)HMC_CLK_PERIOD_NS) * link_bitwidth;
+  this->bitoccupationmax = this->bitrate * link_bitwidth;
 }
 
 bool hmc_link_queue::has_space(unsigned packetleninbit)

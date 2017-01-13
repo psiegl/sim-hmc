@@ -19,8 +19,14 @@ hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
   vault_notify(id, notify, this)
 {
   for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++) {
+#ifdef HMC_USES_BOBSIM
+    this->vaults[i] = new hmc_bobsim(i, id, 1, num_ranks, false, cube, &this->vault_notify);
+#else
+    this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify);
+#endif /* #ifdef HMC_USES_BOBSIM */
+
     hmc_link *linkend0 = new hmc_link(clk, this, HMC_LINK_VAULT, i);
-    hmc_link *linkend1 = new hmc_link(clk);
+    hmc_link *linkend1 = new hmc_link(clk, this->vaults[i], HMC_LINK_VAULT, id);
     linkend0->connect_linkports(linkend1);
     /*
      * Vault: bi-directional    80Gbit/s
@@ -30,12 +36,6 @@ hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
     // ToDo: adjust buf!
     this->link_garbage.push_back(linkend0);
     this->link_garbage.push_back(linkend1);
-
-#ifdef HMC_USES_BOBSIM
-    this->vaults[i] = new hmc_bobsim(i, id, 1, num_ranks, false, cube, &this->vault_notify, linkend1);
-#else
-    this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify, linkend1);
-#endif /* #ifdef HMC_USES_BOBSIM */
   }
 }
 
