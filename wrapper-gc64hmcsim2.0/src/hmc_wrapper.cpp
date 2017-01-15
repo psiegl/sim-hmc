@@ -18,6 +18,8 @@ int hmcsim_init(	struct hmcsim_t *hmc,
 {
   assert(num_links == 2 || num_links == 4);
   hmc->hmcsim = (void*)new hmc_sim(num_devs, num_links, num_links, capacity, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
+  hmc->num_links = num_links; // for SST
+  hmc->num_devs = num_devs;
   return 0;
 }
 
@@ -194,10 +196,10 @@ int hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t 
  * See Table38 in the HMC Spec : pg 58
  *
  */
-int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize )
+int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, uint32_t bsize )
 {
   unsigned i;
-  for (i = 0; i < devs; i++) {
+  for (i = 0; i < hmc->num_devs; i++) {
     if (hmcsim_util_set_max_blocksize(hmc, i, bsize))
       return -1;
   }

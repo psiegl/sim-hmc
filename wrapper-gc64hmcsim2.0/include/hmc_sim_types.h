@@ -26,6 +26,8 @@ extern "C" {
 
 struct hmcsim_t {
   void * hmcsim;
+  unsigned num_links;
+  unsigned num_devs;
 };
 
 /* -------------------------------------------- RETURN CODES */

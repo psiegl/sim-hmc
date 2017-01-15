@@ -14,11 +14,11 @@ bld/hmc_sim.o: bld
 	#gcc -g -c -fPIC -o bld/hmc_sim.o src/hmc_sim.c
 
 lib/libhmcsim.so: bld/hmc_sim.o extract
-	g++ -Wl,--whole-archive -shared -Wl,-soname,-libhmcsim.so bld/*.o -o libhmcsim.so -Wl,--no-whole-archive -lsqlite3 -lz -ltcmalloc
+	g++ -Wl,--whole-archive -shared -Wl,-soname,-libhmcsim.so bld/*.o -o lib/libhmcsim.so -Wl,--no-whole-archive -lsqlite3 -lz -ltcmalloc
 
 
 test: bld
-	gcc -L. src/test.c -lhmcsim -o bld/test.elf
+	gcc -Llib src/test.c -lhmcsim -o bld/test.elf
 
 clean:
 	rm -rf bld lib/*.so

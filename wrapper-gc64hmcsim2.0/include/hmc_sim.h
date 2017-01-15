@@ -33,9 +33,9 @@ extern "C" {
 #include <stdio.h>
 #include <sys/types.h>
 #include "hmc_sim_types.h"
+#include "hmc_sim_macros.h"
 #include "../../src/hmc_sim_t.h"
 #include "../../src/config.h"
-//#include "hmc_sim_macros.h"
 
 /* -------------------------------------------- FUNCTION PROTOTYPES */
 
@@ -285,7 +285,7 @@ int	hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t 
 	\param bsize is the target block size [32,64,128]
 	\return 0 on success, nonzero otherwise 
 */
-int	hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize );
+int	hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, uint32_t bsize );
 
 
 /*!	\fn int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize )
