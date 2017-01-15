@@ -6,7 +6,7 @@
 extern "C" {
 hmc_notify *slid_notifier;
 
-extern int hmcsim_init(	struct hmcsim_t *hmc, 
+int hmcsim_init(	struct hmcsim_t *hmc,
 				uint32_t num_devs, 
 				uint32_t num_links, 
 				uint32_t num_vaults, 
@@ -21,13 +21,13 @@ extern int hmcsim_init(	struct hmcsim_t *hmc,
   return 0;
 }
 
-extern int hmcsim_free( struct hmcsim_t *hmc )
+int hmcsim_free( struct hmcsim_t *hmc )
 {
   delete (hmc_sim*)hmc->hmcsim;
   return 0;
 }
 
-extern int hmcsim_link_config( struct hmcsim_t *hmc, 
+int hmcsim_link_config( struct hmcsim_t *hmc,
 					uint32_t src_dev,
 					uint32_t dest_dev, 
 					uint32_t src_link,
@@ -47,25 +47,25 @@ extern int hmcsim_link_config( struct hmcsim_t *hmc,
   }
 }
 
-extern int hmcsim_trace_handle( struct hmcsim_t *hmc, FILE *tfile )
+int hmcsim_trace_handle( struct hmcsim_t *hmc, FILE *tfile )
 {
 
   return 0;
 }
 
-extern int hmcsim_trace_header( struct hmcsim_t *hmc )
+int hmcsim_trace_header( struct hmcsim_t *hmc )
 {
 
   return 0;
 }
 
-extern int hmcsim_trace_level( struct hmcsim_t *hmc, uint32_t level )
+int hmcsim_trace_level( struct hmcsim_t *hmc, uint32_t level )
 {
 
   return 0;
 }
 
-extern int hmcsim_build_memrequest( struct hmcsim_t *hmc,
+int hmcsim_build_memrequest( struct hmcsim_t *hmc,
                                     uint8_t  cub,
                                     uint64_t addr,
                                     uint16_t  tag,
@@ -80,7 +80,7 @@ extern int hmcsim_build_memrequest( struct hmcsim_t *hmc,
   return 0;
 }
 
-extern int hmcsim_decode_memresponse( struct hmcsim_t *hmc,
+int hmcsim_decode_memresponse( struct hmcsim_t *hmc,
                                       uint64_t *packet,
                                       uint64_t *response_head,
                                       uint64_t *response_tail,
@@ -107,7 +107,7 @@ extern int hmcsim_decode_memresponse( struct hmcsim_t *hmc,
   return 0;
 }
 
-extern int hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet )
+int hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
   if( hmcsim->hmc_send_pkt(slidId, (char*)packet) )
@@ -116,7 +116,7 @@ extern int hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet 
     return HMC_STALL;
 }
 
-extern int hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet )
+int hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
   if((slid_notifier->get_notification() & (1 << link))
@@ -126,26 +126,26 @@ extern int hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint6
     return HMC_STALL;
 }
 
-extern int hmcsim_clock( struct hmcsim_t *hmc )
+int hmcsim_clock( struct hmcsim_t *hmc )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
   hmcsim->clock();
   return 0;
 }
 
-extern uint64_t hmcsim_get_clock( struct hmcsim_t *hmc )
+uint64_t hmcsim_get_clock( struct hmcsim_t *hmc )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
   return hmcsim->hmc_get_clock();
 }
 
-extern int hmcsim_jtag_reg_read( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t *result )
+int hmcsim_jtag_reg_read( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t *result )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
   return hmcsim->hmc_get_jtag_interface(dev)->jtag_reg_read(reg, result);
 }
 
-extern int hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t value )
+int hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t value )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
   return hmcsim->hmc_get_jtag_interface(dev)->jtag_reg_write(reg, value);
@@ -157,7 +157,7 @@ extern int hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t r
  * See Table38 in the HMC Spec : pg 58
  *
  */
-extern int hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t bsize )
+int hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t bsize )
 {
   uint64_t res;
   if (hmcsim_jtag_reg_read(hmc, dev, HMC_REG_AC, &res))
@@ -194,7 +194,7 @@ extern int hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, ui
  * See Table38 in the HMC Spec : pg 58
  *
  */
-extern int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize )
+int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize )
 {
   unsigned i;
   for (i = 0; i < devs; i++) {
@@ -204,7 +204,7 @@ extern int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned dev
   return 0;
 }
 
-extern int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize )
+int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize )
 {
   uint64_t res;
   if (hmcsim_jtag_reg_read(hmc, dev, HMC_REG_AC, &res))
@@ -228,7 +228,7 @@ extern int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, ui
   return 0;
 }
 
-extern int hmcsim_load_cmc( struct hmcsim_t *hmc, char *cmc_lib )
+int hmcsim_load_cmc( struct hmcsim_t *hmc, char *cmc_lib )
 {
 
   return 0;

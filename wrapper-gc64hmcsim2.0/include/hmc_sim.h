@@ -20,8 +20,8 @@
 
 
 
-#ifndef _GCHMC_SIM_H_
-#define _GCHMC_SIM_H_
+#ifndef _GCHMC_WRAPPER_H_
+#define _GCHMC_WRAPPER_H_
 
 
 #ifdef __cplusplus
@@ -61,7 +61,7 @@ extern "C" {
 	\param xbar_depth is the queue depth of each device's crossbar request and response queues, respectively
 	\return 0 on success, nonzero otherwise. 
 */
-extern int	hmcsim_init(	struct hmcsim_t *hmc, 
+int	hmcsim_init(	struct hmcsim_t *hmc,
 				uint32_t num_devs, 
 				uint32_t num_links, 
 				uint32_t num_vaults, 
@@ -77,7 +77,7 @@ extern int	hmcsim_init(	struct hmcsim_t *hmc,
 	\param *hmc is a pointer to a valid hmc structure.  Must not be null. 
 	\return 0 on success, nonzero otherwise.
 */
-extern int	hmcsim_free( struct hmcsim_t *hmc );
+int	hmcsim_free( struct hmcsim_t *hmc );
 
 /*!	\fn int hmcsim_link_config( struct hmcsim_t *hmc, 
 				uint32_t src_dev,
@@ -94,7 +94,7 @@ extern int	hmcsim_free( struct hmcsim_t *hmc );
 	\param type is one of HMC_LINK_HOST_DEV or HMC_LINK_DEV_DEV
 	\return 0 on success, nonzero otherwise
 */
-extern int	hmcsim_link_config( struct hmcsim_t *hmc, 
+int	hmcsim_link_config( struct hmcsim_t *hmc,
 					uint32_t src_dev,
 					uint32_t dest_dev, 
 					uint32_t src_link,
@@ -107,7 +107,7 @@ extern int	hmcsim_link_config( struct hmcsim_t *hmc,
 	\param *tfile is a pointer to a valid and open file handle.  Must not be null
 	\return 0 on success, nonzero otherwise 
 */
-extern int	hmcsim_trace_handle( struct hmcsim_t *hmc, FILE *tfile );
+int	hmcsim_trace_handle( struct hmcsim_t *hmc, FILE *tfile );
 
 
 /*!	\fn int hmcsim_trace_header( struct hmcsim_t *hmc )
@@ -116,7 +116,7 @@ extern int	hmcsim_trace_handle( struct hmcsim_t *hmc, FILE *tfile );
 	\param *hmc is a pointer to a valid and initialized hmc structure.  Must not be null. 
 	\return 0 on success, nonzero otherwise 
 */
-extern int	hmcsim_trace_header( struct hmcsim_t *hmc );
+int	hmcsim_trace_header( struct hmcsim_t *hmc );
 
 /*!	\fn int hmcsim_trace_level( struct hmcsim_t *hmc, uint32_t level )
 	\brief Sets the trace level of an initialized HMC library instance. 
@@ -124,7 +124,7 @@ extern int	hmcsim_trace_header( struct hmcsim_t *hmc );
 	\param level is the target trace level.  Larger integers indicate more tracing output.
 	\returns 0 on success, nonzero otherwise 
 */
-extern int	hmcsim_trace_level( struct hmcsim_t *hmc, uint32_t level );
+int	hmcsim_trace_level( struct hmcsim_t *hmc, uint32_t level );
 
 /*!	\fn int hmcsim_build_memrequest( struct hmcsim_t *hmc, 
                                         uint8_t  cub,
@@ -149,7 +149,7 @@ extern int	hmcsim_trace_level( struct hmcsim_t *hmc, uint32_t level );
 		shall return the completed packet request tail in proper form. 
 	\return 0 on success, nonzero otherwise 
 */
-extern int      hmcsim_build_memrequest( struct hmcsim_t *hmc,
+int      hmcsim_build_memrequest( struct hmcsim_t *hmc,
                                         uint8_t  cub,
                                         uint64_t addr,
                                         uint16_t  tag,
@@ -196,7 +196,7 @@ extern int      hmcsim_build_memrequest( struct hmcsim_t *hmc,
 	\param *crc is a pointer to an unsigned 32 bit integer that contains the CRC32 checksum 
 	\return 0 on success, nonzero otherwise
 */	
-extern int      hmcsim_decode_memresponse(      struct hmcsim_t *hmc,
+int      hmcsim_decode_memresponse(      struct hmcsim_t *hmc,
                                                 uint64_t *packet,
                                                 uint64_t *response_head,
                                                 uint64_t *response_tail,
@@ -219,7 +219,7 @@ extern int      hmcsim_decode_memresponse(      struct hmcsim_t *hmc,
 	\param *packet is a pointer to a valid packet structure of up to 9 FLITS
 	\return HMC_OK on success, HMC_ERROR on error, HMC_STALL when there are no xbar queue slots available
 */
-extern int	hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet );
+int	hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet );
 
 /*!	\fn int hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet )
 	\brief Attempts to poll an HMC device for a response packet
@@ -230,21 +230,21 @@ extern int	hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet 
 	\return HMC_OK on success, HMC_ERROR on error, HMC_STALL when there are no response packets available
 */
 
-extern int	hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet );
+int	hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet );
 
 /*!	\fn int hmcsim_clock( struct hmcsim_t *hmc )
 	\brief Instantiates a single leading edge and falling edge clock cycle on all devices  
 	\param *hmc is a pointer to a valid and initialized hmc structure.  Must not be null. 
 	\return 0 on success, nonzero otherwise
 */
-extern int	hmcsim_clock( struct hmcsim_t *hmc );
+int	hmcsim_clock( struct hmcsim_t *hmc );
 
 /*!     \fn uint64_t hmcsim_get_clock( struct hmcsim_t *hmc )
         \brief Retrieves the current value of the HMC clock from the *hmc structure
         \param *hmc is a pointer to a valid and initialized hmc structure.  Must not be null. 
         \return The current clock value
 */
-extern uint64_t hmcsim_get_clock( struct hmcsim_t *hmc );
+uint64_t hmcsim_get_clock( struct hmcsim_t *hmc );
 
 /*!	\fn int hmcsim_jtag_reg_read( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t *result )
 	\brief Attempts to read the value from the specified HMC device register for the target device
@@ -256,7 +256,7 @@ extern uint64_t hmcsim_get_clock( struct hmcsim_t *hmc );
 		Must be backed by a valid memory region. 
 	\return 0 on success, nonzero otherwise
 */
-extern int	hmcsim_jtag_reg_read( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t *result );
+int	hmcsim_jtag_reg_read( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t *result );
 
 /*!	\fn int hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t value )
 	\brief Attempts to write the value to the specified HMC device register for the target device
@@ -267,7 +267,7 @@ extern int	hmcsim_jtag_reg_read( struct hmcsim_t *hmc, uint32_t dev, uint64_t re
 	\param value is the value to be written
 	\return 0 on success, nonzero otherwise
 */
-extern int	hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t value );
+int	hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t reg, uint64_t value );
 
 
 /*!	\fn int hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t bsize )
@@ -277,7 +277,7 @@ extern int	hmcsim_jtag_reg_write( struct hmcsim_t *hmc, uint32_t dev, uint64_t r
 	\param bsize is the target block size [32,64,128]
 	\return 0 on success, nonzero otherwise 
 */
-extern int	hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t bsize );
+int	hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t bsize );
 
 /*!	\fn int hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, uint32_t bsize )
 	\brief Sets the maximum request size for all the devices
@@ -285,7 +285,7 @@ extern int	hmcsim_util_set_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, ui
 	\param bsize is the target block size [32,64,128]
 	\return 0 on success, nonzero otherwise 
 */
-extern int	hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize );
+int	hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned devs, uint32_t bsize );
 
 
 /*!	\fn int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize )
@@ -295,7 +295,7 @@ extern int	hmcsim_util_set_all_max_blocksize( struct hmcsim_t *hmc, unsigned dev
 	\param *bsize is a pointer to a valid uint32_t location that will contain the max block size
 	\return 0 on success, nonzero otherwise 
 */
-extern int	hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize );
+int	hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t *bsize );
 
 /*!
         \fn int hmcsim_load_cmc( struct hmcsim_t *cmc, char *cmc_lib )
@@ -304,12 +304,12 @@ extern int	hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, ui
         \param *cmc_lib is a character string that contains the full path to the CMC library to load
         \return 0 on success, nonzero otherwise 
 */
-extern int      hmcsim_load_cmc( struct hmcsim_t *hmc, char *cmc_lib );
+int      hmcsim_load_cmc( struct hmcsim_t *hmc, char *cmc_lib );
 
 #ifdef __cplusplus
 } /* extern C */
 #endif
 
-#endif	/* _GCHMC_SIM_H_ */
+#endif	/* _GCHMC_WRAPPER_H_ */
 
 /* EOF */
