@@ -2,7 +2,6 @@
 #include <cstring>
 #include "src/hmc_sim.h"
 
-
 int main(int argc, char* argv[])
 {
   unsigned cubes = 2;
@@ -11,6 +10,10 @@ int main(int argc, char* argv[])
   unsigned slidId = 3;
   unsigned destcub = 0; // 1
 
+#if 1
+  // if GRAPHVIZ is enabled!
+  hmc_notify* slidnotify = sim.hmc_get_slid_notify(slidId);
+#else
   hmc_notify* slidnotify = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
 
   bool ret = sim.hmc_set_link_config(0, 1, 1, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
@@ -18,6 +21,7 @@ int main(int argc, char* argv[])
   if (!ret || slidnotify == nullptr) {
     std::cerr << "link setup was not successful" << std::endl;
   }
+#endif
 
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[(17*FLIT_WIDTH) / 8];

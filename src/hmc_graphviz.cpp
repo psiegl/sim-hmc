@@ -72,8 +72,9 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
           exit(-1);
         }
 
-        std::transform(src->name.begin(), src->name.end(), src->name.begin(), ::tolower);
-        if (!src->name.compare(0, strlen("host"), "host")) {
+        std::string src_name(src->name);
+        std::transform(src_name.begin(), src_name.end(), src_name.begin(), ::tolower);
+        if (!src_name.compare(0, strlen("host"), "host")) {
           unsigned slidId = this->extract_id_from_string(src->location[0]);
           unsigned hmcId = this->extract_id_from_string(tgt->name);
           unsigned linkId = this->extract_id_from_string(tgt->location[0]);

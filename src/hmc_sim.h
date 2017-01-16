@@ -110,6 +110,9 @@ public:
   hmc_notify* hmc_define_slid(unsigned slidId, unsigned hmcId,
                               unsigned linkId,
                               unsigned lanes, float bitrate);
+#ifdef HMC_USES_GRAPHVIZ
+  hmc_notify* hmc_get_slid_notify(unsigned slidId);
+#endif /* #ifdef HMC_USES_GRAPHVIZ */
 
   bool hmc_send_pkt(unsigned slidId, char *pkt);
   bool hmc_recv_pkt(unsigned slidId, char *pkt);

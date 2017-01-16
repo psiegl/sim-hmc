@@ -61,10 +61,9 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 
+  // set up the graph after everything else was set up!
 #ifdef HMC_USES_GRAPHVIZ
-  // set up the graph after everything was set up!
   hmc_graphviz graph(this, graphviz_filename);
-  exit(0);
 #endif /* #ifdef HMC_USES_GRAPHVIZ */
 }
 
@@ -163,6 +162,18 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   this->slids[slidId] = linkend1;
   return &this->slidnotify;
 }
+
+// slidId currently not needed, but maybe in the future ...
+#ifdef HMC_USES_GRAPHVIZ
+hmc_notify* hmc_sim::hmc_get_slid_notify(unsigned slidId)
+{
+  if (slidId >= this->num_slids) {
+    std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    return nullptr;
+  }
+  return &this->slidnotify;
+}
+#endif /* #ifdef HMC_USES_GRAPHVIZ */
 
 bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
 {
