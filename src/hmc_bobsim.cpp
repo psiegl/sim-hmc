@@ -1,4 +1,3 @@
-#ifdef HMC_USES_BOBSIM
 #include "hmc_bobsim.h"
 #include "hmc_link.h"
 #include "hmc_cube.h"
@@ -158,5 +157,3 @@ bool hmc_bobsim::notify_up(void)
   return (!this->linknotify.get_notification() &&
           !this->bobnotify.get_notification());
 }
-
-#endif /* #ifdef HMC_USES_BOBSIM */

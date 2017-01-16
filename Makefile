@@ -14,6 +14,9 @@ TARGET   := lib/lib$(LIBNAME).a
 .PHONY   : $(TARGET)
 
 SRC      := $(wildcard $(SRCDIR)/*.cpp)
+ifeq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
+SRC      := $(filter-out $(SRCDIR)/hmc_bobsim.cpp, $(SRC))
+endif
 OBJ      := $(SRC:$(SRCDIR)/%.cpp=$(BLDDIR)/%.o)
 DEPS     := $(SRC:$(SRCDIR)/%.cpp,$(BLDDIR)/%.deps)
 
