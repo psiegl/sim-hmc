@@ -8,12 +8,16 @@
 #include "hmc_link_buf.h"
 #include "hmc_vault.h"
 #include "hmc_sqlite3.h"
+#ifdef HMC_USES_GRAPHVIZ
+#include "hmc_graphviz.h"
+#endif /* #ifdef HMC_USES_GRAPHVIZ */
 
 extern hmc_sqlite3 **hmc_trace_init;
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
-                 unsigned ringbus_bitwidth, float ringbus_bitrate) :
+                 unsigned ringbus_bitwidth, float ringbus_bitrate,
+                 const char *graphviz_filename) :
   hmc_notify_cl(),
   clk(0),
   cubes_notify(0, nullptr, this),
@@ -56,6 +60,12 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbus_bitwidth, ringbus_bitrate, capacity, &this->cubes, num_hmcs, &this->clk);
     this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
+
+#ifdef HMC_USES_GRAPHVIZ
+  // set up the graph after everything was set up!
+  hmc_graphviz graph(this, graphviz_filename);
+  exit(0);
+#endif /* #ifdef HMC_USES_GRAPHVIZ */
 }
 
 hmc_sim::~hmc_sim(void)

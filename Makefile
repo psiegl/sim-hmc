@@ -17,6 +17,9 @@ SRC      := $(wildcard $(SRCDIR)/*.cpp)
 ifeq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
 SRC      := $(filter-out $(SRCDIR)/hmc_bobsim.cpp, $(SRC))
 endif
+ifeq (,$(findstring HMC_USES_GRAPHVIZ, $(HMCSIM_MACROS)))
+SRC      := $(filter-out $(SRCDIR)/hmc_graphviz.cpp, $(SRC))
+endif
 OBJ      := $(SRC:$(SRCDIR)/%.cpp=$(BLDDIR)/%.o)
 DEPS     := $(SRC:$(SRCDIR)/%.cpp,$(BLDDIR)/%.deps)
 
@@ -33,6 +36,10 @@ else
 CFLAGS   += -O3 -ffast-math -fPIC
 CXXFLAGS += -O3 -ffast-math -fPIC
 HMCSIM_MACROS += -DNDEBUG
+endif
+
+ifneq (,$(findstring HMC_USES_GRAPHVIZ, $(HMCSIM_MACROS)))
+LIBS     += -lboost_system -lboost_graph -lboost_regex
 endif
 
 ifneq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
@@ -66,7 +73,7 @@ $(OBJ): $(BLDDIR)/%.o : $(SRCDIR)/%.cpp
 	@uncrustify  --no-backup -c tools/uncrustify.cfg -q --replace $<
 	@$(CXX) $(CXXFLAGS) -MD -MF $(@:.o=.deps) -c -o $@ $<
 
-$(TARGET): $(BLDDIR) $(OBJ) $(LIBS) $(BOBOBJ)
+$(TARGET): $(BLDDIR) $(OBJ) $(BOBOBJ)
 	@echo "[$(AR)] $@"
 	@-$(RM) -f $(TARGET).ar
 	@echo " Linking..."; echo "CREATE $@" > $(TARGET).ar
@@ -80,7 +87,7 @@ $(TARGET): $(BLDDIR) $(OBJ) $(LIBS) $(BOBOBJ)
 
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
-	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc -lsqlite3
+	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc -lsqlite3 $(LIBS)
 
 bldall:
 	make clean
