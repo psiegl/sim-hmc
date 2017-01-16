@@ -109,7 +109,7 @@ public:
                            unsigned bitwidth, float bitrate);
   hmc_notify* hmc_define_slid(unsigned slidId, unsigned hmcId,
                               unsigned linkId,
-                              unsigned bitwidth, float bitrate);
+                              unsigned lanes, float bitrate);
 
   bool hmc_send_pkt(unsigned slidId, char *pkt);
   bool hmc_recv_pkt(unsigned slidId, char *pkt);

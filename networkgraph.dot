@@ -4,12 +4,12 @@ graph G {
     HMC0[label="{ {<link0>link0||<link1>link1}|HMC0|{<link2>link2||<link3>link3} }"];
     HMC1[label="{ {<link0>link0||<link1>link1}|HMC1|{<link2>link2||<link3>link3} }"];
 
-    HOST:slid0 -- HMC0:link0 [label="64-bit,0.325"];
-    HOST:slid1 -- HMC0:link1 [label="64-bit,0.325"];
+    HOST:slid0 -- HMC0:link0 [label="16,BR30"];
+    HOST:slid1 -- HMC0:link1 [label="16,BR30"];
     
-    HOST:slid2 -- HMC1:link0 [label="64-bit,0.325"];
-    HOST:slid3 -- HMC1:link1 [label="64-bit,0.325"];
+    HOST:slid2 -- HMC1:link0 [label="16,BR30"];
+    HOST:slid3 -- HMC1:link1 [label="16,BR30"];
     
-    HMC0:link3 -- HMC1:link3 [label="64-bit,0.325"];
-    HMC0:link2 -- HMC1:link2 [label="64-bit,0.325"];
+    HMC0:link3 -- HMC1:link3 [label="16,BR30"];
+    HMC0:link2 -- HMC1:link2 [label="16,BR30"];
 }

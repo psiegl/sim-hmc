@@ -22,33 +22,62 @@ std::string hmc_graphviz::get_content_from_file(const char *filename)
   return str;
 }
 
+#define boost_graphviz boost::read_graphviz_detail
+
 // https://stackoverflow.com/questions/5208811/how-to-get-port-identifiers-for-an-edge-using-boost-graph-library
 void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
 {
-  boost::read_graphviz_detail::parser_result result;
-  boost::read_graphviz_detail::parse_graphviz_from_string(content, result, false);
-  for (std::vector<boost::read_graphviz_detail::edge_info>::iterator it = result.edges.begin(); it != result.edges.end(); ++it) {
-    struct boost::read_graphviz_detail::node_and_port *src = &(*it).source;
-    struct boost::read_graphviz_detail::node_and_port *tgt = &(*it).target;
-    boost::read_graphviz_detail::properties *props = &(*it).props;
-    boost::read_graphviz_detail::properties::iterator propsit = props->find("label");
+  boost_graphviz::parser_result result;
+  boost_graphviz::parse_graphviz_from_string(content, result, false);
+  for (std::vector<boost_graphviz::edge_info>::iterator it = result.edges.begin(); it != result.edges.end(); ++it) {
+    struct boost_graphviz::node_and_port *src = &(*it).source;
+    struct boost_graphviz::node_and_port *tgt = &(*it).target;
+    boost_graphviz::properties *props = &(*it).props;
+    boost_graphviz::properties::iterator propsit = props->find("label");
     if (propsit != props->end()) {
       std::string label = propsit->second;
-      std::cout << label << std::endl;
-      if (label.find("-bit") != std::string::npos
-          && label.find(".") != std::string::npos) {
-        // Todo: parse 64-bit,0.325 ... currently ugly
+      if (label.find(",") != std::string::npos
+          && label.find("BR") != std::string::npos) {
         std::string::size_type sz;
-        unsigned int bitwidth = std::stoi(label, &sz);
-        float bitrate = std::stof(label.substr(sz + strlen("-bit,")));
+        unsigned int lanes = std::stoi(label, &sz); // ToDo
+        switch (lanes) {
+        case HMCSIM_FULL_LINK_WIDTH:
+        case HMCSIM_HALF_LINK_WIDTH:
+        case HMCSIM_QUARTER_LINK_WIDTH:
+          break;
+        default:
+          std::cerr << "ERROR: lanes supports only ";
+          std::cerr << HMCSIM_FULL_LINK_WIDTH << " (FULL), ";
+          std::cerr << HMCSIM_HALF_LINK_WIDTH << " (HALF), ";
+          std::cerr << HMCSIM_QUARTER_LINK_WIDTH << " (QUARTER); ";
+          std::cerr << "current: " << lanes;
+          std::cerr << std::endl;
+          exit(-1);
+        }
 
-        std::cout << src->name << ":" << src->location[0] << " -- " << tgt->name << ":" << tgt->location[0] << std::endl;
+        float bitrate = std::stof(label.substr(sz + strlen(",BR"))); // ToDo
+        if (!(similar_floats(bitrate, HMCSIM_BR12_5)
+              || similar_floats(bitrate, HMCSIM_BR15)
+              || similar_floats(bitrate, HMCSIM_BR25)
+              || similar_floats(bitrate, HMCSIM_BR28)
+              || similar_floats(bitrate, HMCSIM_BR30))) {
+          std::cerr << "ERROR: bitrate supports only ";
+          std::cerr << HMCSIM_BR12_5 << " (BR12.5), ";
+          std::cerr << HMCSIM_BR15 << " (BR15), ";
+          std::cerr << HMCSIM_BR25 << " (BR25), ";
+          std::cerr << HMCSIM_BR28 << " (BR28), ";
+          std::cerr << HMCSIM_BR30 << " (BR30); ";
+          std::cerr << "current: " << bitrate;
+          std::cerr << std::endl;
+          exit(-1);
+        }
+
         std::transform(src->name.begin(), src->name.end(), src->name.begin(), ::tolower);
         if (!src->name.compare(0, strlen("host"), "host")) {
           unsigned slidId = this->extract_id_from_string(src->location[0]);
           unsigned hmcId = this->extract_id_from_string(tgt->name);
           unsigned linkId = this->extract_id_from_string(tgt->location[0]);
-          if (!sim->hmc_define_slid(slidId, hmcId, linkId, bitwidth, bitrate)) {
+          if (!sim->hmc_define_slid(slidId, hmcId, linkId, lanes, bitrate)) {
             std::cout << "ERROR: define slid failed!" << std::endl;
             exit(-1);
           }
@@ -58,11 +87,12 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
           unsigned src_linkId = this->extract_id_from_string(src->location[0]);
           unsigned tgt_hmcId = this->extract_id_from_string(tgt->name);
           unsigned tgt_linkId = this->extract_id_from_string(tgt->location[0]);
-          if (!sim->hmc_set_link_config(src_hmcId, src_linkId, tgt_hmcId, tgt_linkId, bitwidth, bitrate)) {
+          if (!sim->hmc_set_link_config(src_hmcId, src_linkId, tgt_hmcId, tgt_linkId, lanes, bitrate)) {
             std::cout << "ERROR: set link config failed!" << std::endl;
             exit(-1);
           }
         }
+        std::cout << "HMC_GRAPHVIZ: " << src->name << ":" << src->location[0] << " -- " << tgt->name << ":" << tgt->location[0] << std::endl;
       }
 
       continue;
@@ -73,16 +103,17 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
   }
 }
 
-hmc_graphviz::hmc_graphviz(hmc_sim *sim, const char *graphviz_filename)
+hmc_graphviz::hmc_graphviz (hmc_sim *sim, const char *graphviz_filename)
 {
   // if not set, try to find a filename, if this does not apply, potentially the graph will be setup the old way
   if (!graphviz_filename) {
     graphviz_filename = this->get_filename_from_env();
     if (!graphviz_filename) {
-      std::cout << "HMCSIM_GRAPH_DOTFILE env variable not set!" << std::endl;
+      std::cout << "HMC_GRAPHVIZ: HMCSIM_GRAPH_DOTFILE env variable not set!" << std::endl;
       return;
     }
   }
+  std::cout << "HMC_GRAPHVIZ: " << graphviz_filename << std::endl;
 
   std::string content = this->get_content_from_file(graphviz_filename);
   if (content.empty())

@@ -22,7 +22,7 @@ hmc_route::~hmc_route(void)
 
 void hmc_route::set_slid(unsigned slid, unsigned cubId, unsigned quadId)
 {
-  std::cout << "slid : " << slid << " cub " << cubId << " quad " << quadId << std::endl;
+  std::cout << "HMC_ROUTE: slid : " << slid << " cub " << cubId << " quad " << quadId << std::endl;
   this->slidToCube[slid] = std::make_pair(cubId, quadId);
 }
 
@@ -49,15 +49,15 @@ unsigned hmc_route::ext_routing(unsigned destCubId, unsigned curQuadId)
 
 void hmc_route::hmc_routing_tables_visualize(void)
 {
-  std::cout << "Routing table\n" << std::endl;
-  std::cout << "Src.  Dest.  Gateway  Hops\n" << std::endl;
+  std::cout << "HMC_ROUTE: Routing table" << std::endl;
+  std::cout << "HMC_ROUTE: Src.  Dest.  Gateway  Hops" << std::endl;
   unsigned numcubes = this->cubes->size();
   for (unsigned d = 0; d < numcubes; d++) {
     hmc_cube *cube = (*this->cubes)[d];
     for (unsigned t = 0; t < numcubes; t++) {
       hmc_route_t *cur = cube->get_routingtbl()[ t ];
       while (cur != NULL) {
-        std::cout << "  " << d << "     " << t << "       " << cur->next_dev << "   " << cur->hops << std::endl;
+        std::cout << "HMC_ROUTE:   " << d << "     " << t << "       " << cur->next_dev << "   " << cur->hops << std::endl;
         cur = cur->next;
       }
     }

@@ -9,7 +9,7 @@ hmc_sqlite3 **hmc_trace_init = &hmc_sqlite3_data;
 // http://www.wassen.net/sqlite-c.html
 hmc_sqlite3::hmc_sqlite3(const char *dbname)
 {
-  std::cout << "dbname : " << dbname << std::endl;
+  std::cout << "HMC_SQLITE3: dbname : " << dbname << std::endl;
 
   // check if file exists. If so, delete
   std::ifstream ifile(dbname);
@@ -42,7 +42,7 @@ hmc_sqlite3::~hmc_sqlite3(void)
   sqlite3_finalize(this->sql_rqst);
   sqlite3_finalize(this->sql_rsp);
   sqlite3_close(this->db);
-  std::cout << "closed db!" << std::endl;
+  std::cout << "HMC_SQLITE3: closed db!" << std::endl;
 }
 
 void hmc_trace::trace_rqst(uint64_t cycle, uint64_t phyPktAddr, unsigned pktTag,

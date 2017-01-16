@@ -130,7 +130,7 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
 }
 
 hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned linkId,
-                                     unsigned bitwidth, float bitrate)
+                                     unsigned lanes, float bitrate)
 {
   if (slidId >= this->num_slids) {
     std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
@@ -150,7 +150,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN, 0);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
-  linkend0->adjust_both_linkends(bitwidth, bitrate);
+  linkend0->adjust_both_linkends(lanes, bitrate);
   linkend1->set_ilink_notify(slidId, slidId, &this->slidnotify); // important 1!! -> will be return for slid
 
   this->link_garbage.push_back(linkend0);

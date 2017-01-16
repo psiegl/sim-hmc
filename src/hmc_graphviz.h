@@ -1,9 +1,14 @@
 #include <boost/regex.hpp>
 #include <iostream>
+#include <cmath>
 class hmc_sim;
 
 class hmc_graphviz {
 private:
+    bool similar_floats(float a, float b) {
+      return std::fabs(a - b) < std::numeric_limits<float>::epsilon();
+    }
+
     const char* get_filename_from_env(void);
     std::string get_content_from_file(const char* filename);
     void parse_content_and_set(hmc_sim *sim, std::string content);
