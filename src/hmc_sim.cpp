@@ -7,17 +7,22 @@
 #include "hmc_link_queue.h"
 #include "hmc_link_buf.h"
 #include "hmc_vault.h"
-#include "hmc_sqlite3.h"
+#ifdef HMC_LOGGING
+# include "hmc_trace.h"
+# include "hmc_trace_sqlite3.h"
+#endif /* #ifdef HMC_LOGGING */
 #ifdef HMC_USES_GRAPHVIZ
-#include "hmc_graphviz.h"
+# include "hmc_graphviz.h"
 #endif /* #ifdef HMC_USES_GRAPHVIZ */
 
-extern hmc_sqlite3 **hmc_trace_init;
+#ifdef HMC_LOGGING
+extern hmc_trace_logger **hmc_trace_log;
+#endif /* #ifdef HMC_LOGGING */
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
                  unsigned ringbus_bitwidth, float ringbus_bitrate,
-                 const char *graphviz_filename) :
+                 const char *database_filename, const char *graphviz_filename) :
   hmc_notify_cl(),
   clk(0),
   cubes_notify(0, nullptr, this),
@@ -53,24 +58,33 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     throw false;
   }
 
-  if (!*hmc_trace_init)
-    *hmc_trace_init = new hmc_sqlite3("hmcsim.db");
-
   for (unsigned i = 0; i < num_hmcs; i++) {
     this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbus_bitwidth, ringbus_bitrate, capacity, &this->cubes, num_hmcs, &this->clk);
     this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 
+#ifdef HMC_LOGGING
+  if (!*hmc_trace_log) {
+    if (!database_filename)
+      database_filename = getenv("HMCSIM_TRACE_DBFILE");
+    *hmc_trace_log = new hmc_sqlite3(database_filename);
+  }
+#endif /* #ifdef HMC_LOGGING */
+
   // set up the graph after everything else was set up!
 #ifdef HMC_USES_GRAPHVIZ
+  if (!graphviz_filename)
+    graphviz_filename = getenv("HMCSIM_GRAPH_DOTFILE");
   hmc_graphviz graph(this, graphviz_filename);
 #endif /* #ifdef HMC_USES_GRAPHVIZ */
 }
 
 hmc_sim::~hmc_sim(void)
 {
-  if (*hmc_trace_init)
-    delete *hmc_trace_init;
+#ifdef HMC_LOGGING
+  if (*hmc_trace_log)
+    delete *hmc_trace_log;
+#endif /* #ifdef HMC_LOGGING */
 
   unsigned i = 0;
   for (std::map<unsigned, hmc_cube*>::iterator it = this->cubes.begin(); it != this->cubes.end(); ++it) {
@@ -143,6 +157,10 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
     std::cerr << "Defined hmc heigher than amount of hmcs defined (" << hmcId << " / " << this->cubes.size() << ")" << std::endl;
     return nullptr;
   }
+  if (this->slids.find(slidId) != this->slids.end()) {
+    std::cerr << "ERROR: slid already set!" << std::endl;
+    return nullptr;
+  }
 
   hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
 
@@ -168,7 +186,11 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
 hmc_notify* hmc_sim::hmc_get_slid_notify(unsigned slidId)
 {
   if (slidId >= this->num_slids) {
-    std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    std::cerr << "ERROR: Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    return nullptr;
+  }
+  if (this->slids.find(slidId) == this->slids.end()) {
+    std::cerr << "ERROR: slid not set! Most likely initialisation error!" << std::endl;
     return nullptr;
   }
   return &this->slidnotify;
@@ -178,14 +200,21 @@ hmc_notify* hmc_sim::hmc_get_slid_notify(unsigned slidId)
 bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
 {
   if (slidId >= this->num_slids) {
-    std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    std::cerr << "ERROR: defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    return false;
+  }
+  if (this->slids.find(slidId) == this->slids.end()) {
+    std::cerr << "ERROR: slid not set! Most likely initialisation error!" << std::endl;
+    return false;
+  }
+  if (pkt == nullptr) {
+    std::cerr << "ERROR: packet is nullptr!" << std::endl;
     return false;
   }
 
   uint64_t header = HMC_PACKET_HEADER(pkt);
 
   assert(HMCSIM_PACKET_REQUEST_GET_CUB(header) < this->cubes.size());
-  assert(this->slids.find(slidId) != this->slids.end());
 
   unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
   unsigned flitwidthInBit = flits * FLIT_WIDTH;
@@ -193,9 +222,9 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
   if (!slid->has_space(flitwidthInBit)) // check if we have space!
     return false;
 
-  char *packet = new char[flitwidthInBit / 8];
-  memcpy(packet, pkt, flitwidthInBit / 8);
-  packet[0] |= HMCSIM_PACKET_SET_REQUEST();
+  char *packet = new char[flitwidthInBit / (sizeof(char) * 8)];
+  memcpy(packet, pkt, flitwidthInBit / (sizeof(char) * 8));
+  packet[0] |= HMCSIM_PACKET_SET_REQUEST(); // still a hack
 
   unsigned len64bit = flits << 1;
   ((uint64_t*)packet)[len64bit - 1] &= ~(uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(~0x0); // mask out whatever is set for slid
@@ -207,12 +236,13 @@ bool hmc_sim::hmc_send_pkt(unsigned slidId, char *pkt)
 bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
 {
   if (slidId >= this->num_slids) {
-    std::cerr << "Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
+    std::cerr << "ERROR: defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
     return false;
   }
-
-  assert(this->slids.find(slidId) != this->slids.end());
-  assert(pkt != nullptr);
+  if (this->slids.find(slidId) == this->slids.end()) {
+    std::cerr << "ERROR: slid not set! Most likely initialisation error!" << std::endl;
+    return false;
+  }
 
   unsigned recvpacketleninbit;
   hmc_link_buf *rx = this->slids[slidId]->get_rx();
@@ -221,7 +251,8 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
     return false;
 
   rx->pop_front();
-  memcpy(pkt, packet, recvpacketleninbit / 64);
+  if (pkt != nullptr)
+    memcpy(pkt, packet, recvpacketleninbit / 64);
   delete[] packet;
   return true;
 }
@@ -367,7 +398,7 @@ void hmc_sim::hmc_encode_pkt(unsigned cub, uint64_t addr,
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_FRP(hmcsim_rqst_getfrp());
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SEQ(hmcsim_rqst_getseq(cmd));
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_Pb(0x1);
-  //pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slid);
+  //pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slid); // slid is set when send_pkt is issued
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_RTC(hmcsim_rqst_getrtc());
   pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_CRC(hmcsim_crc32((unsigned char*)pkt, 2 * flits));  // crc32 calc. needs to be last of packet init!
 }

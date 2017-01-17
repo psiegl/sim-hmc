@@ -10,15 +10,16 @@
 class hmc_module;
 
 enum hmc_link_type {
-  HMC_LINK_EXTERN, /* HOST <-> DEV (SLID) or DEV <-> DEV */
-  HMC_LINK_RING,
-  HMC_LINK_VAULT,
-  HMC_LINK_UNDEFINED
+  HMC_LINK_EXTERN    = 0x0, /* HOST <-> DEV (SLID) or DEV <-> DEV */
+  HMC_LINK_RING      = 0x1,
+  HMC_LINK_VAULT     = 0x2,
+  HMC_LINK_UNDEFINED = 0x3
 };
 
 class hmc_link : private hmc_notify_cl {
 private:
   hmc_module *module;
+  enum hmc_link_type type;
   hmc_notify not_rx_q;
   hmc_link_queue rx_q;
 
@@ -52,6 +53,10 @@ public:
   ALWAYS_INLINE hmc_link* get_binding(void)
   {
     return this->binding;
+  }
+  ALWAYS_INLINE enum hmc_link_type get_type(void)
+  {
+    return this->type;
   }
 
   void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify);

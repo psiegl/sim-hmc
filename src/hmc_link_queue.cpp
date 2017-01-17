@@ -6,16 +6,15 @@
 #include "config.h"
 #include "hmc_module.h"
 #ifdef HMC_LOGGING
-#include <iostream>
-#include "hmc_packet.h"
-#include "hmc_decode.h"
-#include "hmc_sqlite3.h"
+# include "hmc_packet.h"
+# include "hmc_decode.h"
+# include "hmc_trace.h"
 #endif /* #ifdef HMC_LOGGING */
 
 // everything related to occupation will be in Mega instead of Giga!
 // therewith we can use safer unsigned, instead of float
-hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf, hmc_notify *notify,
-                               hmc_link *link) :
+hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf,
+                               hmc_notify *notify, hmc_link *link) :
   id(-1),
   notifyid(-1),
   cur_cycle(cur_cycle),
@@ -64,22 +63,19 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
     float UI = packetleninbit / this->bitwidth;
     this->list.push_back(std::make_tuple(packet, UI, packetleninbit, *this->cur_cycle));
 #ifdef HMC_LOGGING
-    uint64_t header = HMC_PACKET_HEADER(packet);
     hmc_module *fromModule = this->link->get_binding()->get_module();
     int fromId = (fromModule) ? fromModule->get_id() : -1;
     hmc_module *toModule = this->link->get_module();
     int toId = (toModule) ? toModule->get_id() : -1;
 
+    uint64_t header = HMC_PACKET_HEADER(packet);
     if (HMCSIM_PACKET_IS_REQUEST(header)) {
-      uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
-      unsigned tag = HMCSIM_PACKET_REQUEST_GET_TAG(header);
-      std::cout << std::dec << *cur_cycle << " IN_RQST  pkt " << tag << " (addr " << addr << "): from: " << fromId << ", to: " << toId << std::endl;
-      hmc_trace::trace_rqst(*cur_cycle, (uint64_t)packet, tag, addr, 0, fromId, toId);
+      uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
+      hmc_trace::trace_in_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
     }
     else {
-      unsigned tag = HMCSIM_PACKET_RESPONSE_GET_TAG(header);
-      std::cout << std::dec << *cur_cycle << " IN_RSP  pkt " << tag << ": from: " << fromId << ", to: " << toId << std::endl;
-      hmc_trace::trace_rsp(*cur_cycle, (uint64_t)packet, tag, 0, fromId, toId);
+      uint64_t tail = HMC_PACKET_RESP_TAIL(packet);
+      hmc_trace::trace_in_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
     }
 #endif /* #ifdef HMC_LOGGING */
     return true;
@@ -122,20 +118,22 @@ void hmc_link_queue::clock(void)
   auto front = this->list.front();
   if (std::get<1>(front) == 0.0f) {
     char *packet = std::get<0>(front);
-#if 0
 #ifdef HMC_LOGGING
+    hmc_module *fromModule = this->link->get_binding()->get_module();
+    int fromId = (fromModule) ? fromModule->get_id() : -1;
+    hmc_module *toModule = this->link->get_module();
+    int toId = (toModule) ? toModule->get_id() : -1;
+
     uint64_t header = HMC_PACKET_HEADER(packet);
     if (HMCSIM_PACKET_IS_REQUEST(header)) {
-      uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
-      unsigned tag = HMCSIM_PACKET_REQUEST_GET_TAG(header);
-      std::cout << std::dec << *cur_cycle << " OUT pkt " << tag << " (addr " << addr << "): from: " << this->link->get_tx()->get_id() << ", to: " << this->id << std::endl;
+      uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
+      hmc_trace::trace_out_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
     }
     else {
-      unsigned tag = HMCSIM_PACKET_RESPONSE_GET_TAG(header);
-      std::cout << std::dec << *cur_cycle << " OUT pkt " << tag << ": from: " << this->link->get_tx()->get_id() << ", to: " << this->id << std::endl;
+      uint64_t tail = HMC_PACKET_RESP_TAIL(packet);
+      hmc_trace::trace_out_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
     }
 #endif /* #ifdef HMC_LOGGING */
-#endif
     this->buf->push_back_set_avail(packet, std::get<2>(front));
     this->list.pop_front();
     if (!this->list.size())

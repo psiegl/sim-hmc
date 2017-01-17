@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <sys/time.h>
 #include "src/hmc_sim.h"
 
 int main(int argc, char* argv[])
@@ -13,6 +14,10 @@ int main(int argc, char* argv[])
 #if 1
   // if GRAPHVIZ is enabled!
   hmc_notify* slidnotify = sim.hmc_get_slid_notify(slidId);
+  if(slidnotify == nullptr) {
+    std::cerr << "initialisation failed!" << std::endl;
+    exit(-1);
+  }
 #else
   hmc_notify* slidnotify = sim.hmc_define_slid(slidId, 0, 0, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
 
@@ -34,7 +39,10 @@ int main(int argc, char* argv[])
   unsigned clks = 0;
   unsigned *track = new unsigned[issue];
 
-  char retpacket[17*FLIT_WIDTH / 8];
+  struct timeval t1, t2;
+  gettimeofday(&t1, NULL);
+
+  char retpacket[17*FLIT_WIDTH / (sizeof(char)*8)];
   bool next_available = false;
   do
   {
@@ -44,6 +52,7 @@ int main(int argc, char* argv[])
 
       unsigned addr;
       switch(send_ctr & 0x3) {
+      default:
       case 0x0:
         addr = 0b000000000000; // quad 0
         break;
@@ -89,6 +98,8 @@ int main(int argc, char* argv[])
     sim.clock();
   } while(true);
 
+  gettimeofday(&t2, NULL);
+
   unsigned long long avg = 0;
   for(unsigned i=0; i<issue-skip; i++) {
     avg += track[i];
@@ -103,6 +114,10 @@ int main(int argc, char* argv[])
   float bw = (((float)(256+16)*8*(issue-skip))/(clks*freq)); // Gbit/s
   std::cout << "bw: " << bw << "Gbit/s, " << (bw/8) << "GB/s"  << std::endl;
   std::cout << "bw per lane: " << (((float)(256+16)*8*(issue-skip))/(clks*freq*16)) << "Gbit/s" << std::endl;
+
+  double elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0; // ms
+  std::cout << std::endl;
+  std::cout << "Simulation time: " << elapsedTime << " ms, cycles: " << clks << ", " << (clks/elapsedTime) << " kHz" << std::endl;
 
   return 0;
 }

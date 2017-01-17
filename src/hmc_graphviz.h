@@ -9,7 +9,6 @@ private:
       return std::fabs(a - b) < std::numeric_limits<float>::epsilon();
     }
 
-    const char* get_filename_from_env(void);
     std::string get_content_from_file(const char* filename);
     void parse_content_and_set(hmc_sim *sim, std::string content);
 

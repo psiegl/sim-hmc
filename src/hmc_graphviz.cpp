@@ -6,11 +6,6 @@
 #include "hmc_graphviz.h"
 #include "hmc_sim.h"
 
-const char* hmc_graphviz::get_filename_from_env(void)
-{
-  return getenv("HMCSIM_GRAPH_DOTFILE");
-}
-
 std::string hmc_graphviz::get_content_from_file(const char *filename)
 {
   std::ifstream fh;
@@ -108,11 +103,8 @@ hmc_graphviz::hmc_graphviz (hmc_sim *sim, const char *graphviz_filename)
 {
   // if not set, try to find a filename, if this does not apply, potentially the graph will be setup the old way
   if (!graphviz_filename) {
-    graphviz_filename = this->get_filename_from_env();
-    if (!graphviz_filename) {
-      std::cout << "HMC_GRAPHVIZ: HMCSIM_GRAPH_DOTFILE env variable not set!" << std::endl;
-      return;
-    }
+    std::cout << "HMC_GRAPHVIZ: HMCSIM_GRAPH_DOTFILE env variable not set!" << std::endl;
+    return;
   }
   std::cout << "HMC_GRAPHVIZ: " << graphviz_filename << std::endl;
 

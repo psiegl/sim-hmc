@@ -39,7 +39,7 @@ HMCSIM_MACROS += -DNDEBUG
 endif
 
 ifneq (,$(findstring HMC_USES_GRAPHVIZ, $(HMCSIM_MACROS)))
-LIBS     += -lboost_system -lboost_graph -lboost_regex
+LIBS      += -lboost_system -lboost_graph -lboost_regex
 endif
 
 ifneq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))

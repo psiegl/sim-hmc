@@ -132,6 +132,7 @@
 
 #define HMC_PACKET_HEADER( x )    (((uint64_t*)(x))[0])
 #define HMC_PACKET_REQ_TAIL( x )  (((uint64_t*)(x))[(HMCSIM_PACKET_REQUEST_GET_LNG(HMC_PACKET_HEADER(x)) << 1)-1])
+#define HMC_PACKET_RESP_TAIL( x ) (((uint64_t*)(x))[(HMCSIM_PACKET_RESPONSE_GET_LNG(HMC_PACKET_HEADER(x)) << 1)-1])
 
 /* ----------------------------------------- */
 class hmc_decode {

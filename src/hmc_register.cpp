@@ -8,9 +8,8 @@ hmc_register::hmc_register(hmc_cube *cube, unsigned capacity) :
   hmc_decode(),
   cube(cube)
 {
-  for (unsigned i = 0; i < HMC_NUM_REGS; i++) {
+  for (unsigned i = 0; i < HMC_NUM_REGS; i++)
     this->regs[i] = 0x0;
-  }
 
   // reset all the registers
   for (unsigned i = 0; i < (unsigned)elemsof(this->hmcsim_decode); i++) {
