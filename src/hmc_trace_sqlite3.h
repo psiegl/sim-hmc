@@ -2,15 +2,21 @@
 #define _HMC_TRACE_SQLITE3_H_
 
 #include <sqlite3.h>
+#include <stdint.h>
 #include "hmc_trace.h"
 
 class hmc_sqlite3 : public hmc_trace_logger {
 private:
+  bool use_memory;
   sqlite3 *db;
+  sqlite3 *filedb;
   sqlite3_stmt *sql;
 
 public:
-  explicit hmc_sqlite3(const char *dbname);
+  /*
+   * Let's first dump everything into memory and then store it afterwards to file!
+   */
+  explicit hmc_sqlite3(const char *dbname, bool use_memory = true);
   ~hmc_sqlite3(void);
 
   void execute(unsigned linkTypeId, unsigned linkIntTypeId,

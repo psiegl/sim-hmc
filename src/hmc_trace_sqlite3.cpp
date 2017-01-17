@@ -4,7 +4,8 @@
 #include "hmc_trace_sqlite3.h"
 
 // http://www.wassen.net/sqlite-c.html
-hmc_sqlite3::hmc_sqlite3(const char *dbname)
+hmc_sqlite3::hmc_sqlite3(const char *dbname, bool use_memory) :
+  use_memory(use_memory)
 {
   if (dbname == nullptr) {
     std::cerr << "HMC_SQLITE3: ERROR: dbname not set!" << std::endl;
@@ -16,9 +17,19 @@ hmc_sqlite3::hmc_sqlite3(const char *dbname)
   if (ifile)
     remove(dbname);
 
-  if (sqlite3_open_v2(dbname, &this->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr)) {
+  if (sqlite3_open_v2(dbname, &this->filedb, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr)) {
     std::cerr << "ERROR: couldn't open database '" << dbname << "'!" << std::endl;
     exit(-1);
+  }
+
+  if (this->use_memory) {
+    if (sqlite3_open(":memory:", &this->db)) {
+      std::cerr << "ERROR: couldn't open database '" << dbname << "'!" << std::endl;
+      exit(-1);
+    }
+  }
+  else {
+    this->db = this->filedb;
   }
 
   sqlite3_stmt *query;
@@ -37,7 +48,24 @@ hmc_sqlite3::hmc_sqlite3(const char *dbname)
 hmc_sqlite3::~hmc_sqlite3(void)
 {
   sqlite3_finalize(this->sql);
-  sqlite3_close(this->db);
+
+  if (this->use_memory) {
+    sqlite3 *pFrom = this->db;
+    sqlite3 *pTo = this->filedb;
+
+    // https://www.sqlite.org/backup.html
+    sqlite3_backup *pBackup = sqlite3_backup_init(pTo, "main", pFrom, "main");
+    if (pBackup) {
+      sqlite3_backup_step(pBackup, -1);
+      sqlite3_backup_finish(pBackup);
+    }
+    if (sqlite3_errcode(pTo))
+      std::cerr << "ERROR: couldn't dump data into db-file!" << std::endl;
+
+    sqlite3_close(this->db);
+  }
+
+  sqlite3_close(this->filedb);
 }
 
 void hmc_sqlite3::execute(unsigned linkTypeId, unsigned linkIntTypeId,

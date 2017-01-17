@@ -53,9 +53,17 @@ bool hmc_link_queue::has_space(unsigned packetleninbit)
   return ((this->bitoccupation / 1000) < this->bitoccupationmax);
 }
 
+//#define HMC_LINK_QUEUE_PERFORMANCE__UNSAFE 1
+/*
+ * in theory, has_space will always be executed checked before push_back will be executed
+ * If full performance is required, check first if else case below will be entered .. if not ... go for it :-)
+ */
 bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 {
-  if ((this->bitoccupation / 1000) /* + packetleninbit */ < this->bitoccupationmax) {
+#ifndef HMC_LINK_QUEUE_PERFORMANCE__UNSAFE
+  if (__builtin_expect((this->bitoccupation / 1000) /* + packetleninbit */ < this->bitoccupationmax, 1))
+#endif /* #ifndef HMC_LINK_QUEUE_PERFORMANCE__UNSAFE */
+  {
     if (!this->bitoccupation)
       this->notify->notify_add(this->notifyid);
 
@@ -80,8 +88,11 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 #endif /* #ifdef HMC_LOGGING */
     return true;
   }
-  // ToDo: shouldn't happen
+
+  // shouldn't happen
+#ifndef HMC_LINK_QUEUE_PERFORMANCE__UNSAFE
   return false;
+#endif /* #ifndef HMC_LINK_QUEUE_PERFORMANCE__UNSAFE */
 }
 
 void hmc_link_queue::clock(void)
