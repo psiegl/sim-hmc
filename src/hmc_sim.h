@@ -97,7 +97,7 @@ public:
   hmc_sim(unsigned num_hmcs, unsigned num_slids,
           unsigned num_links, unsigned capacity,
           unsigned ringbus_bitwidth, float ringbus_bitrate,
-          const char* database_filename = nullptr, const char* graphviz_filename = nullptr);
+          const char* graphviz_filename = nullptr);
   ~hmc_sim(void);
 
   ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)

@@ -26,6 +26,11 @@ SRC      := $(filter-out $(SRCDIR)/hmc_trace_sqlite3.cpp, $(SRC))
 else
 LIBS     += -lsqlite3
 endif
+ifeq (,$(findstring HMC_LOGGING_POSTGRESQL, $(HMCSIM_MACROS)))
+SRC      := $(filter-out $(SRCDIR)/hmc_trace_postgresql.cpp, $(SRC))
+else
+LIBS     += -lpqxx -lpq
+endif
 ifeq (,$(findstring HMC_LOGGING, $(HMCSIM_MACROS)))
 SRC      := $(filter-out $(SRCDIR)/hmc_trace.cpp, $(SRC))
 else

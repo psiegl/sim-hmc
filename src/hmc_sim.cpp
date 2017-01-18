@@ -11,6 +11,8 @@
 # include "hmc_trace.h"
 # if defined(HMC_LOGGING_SQLITE3)
 #  include "hmc_trace_sqlite3.h"
+# elif defined(HMC_LOGGING_POSTGRESQL)
+#  include "hmc_trace_postgresql.h"
 # elif defined(HMC_LOGGING_STDOUT)
 #  include "hmc_trace_stdout.h"
 # endif
@@ -26,7 +28,7 @@ extern hmc_trace_logger **hmc_trace_log;
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
                  unsigned ringbus_bitwidth, float ringbus_bitrate,
-                 const char *database_filename, const char *graphviz_filename) :
+                 const char *graphviz_filename) :
   hmc_notify_cl(),
   clk(0),
   cubes_notify(0, nullptr, this),
@@ -70,9 +72,35 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 #ifdef HMC_LOGGING
 #if defined(HMC_LOGGING_SQLITE3)
   if (!*hmc_trace_log) {
-    if (!database_filename)
-      database_filename = getenv("HMCSIM_TRACE_DBFILE");
-    *hmc_trace_log = new hmc_sqlite3(database_filename);
+    const char *dbname;
+    if (!(dbname = getenv("HMCSIM_TRACE_DBFILE"))) {
+      std::cout << "WARNING: please define env variable: " \
+        "HMCSIM_TRACE_DBFILE" << std::endl;
+      std::cout << "         will try default param." << std::endl;
+      *hmc_trace_log = new hmc_sqlite3();
+    }
+    else
+      *hmc_trace_log = new hmc_sqlite3(dbname);
+  }
+#elif defined(HMC_LOGGING_POSTGRESQL)
+  if (!*hmc_trace_log) {
+    const char *dbname, *dbuser, *dbpassword, *dbaddr, *dbport;
+    if (!(dbname = getenv("HMCSIM_TRACE_DBNAME"))
+        || !(dbuser = getenv("HMCSIM_TRACE_DBUSER"))
+        || !(dbpassword = getenv("HMCSIM_TRACE_DBPASSWD"))
+        || !(dbaddr = getenv("HMCSIM_TRACE_DBADDR"))
+        || !(dbport = getenv("HMCSIM_TRACE_DBPORT"))) {
+      std::cout << "WARNING: please define all env variables: " \
+        "HMCSIM_TRACE_DBNAME, " \
+        "HMCSIM_TRACE_DBUSER, " \
+        "HMCSIM_TRACE_DBPASSWD, " \
+        "HMCSIM_TRACE_DBADDR, " \
+        "HMCSIM_TRACE_DBPORT" << std::endl;
+      std::cout << "         will try default params." << std::endl;
+      *hmc_trace_log = new hmc_postgresql();
+    }
+    else
+      *hmc_trace_log = new hmc_postgresql(dbname, dbuser, dbpassword, dbaddr, dbport);
   }
 #elif defined(HMC_LOGGING_STDOUT)
   *hmc_trace_log = new hmc_trace_stdout();

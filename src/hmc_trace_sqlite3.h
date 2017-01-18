@@ -16,7 +16,7 @@ public:
   /*
    * Let's first dump everything into memory and then store it afterwards to file!
    */
-  explicit hmc_sqlite3(const char *dbname, bool use_memory = true);
+  explicit hmc_sqlite3(const char *dbname = "hmcsim_sqlite3.db", bool use_memory = true);
   ~hmc_sqlite3(void);
 
   void execute(unsigned linkTypeId, unsigned linkIntTypeId,
