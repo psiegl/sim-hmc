@@ -2,7 +2,9 @@
 #include "hmc_trace_postgresql.h"
 
 hmc_postgresql::hmc_postgresql(const char *dbname, const char *dbuser, const char *dbpasswd,
-                               const char *dbaddr, const char *dbport)
+                               const char *dbaddr, const char *dbport) :
+  db_conn(nullptr),
+  trans(nullptr)
 {
   std::string str = std::string("dbname=") + std::string(dbname);
   str += std::string(" user=") + std::string(dbuser);
@@ -39,7 +41,7 @@ hmc_postgresql::hmc_postgresql(const char *dbname, const char *dbuser, const cha
                         "fromId         INT," \
                         "toId           INT," \
                         "header         BIGINT," \
-                        "tail           BIGINT );";   // we always start with a fresh table ... user needs to back it up
+                        "tail           BIGINT );"; // we always start with a fresh table ... user needs to back it up
 
     this->trans = new pqxx::work(*this->db_conn);
     this->trans->exec(s_sql);

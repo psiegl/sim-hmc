@@ -2,7 +2,6 @@
 #define _HMC_TRACE_POSTGRESQL_H_
 
 #include <pqxx/pqxx>
-#include <vector>
 #include <stdint.h>
 #include "hmc_trace.h"
 
@@ -12,9 +11,6 @@ private:
   pqxx::work* trans;
 
 public:
-  /*
-   * Let's first dump everything into memory and then store it afterwards to file!
-   */
   explicit hmc_postgresql(const char* dbname = "hmcsim", const char* dbuser = "hmcsim", const char* dbpasswd = "hmcsim",
                           const char* dbaddr = "127.0.0.1", const char* dbport = "5432");
   ~hmc_postgresql(void);
