@@ -20,6 +20,18 @@ endif
 ifeq (,$(findstring HMC_USES_GRAPHVIZ, $(HMCSIM_MACROS)))
 SRC      := $(filter-out $(SRCDIR)/hmc_graphviz.cpp, $(SRC))
 endif
+
+ifeq (,$(findstring HMC_LOGGING_SQLITE3, $(HMCSIM_MACROS)))
+SRC      := $(filter-out $(SRCDIR)/hmc_trace_sqlite3.cpp, $(SRC))
+else
+LIBS     += -lsqlite3
+endif
+ifeq (,$(findstring HMC_LOGGING, $(HMCSIM_MACROS)))
+SRC      := $(filter-out $(SRCDIR)/hmc_trace.cpp, $(SRC))
+else
+CFLAGS   += -DHMC_LOGGING
+CXXFLAGS += -DHMC_LOGGING
+endif
 OBJ      := $(SRC:$(SRCDIR)/%.cpp=$(BLDDIR)/%.o)
 DEPS     := $(SRC:$(SRCDIR)/%.cpp,$(BLDDIR)/%.deps)
 
@@ -87,7 +99,7 @@ $(TARGET): $(BLDDIR) $(OBJ) $(BOBOBJ)
 
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
-	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc -lsqlite3 $(LIBS)
+	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc $(LIBS)
 
 bldall:
 	make clean

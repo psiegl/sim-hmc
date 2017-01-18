@@ -9,8 +9,11 @@
 #include "hmc_vault.h"
 #ifdef HMC_LOGGING
 # include "hmc_trace.h"
-# include "hmc_trace_sqlite3.h"
-# include "hmc_trace_stdout.h"
+# if defined(HMC_LOGGING_SQLITE3)
+#  include "hmc_trace_sqlite3.h"
+# elif defined(HMC_LOGGING_STDOUT)
+#  include "hmc_trace_stdout.h"
+# endif
 #endif /* #ifdef HMC_LOGGING */
 #ifdef HMC_USES_GRAPHVIZ
 # include "hmc_graphviz.h"
@@ -65,13 +68,13 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
 #ifdef HMC_LOGGING
-#if 1
+#if defined(HMC_LOGGING_SQLITE3)
   if (!*hmc_trace_log) {
     if (!database_filename)
       database_filename = getenv("HMCSIM_TRACE_DBFILE");
     *hmc_trace_log = new hmc_sqlite3(database_filename);
   }
-#else
+#elif defined(HMC_LOGGING_STDOUT)
   *hmc_trace_log = new hmc_trace_stdout();
 #endif
 #endif /* #ifdef HMC_LOGGING */

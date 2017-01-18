@@ -211,8 +211,4 @@ Energy Components:
 
 */
 
-
-#define HMC_LOGGING 1
-
-
 #endif /* #ifndef _CONFIG_H_ */
