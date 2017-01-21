@@ -9,23 +9,10 @@
 #include "hmc_vault.h"
 #ifdef HMC_LOGGING
 # include "hmc_trace.h"
-# if defined(HMC_LOGGING_HDF5)
-#  include "hmc_trace_hdf5.h"
-# elif defined(HMC_LOGGING_SQLITE3)
-#  include "hmc_trace_sqlite3.h"
-# elif defined(HMC_LOGGING_POSTGRESQL)
-#  include "hmc_trace_postgresql.h"
-# elif defined(HMC_LOGGING_STDOUT)
-#  include "hmc_trace_stdout.h"
-# endif
 #endif /* #ifdef HMC_LOGGING */
 #ifdef HMC_USES_GRAPHVIZ
 # include "hmc_graphviz.h"
 #endif /* #ifdef HMC_USES_GRAPHVIZ */
-
-#ifdef HMC_LOGGING
-extern hmc_trace_logger **hmc_trace_log;
-#endif /* #ifdef HMC_LOGGING */
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
@@ -72,45 +59,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
 #ifdef HMC_LOGGING
-#if defined(HMC_LOGGING_HDF5)
-  if (!*hmc_trace_log) {
-    *hmc_trace_log = new hmc_hdf5();
-  }
-#elif defined(HMC_LOGGING_SQLITE3)
-  if (!*hmc_trace_log) {
-    const char *dbname;
-    if (!(dbname = getenv("HMCSIM_TRACE_DBFILE"))) {
-      std::cout << "WARNING: please define env variable: " \
-        "HMCSIM_TRACE_DBFILE" << std::endl;
-      std::cout << "         will try default param." << std::endl;
-      *hmc_trace_log = new hmc_sqlite3();
-    }
-    else
-      *hmc_trace_log = new hmc_sqlite3(dbname);
-  }
-#elif defined(HMC_LOGGING_POSTGRESQL)
-  if (!*hmc_trace_log) {
-    const char *dbname, *dbuser, *dbpassword, *dbaddr, *dbport;
-    if (!(dbname = getenv("HMCSIM_TRACE_DBNAME"))
-        || !(dbuser = getenv("HMCSIM_TRACE_DBUSER"))
-        || !(dbpassword = getenv("HMCSIM_TRACE_DBPASSWD"))
-        || !(dbaddr = getenv("HMCSIM_TRACE_DBADDR"))
-        || !(dbport = getenv("HMCSIM_TRACE_DBPORT"))) {
-      std::cout << "WARNING: please define all env variables: " \
-        "HMCSIM_TRACE_DBNAME, " \
-        "HMCSIM_TRACE_DBUSER, " \
-        "HMCSIM_TRACE_DBPASSWD, " \
-        "HMCSIM_TRACE_DBADDR, " \
-        "HMCSIM_TRACE_DBPORT" << std::endl;
-      std::cout << "         will try default params." << std::endl;
-      *hmc_trace_log = new hmc_postgresql();
-    }
-    else
-      *hmc_trace_log = new hmc_postgresql(dbname, dbuser, dbpassword, dbaddr, dbport);
-  }
-#elif defined(HMC_LOGGING_STDOUT)
-  *hmc_trace_log = new hmc_trace_stdout();
-#endif
+  hmc_trace::trace_setup();
 #endif /* #ifdef HMC_LOGGING */
 
   // set up the graph after everything else was set up!
@@ -124,8 +73,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 hmc_sim::~hmc_sim(void)
 {
 #ifdef HMC_LOGGING
-  if (*hmc_trace_log)
-    delete *hmc_trace_log;
+  hmc_trace::trace_cleanup();
 #endif /* #ifdef HMC_LOGGING */
 
   unsigned i = 0;

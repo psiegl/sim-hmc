@@ -14,6 +14,9 @@ public:
 
 class hmc_trace {
 public:
+  static void trace_setup(void);
+  static void trace_cleanup(void);
+
   static void trace_in_rqst(uint64_t cycle, uint64_t phyPktAddr,
                             unsigned typeId, int fromId, int toId,
                             uint64_t header, uint64_t tail);
