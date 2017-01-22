@@ -36,18 +36,13 @@ void hmc_link::set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *noti
 }
 
 
-void hmc_link::adjust_both_linkends(unsigned link_bitwidth, float link_bitrate)
+void hmc_link::adjust_both_linkends(unsigned link_bitwidth, float link_bitrate, unsigned link_fifo_out_sizeInFlits)
 {
   this->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
   this->binding->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
 
-  this->re_adjust_bufsize(FLIT_WIDTH * RETRY_BUFFER_FLITS);
-  this->binding->re_adjust_bufsize(FLIT_WIDTH * RETRY_BUFFER_FLITS);
-}
-
-void hmc_link::re_adjust_bufsize(unsigned buf_bitsize)
-{
-  this->rx_fifo_out.adjust_size(buf_bitsize);
+  this->get_rx_fifo_out()->adjust_size(link_fifo_out_sizeInFlits);
+  this->binding->get_rx_fifo_out()->adjust_size(link_fifo_out_sizeInFlits);
 }
 
 void hmc_link::connect_linkports(hmc_link *part)

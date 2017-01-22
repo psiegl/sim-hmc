@@ -28,8 +28,7 @@ hmc_quad::hmc_quad(unsigned id, hmc_conn_part *conn, unsigned num_ranks, hmc_not
      * Vault: bi-directional    80Gbit/s
      *        in one direction: 40Gbit/s (bitwidth: 32bits * bitrate: 1.25Gbit/s)
      */
-    linkend0->adjust_both_linkends(32, 1.25f);
-    // ToDo: adjust buf!
+    linkend0->adjust_both_linkends(32, 1.25f, FLIT_WIDTH * RETRY_BUFFER_FLITS);
     this->link_garbage.push_back(linkend0);
     this->link_garbage.push_back(linkend1);
   }

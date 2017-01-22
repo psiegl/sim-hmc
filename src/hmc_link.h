@@ -61,8 +61,7 @@ public:
 
   void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify);
 
-  void adjust_both_linkends(unsigned link_bitwidth, float link_bitrate);
-  void re_adjust_bufsize(unsigned buf_bitsize);
+  void adjust_both_linkends(unsigned link_bitwidth, float link_bitrate, unsigned link_fifo_out_sizeInFlits);
 
   // setup of two parts of hmc_link to form ONE link
   void connect_linkports(hmc_link *part);

@@ -120,7 +120,7 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
   hmc_link *linkend0 = new hmc_link(&this->clk, src_quad, HMC_LINK_EXTERN, 0);
   hmc_link *linkend1 = new hmc_link(&this->clk, dst_quad, HMC_LINK_EXTERN, 0);
   linkend0->connect_linkports(linkend1);
-  linkend0->adjust_both_linkends(bitwidth, bitrate);
+  linkend0->adjust_both_linkends(bitwidth, bitrate, FLIT_WIDTH * RETRY_BUFFER_FLITS);
 
   // adjust routing as of multiple HMCs
   this->cubes[src_hmcId]->get_partial_link_graph(dst_hmcId)->links |= (0x1 << src_linkId);
@@ -158,7 +158,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN, 0);
   hmc_link *linkend1 = new hmc_link(&this->clk);
   linkend0->connect_linkports(linkend1);
-  linkend0->adjust_both_linkends(lanes, bitrate);
+  linkend0->adjust_both_linkends(lanes, bitrate, FLIT_WIDTH * RETRY_BUFFER_FLITS);
   linkend1->set_ilink_notify(slidId, slidId, &this->slidnotify); // important 1!! -> will be return for slid
 
   this->link_garbage.push_back(linkend0);
