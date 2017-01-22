@@ -12,6 +12,7 @@
 
 hmc_connection::hmc_connection(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   hmc_notify_cl(),
+  hmc_module(),
   id(id),
   cub(cub),
   links_notify(id, notify, this),

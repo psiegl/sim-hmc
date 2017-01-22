@@ -1,4 +1,5 @@
 #include "hmc_quad.h"
+#include "hmc_connection.h"
 #include "hmc_cube.h"
 #ifdef HMC_USES_BOBSIM
 #include "hmc_bobsim.h"
@@ -8,13 +9,9 @@
 #include "hmc_notify.h"
 #include "hmc_link.h"
 
-hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
+hmc_quad::hmc_quad(unsigned id, hmc_connection *conn, unsigned num_ranks, hmc_notify *notify,
                    hmc_cube *cube, uint64_t *clk) :
   hmc_notify_cl(),
-  hmc_module(),
-  id(id),
-  ring_notify(id, notify, this),
-  ring(id, &this->ring_notify, cube),
   vault_notify(id, notify, this)
 {
   for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++) {
@@ -24,7 +21,7 @@ hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
     this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify);
 #endif /* #ifdef HMC_USES_BOBSIM */
 
-    hmc_link *linkend0 = new hmc_link(clk, this, HMC_LINK_VAULT, i);
+    hmc_link *linkend0 = new hmc_link(clk, conn, HMC_LINK_VAULT, i);
     hmc_link *linkend1 = new hmc_link(clk, this->vaults[i], HMC_LINK_VAULT, id);
     linkend0->connect_linkports(linkend1);
     /*
@@ -67,27 +64,14 @@ void hmc_quad::clock(void)
       }
     }
   }
-
-#ifdef HMC_USES_NOTIFY
-  if (this->ring_notify.get_notification())
-#endif /* #ifdef HMC_USES_NOTIFY */
-  {
-    this->ring.clock();
-  }
 }
 
 bool hmc_quad::notify_up(void)
 {
 #ifdef HMC_USES_NOTIFY
-  return (!this->vault_notify.get_notification() &&
-          !this->ring_notify.get_notification());
+  return (!this->vault_notify.get_notification());
 #else
   return true;
 #endif /* #ifdef HMC_USES_NOTIFY */
-}
-
-bool hmc_quad::set_link(unsigned linkId, hmc_link *link, enum hmc_link_type linkType)
-{
-  return this->ring.set_link(linkId, link, linkType);
 }
 

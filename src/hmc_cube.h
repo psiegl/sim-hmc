@@ -10,6 +10,7 @@
 
 class hmc_quad;
 class hmc_link;
+class hmc_connection;
 
 class hmc_cube : public hmc_route,
                  private hmc_notify_cl,
@@ -19,6 +20,8 @@ private:
 
   hmc_notify quad_notify;
   std::vector<hmc_quad*> quads;
+  hmc_notify conns_notify;
+  std::vector<hmc_connection*> conns;
 
   std::list<hmc_link*> link_garbage;
 
@@ -36,12 +39,10 @@ public:
     return this->id;
   }
 
-  ALWAYS_INLINE hmc_quad* get_quad(unsigned id)
+  ALWAYS_INLINE hmc_connection* get_conn(unsigned id)
   {
-    return this->quads[id];
+    return this->conns[id];
   }
-
-
 
   void clock(void);
 };

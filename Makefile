@@ -108,7 +108,7 @@ $(TARGET): $(BLDDIR)/asm.ar
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
 	@echo "[$(CXX)]" $@
-	@$(CXX) $(CXXFLAGS) -o $@ main.cpp $(TARGET) $(LIBS)
+	@$(CXX) $(CXXFLAGS) -o $@ main.cpp $(TARGET) $(LIBS) # -static
 
 runall: $(TESTBIN)
 	@./$(TESTBIN)

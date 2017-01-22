@@ -7,6 +7,7 @@
 #include "hmc_link_queue.h"
 #include "hmc_link_buf.h"
 #include "hmc_vault.h"
+#include "hmc_connection.h"
 #ifdef HMC_LOGGING
 # include "hmc_trace.h"
 #endif /* #ifdef HMC_LOGGING */
@@ -113,8 +114,8 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
     return false;
   }
 
-  hmc_quad *src_quad = this->cubes[src_hmcId]->get_quad(src_linkId);
-  hmc_quad *dst_quad = this->cubes[dst_hmcId]->get_quad(dst_linkId);
+  hmc_connection *src_quad = this->cubes[src_hmcId]->get_conn(src_linkId);
+  hmc_connection *dst_quad = this->cubes[dst_hmcId]->get_conn(dst_linkId);
 
   hmc_link *linkend0 = new hmc_link(&this->clk, src_quad, HMC_LINK_EXTERN, 0);
   hmc_link *linkend1 = new hmc_link(&this->clk, dst_quad, HMC_LINK_EXTERN, 0);
@@ -152,7 +153,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
     return nullptr;
   }
 
-  hmc_quad *quad = this->cubes[hmcId]->get_quad(linkId);
+  hmc_connection *quad = this->cubes[hmcId]->get_conn(linkId);
 
   hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN, 0);
   hmc_link *linkend1 = new hmc_link(&this->clk);
@@ -397,7 +398,7 @@ void hmc_sim::clock(void)
 {
   this->clk++;
 #ifdef HMC_USES_NOTIFY
-  uint32_t notifymap = this->cubes_notify.get_notification();
+  unsigned notifymap = this->cubes_notify.get_notification();
   unsigned lid = __builtin_ctzl(notifymap);
 #else
   unsigned lid = 0;

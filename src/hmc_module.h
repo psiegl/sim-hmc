@@ -4,7 +4,8 @@
 /**
  * Interface / base-class of each hmc module.
  */
-class hmc_link;
+
+#include "hmc_link.h"
 
 class hmc_module {
 public:

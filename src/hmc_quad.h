@@ -4,10 +4,7 @@
 #include <list>
 #include <map>
 #include "config.h"
-#include "hmc_conn_ring.h"
-#include "hmc_conn_xbar.h"
 #include "hmc_notify.h"
-#include "hmc_module.h"
 
 #ifdef HMC_USES_BOBSIM
 class hmc_bobsim;
@@ -15,16 +12,11 @@ class hmc_bobsim;
 class hmc_vault;
 #endif /* #ifdef HMC_USES_BOBSIM */
 class hmc_cube;
+class hmc_connection;
 class hmc_link;
 
-class hmc_quad : private hmc_notify_cl,
-                 public hmc_module {
+class hmc_quad : private hmc_notify_cl {
 private:
-  unsigned id;
-
-  hmc_notify ring_notify;
-  hmc_conn_ring ring;
-
   hmc_notify vault_notify;
 #ifdef HMC_USES_BOBSIM
   std::map<unsigned, hmc_bobsim*> vaults;
@@ -36,14 +28,11 @@ private:
   bool notify_up(void);
 
 public:
-  hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
+  hmc_quad(unsigned id, hmc_connection *conn, unsigned num_ranks, hmc_notify *notify,
            hmc_cube *cube, uint64_t *clk);
   virtual ~hmc_quad(void);
 
   void clock(void);
-
-  unsigned get_id(void) { return this->id; }
-  bool set_link(unsigned linkId, hmc_link* link, enum hmc_link_type linkType);
 };
 
 #endif /* #ifndef _HMC_QUAD_H_ */

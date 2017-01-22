@@ -6,6 +6,7 @@
 #include "hmc_notify.h"
 #include "hmc_macros.h"
 #include "hmc_link.h"
+#include "hmc_module.h"
 
 class hmc_cube;
 class hmc_quad;
@@ -15,7 +16,7 @@ class hmc_quad;
 #define HMC_JTL_RING_LINK( x )    ( HMC_MAX_LINKS/HMC_NUM_QUADS + (x) )
 #define HMC_JTL_VAULT_LINK( x )   ( HMC_MAX_LINKS/HMC_NUM_QUADS + HMC_NUM_QUADS + (x) )
 
-class hmc_connection : private hmc_notify_cl {
+class hmc_connection : private hmc_notify_cl, public hmc_module {
 protected:
   unsigned id;
 private:
@@ -51,6 +52,8 @@ public:
   }
 
   void clock(void);
+
+  unsigned get_id(void) { return this->id; }
 };
 
 #endif /* #ifndef _HMC_CONNECTION_H_ */
