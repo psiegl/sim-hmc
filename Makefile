@@ -8,7 +8,7 @@ include Makefile.inc
 LIBNAME  := hmcsim
 SRCDIR   := src
 BLDDIR   := build
-LIBS     :=
+LIBS     := -ltcmalloc
 TARGET   := lib/lib$(LIBNAME).a
 
 .PHONY   : $(TARGET)
@@ -47,12 +47,16 @@ default: $(TARGET)
 ####### Conditional ##############################
 
 ifneq (,$(findstring HMC_DEBUG, $(HMCSIM_MACROS)))
-CFLAGS   += -O -g -pg #-fsanitize=address -fno-omit-frame-pointer -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift
-CXXFLAGS += -O -g -pg #-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift -fsanitize=undefined 
+CFLAGS   += -O -g #-fsanitize=address -fno-omit-frame-pointer -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift
+CXXFLAGS += -O -g #-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift -fsanitize=undefined 
 else
 CFLAGS   += -O3 -ffast-math -fPIC
 CXXFLAGS += -O3 -ffast-math -fPIC
 HMCSIM_MACROS += -DNDEBUG
+endif
+ifneq (,$(findstring HMC_PROF, $(HMCSIM_MACROS)))
+CFLAGS   += -pg
+CXXFLAGS += -pg
 endif
 
 ifneq (,$(findstring HMC_USES_GRAPHVIZ, $(HMCSIM_MACROS)))
@@ -93,7 +97,7 @@ $(OBJ): $(BLDDIR)/%.o : $(SRCDIR)/%.cpp
 $(TARGET): $(BLDDIR) $(OBJ) $(BOBOBJ)
 	@echo "[$(AR)] $@"
 	@-$(RM) -f $(TARGET).ar
-	@echo " Linking..."; echo "CREATE $@" > $(TARGET).ar
+	@echo "CREATE $@" > $(TARGET).ar
 	@for o in $(BOBOBJ); do (echo "ADDMOD $$o" >> $(TARGET).ar); done
 	@for o in $(OBJ); do (echo "ADDMOD $$o" >> $(TARGET).ar); done
 	@echo "SAVE" >> $(TARGET).ar
@@ -104,14 +108,10 @@ $(TARGET): $(BLDDIR) $(OBJ) $(BOBOBJ)
 
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
-	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz -ltcmalloc $(LIBS)
+	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz $(LIBS)
 
-bldall:
-	make clean
-	make $(TESTBIN)
-
-runall: 
-	./$(TESTBIN)
+runall: $(TESTBIN)
+	@./$(TESTBIN)
 	#gprof $(TESTBIN) gmon.out > $(TESTBIN).anal.txt
 	#gprof $(TESTBIN) | gprof2dot | dot -Tpng -o output.png
 

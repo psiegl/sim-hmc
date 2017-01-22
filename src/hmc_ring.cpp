@@ -33,7 +33,6 @@ bool hmc_ring::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
   return false;
 }
 
-#include <iostream>
 unsigned hmc_ring::decode_link_of_packet(char *packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
@@ -73,10 +72,19 @@ unsigned hmc_ring::decode_link_of_packet(char *packet)
 
 void hmc_ring::clock(void)
 {
+#ifdef HMC_USES_NOTIFY
   uint32_t notifymap = this->links_notify.get_notification();
   unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
+#else
+  unsigned lid = 0;
+#endif /* #ifdef HMC_USES_NOTIFY */
   for (unsigned i = lid; i < HMC_JTL_ALL_LINKS; i++) {
-    if ((0x1 << i) & notifymap) {
+#ifdef HMC_USES_NOTIFY
+    if ((0x1 << i) & notifymap)
+#else
+    if (this->links[i] != nullptr)
+#endif /* #ifdef HMC_USES_NOTIFY */
+    {
       this->links[i]->clock(); // ToDo!
 
       hmc_link_buf *rx = this->links[i]->get_rx();
@@ -98,8 +106,11 @@ void hmc_ring::clock(void)
     }
   }
 }
-
 bool hmc_ring::notify_up(void)
 {
+#ifdef HMC_USES_NOTIFY
   return !this->links_notify.get_notification();
+#else
+  return true;
+#endif /* #ifdef HMC_USES_NOTIFY */
 }

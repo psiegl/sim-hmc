@@ -49,24 +49,42 @@ hmc_quad::~hmc_quad(void)
 
 void hmc_quad::clock(void)
 {
+#ifdef HMC_USES_NOTIFY
   unsigned notifymap = this->vault_notify.get_notification();
-  if (notifymap) {
+  if (notifymap)
+#endif /* #ifdef HMC_USES_NOTIFY */
+  {
+#ifdef HMC_USES_NOTIFY
     unsigned lid = __builtin_ctzl(notifymap);
+#else
+    unsigned lid = 0;
+#endif /* #ifdef HMC_USES_NOTIFY */
     for (unsigned v = lid; v < HMC_NUM_VAULTS / HMC_NUM_QUADS; v++) {
-      if ((0x1 << v) & notifymap) {
+#ifdef HMC_USES_NOTIFY
+      if ((0x1 << v) & notifymap)
+#endif /* #ifdef HMC_USES_NOTIFY */
+      {
         this->vaults[v]->clock();
       }
     }
   }
 
+#ifdef HMC_USES_NOTIFY
   if (this->ring_notify.get_notification())
+#endif /* #ifdef HMC_USES_NOTIFY */
+  {
     this->ring.clock();
+  }
 }
 
 bool hmc_quad::notify_up(void)
 {
+#ifdef HMC_USES_NOTIFY
   return (!this->vault_notify.get_notification() &&
           !this->ring_notify.get_notification());
+#else
+  return true;
+#endif /* #ifdef HMC_USES_NOTIFY */
 }
 
 bool hmc_quad::set_link(unsigned linkId, hmc_link *link, enum hmc_link_type linkType)

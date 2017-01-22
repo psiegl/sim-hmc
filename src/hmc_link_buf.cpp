@@ -25,9 +25,10 @@ bool hmc_link_buf::reserve_space(float packetleninbit)
   assert(packetleninbit <= this->bitoccupationmax);
   if ((this->bitoccupation + packetleninbit) <= this->bitoccupationmax) {
     this->bitoccupation += packetleninbit;
-    if (!this->buf.size()) {
+#ifdef HMC_USES_NOTIFY
+    if (!this->buf.size())
       this->notify->notify_add(0);
-    }
+#endif /* #ifdef HMC_USES_NOTIFY */
     return true;
   }
   return false;
@@ -52,7 +53,9 @@ void hmc_link_buf::pop_front(void)
 {
   switch (this->buf.size()) {
   case 1:
+#ifdef HMC_USES_NOTIFY
     this->notify->notify_del(0);
+#endif /* #ifdef HMC_USES_NOTIFY */
   // no break!!
   //-> in the case there is only one, we turn off notify,
   // because afterwards there is nothing left

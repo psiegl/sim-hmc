@@ -64,13 +64,21 @@ void hmc_link::set_binding(hmc_link *part)
 
 void hmc_link::clock(void)
 {
+#ifdef HMC_USES_NOTIFY
   if (this->not_rx_q.get_notification())
+#endif /* #ifdef HMC_USES_NOTIFY */
+  {
     this->rx_q.clock();
+  }
 // ToDo -> will be most likely a combination out of front and pop_front
 }
 
 bool hmc_link::notify_up(void)
 {
+#ifdef HMC_USES_NOTIFY
   return (!this->not_rx_q.get_notification()
           && !this->not_rx_buf.get_notification());
+#else
+  return true;
+#endif /* #ifdef HMC_USES_NOTIFY */
 }

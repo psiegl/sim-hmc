@@ -33,7 +33,11 @@ public:
 
   ALWAYS_INLINE unsigned get_notification(void)
   {
+#ifdef HMC_USES_NOTIFY
      return this->notifier;
+#else
+    return ~0x0;
+#endif /* #ifdef HMC_USES_NOTIFY */
   }
 };
 

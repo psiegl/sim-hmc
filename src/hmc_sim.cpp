@@ -396,15 +396,35 @@ void hmc_sim::hmc_encode_pkt(unsigned cub, uint64_t addr,
 void hmc_sim::clock(void)
 {
   this->clk++;
+#ifdef HMC_USES_NOTIFY
   uint32_t notifymap = this->cubes_notify.get_notification();
   unsigned lid = __builtin_ctzl(notifymap);
-  for (unsigned h = lid; h < this->cubes.size(); h++)
+#else
+  unsigned lid = 0;
+#endif /* #ifdef HMC_USES_NOTIFY */
+  for (unsigned h = lid; h < this->cubes.size(); h++) {
+#ifdef HMC_USES_NOTIFY
     if ((0x1 << h) & notifymap)
+#endif /* #ifdef HMC_USES_NOTIFY */
+    {
       this->cubes[h]->clock();
+    }
+  }
 
+#ifdef HMC_USES_NOTIFY
   notifymap = this->slidnotify.get_notification();
   lid = __builtin_ctzl(notifymap);
-  for (unsigned slidId = lid; slidId < this->num_slids; slidId++)
+#else
+  lid = 0;
+#endif /* #ifdef HMC_USES_NOTIFY */
+  for (unsigned slidId = lid; slidId < this->num_slids; slidId++) {
+#ifdef HMC_USES_NOTIFY
     if ((0x1 << slidId) & notifymap)
+#else
+    if (this->slids[slidId] != nullptr)
+#endif /* #ifdef HMC_USES_NOTIFY */
+    {
       this->slids[slidId]->clock(); // ToDo
+    }
+  }
 }

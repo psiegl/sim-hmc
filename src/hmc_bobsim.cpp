@@ -49,32 +49,36 @@ hmc_bobsim::~hmc_bobsim(void)
 bool hmc_bobsim::bob_feedback(char *packet)
 {
   if (this->vault.hmcsim_process_rqst(packet)) {
+#ifdef HMC_USES_NOTIFY
 #ifndef ALWAYS_NOTIFY_BOBSIM
     if (!--this->bobnotify_ctr)
       this->bobnotify.notify_del(0);
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
+#endif /* #ifdef HMC_USES_NOTIFY */
     return true;
   }
   else {
     this->feedback_cache.push_back(packet);
-    std::cout << "shiiiiiiiTTTT!" << std::endl;
+//    std::cout << "shiiiiiiiTTTT!" << std::endl;
     return false;
   }
 }
 
 void hmc_bobsim::clock(void)
 {
+#ifdef HMC_USES_NOTIFY
 #ifndef ALWAYS_NOTIFY_BOBSIM
   if (this->bobnotify_ctr)
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
+#endif /* #ifdef HMC_USES_NOTIFY */
   {
     if (this->feedback_cache.empty()) {
       this->bobsim->Update();
     }
     else {
-      std::cerr << "WARNING: this shouldn't happen!" << std::endl;
-      std::cerr << "This can only happen, if bobsim pushes further responses,";
-      std::cerr << " while this module can't push it further ... " << std::endl;
+//      std::cerr << "WARNING: this shouldn't happen!" << std::endl;
+//      std::cerr << "This can only happen, if bobsim pushes further responses,";
+//      std::cerr << " while this module can't push it further ... " << std::endl;
       bool update = true;
       for (auto it = this->feedback_cache.begin(); it != this->feedback_cache.end(); ++it) {
         if (!this->bob_feedback(*it)) {
@@ -82,13 +86,15 @@ void hmc_bobsim::clock(void)
           break;
         }
       }
-      if (update) {
+      if (update)
         this->bobsim->Update();
-      }
     }
   }
 
-  if (this->linknotify.get_notification()) {
+#ifdef HMC_USES_NOTIFY
+  if (this->linknotify.get_notification())
+#endif /* #ifdef HMC_USES_NOTIFY */
+  {
     this->link->clock();
 
     if (!this->bobsim->IsPortBusy(0 /* port */)) {
@@ -123,6 +129,7 @@ void hmc_bobsim::clock(void)
       if (!this->bobsim->AddTransaction(bobtrans, 0 /* port */)) {
         exit(0);
       }
+#ifdef HMC_USES_NOTIFY
 #ifdef ALWAYS_NOTIFY_BOBSIM
       else if (!this->bobnotify.get_notification()) {
         // only add forever, if there is something in it
@@ -133,6 +140,7 @@ void hmc_bobsim::clock(void)
         this->bobnotify.notify_add(0);
       }
 #endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
+#endif /* #ifdef HMC_USES_NOTIFY */
       this->link->get_rx()->pop_front();
     }
   }
@@ -154,6 +162,10 @@ void hmc_bobsim::bob_printStats(void)
 
 bool hmc_bobsim::notify_up(void)
 {
+#ifdef HMC_USES_NOTIFY
   return (!this->linknotify.get_notification() &&
           !this->bobnotify.get_notification());
+#else
+  return true;
+#endif /* #ifdef HMC_USES_NOTIFY */
 }

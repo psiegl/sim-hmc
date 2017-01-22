@@ -40,16 +40,29 @@ hmc_cube::~hmc_cube(void)
 
 void hmc_cube::clock(void)
 {
+#ifdef HMC_USES_NOTIFY
   uint32_t notifymap = this->quad_notify.get_notification();
-  if (notifymap) {
-    unsigned lid = __builtin_ctzl(notifymap);
-    for (unsigned q = lid; q < HMC_NUM_QUADS; q++)
-      if ((0x1 << q) & notifymap)
-        this->quads[q]->clock();
+  if (!notifymap)
+    return;
+  unsigned lid = __builtin_ctzl(notifymap);
+#else
+  unsigned lid = 0;
+#endif /* #ifdef HMC_USES_NOTIFY */
+  for (unsigned q = lid; q < HMC_NUM_QUADS; q++) {
+#ifdef HMC_USES_NOTIFY
+    if ((0x1 << q) & notifymap)
+#endif /* #ifdef HMC_USES_NOTIFY */
+    {
+      this->quads[q]->clock();
+    }
   }
 }
 
 bool hmc_cube::notify_up(void)
 {
+#ifdef HMC_USES_NOTIFY
   return (!this->quad_notify.get_notification());
+#else
+  return true;
+#endif /* #ifdef HMC_USES_NOTIFY */
 }

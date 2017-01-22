@@ -106,7 +106,11 @@ private:
   };
 
   bool notify_up(void) {
+#ifdef HMC_USES_NOTIFY
     return (!this->link_notify.get_notification());
+#else
+    return true;
+#endif /* #ifdef HMC_USES_NOTIFY */
   }
 
 public:

@@ -64,8 +64,10 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
   if (__builtin_expect((this->bitoccupation / 1000) /* + packetleninbit */ < this->bitoccupationmax, 1))
 #endif /* #ifndef HMC_LINK_QUEUE_PERFORMANCE__UNSAFE */
   {
+#ifdef HMC_USES_NOTIFY
     if (!this->bitoccupation)
       this->notify->notify_add(this->notifyid);
+#endif /* #ifdef HMC_USES_NOTIFY */
 
     this->bitoccupation += ((packetleninbit / this->bitwidth) * 1000);
     float UI = packetleninbit / this->bitwidth;
@@ -97,7 +99,9 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 
 void hmc_link_queue::clock(void)
 {
+#ifdef HMC_USES_NOTIFY
   assert(!this->list.empty());
+#endif /* #ifdef HMC_USES_NOTIFY */
   if (this->bitoccupation) { // speedup, it could be that clock is issued, but there is no bitoccupation, but still elements left, since it could not yet fit into the buffer
     float tbitrate = this->bitrate;
     for (auto it = this->list.begin(); it != this->list.end(); ++it) {
@@ -126,6 +130,10 @@ void hmc_link_queue::clock(void)
     }
   }
 
+#ifndef HMC_USES_NOTIFY
+  if (this->list.empty())
+    return;
+#endif /* #ifndef HMC_USES_NOTIFY */
   auto front = this->list.front();
   if (std::get<1>(front) == 0.0f) {
     char *packet = std::get<0>(front);
@@ -147,7 +155,9 @@ void hmc_link_queue::clock(void)
 #endif /* #ifdef HMC_LOGGING */
     this->buf->push_back_set_avail(packet, std::get<2>(front));
     this->list.pop_front();
+#ifdef HMC_USES_NOTIFY
     if (!this->list.size())
       this->notify->notify_del(this->notifyid);
+#endif /* #ifdef HMC_USES_NOTIFY */
   }
 }

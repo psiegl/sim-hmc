@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[(17*FLIT_WIDTH) / 8];
 
-  unsigned issue = 1000; //6002;
+  unsigned issue = 60000;
   unsigned send_ctr = 0;
   unsigned skip = 0;
   unsigned recv_ctr = 0 + skip;
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
         addr = 0b110000000000; // quad 3
         break;
       }
-      if(send_ctr < (issue /*- 2*/)) {
+      if(send_ctr < (issue /* - 2*/)) {
         unsigned dram_hi = (send_ctr & 0b111) << 4;
         unsigned dram_lo = (send_ctr >> 3) << (capacity == 8 ? 16 : 15);
         sim.hmc_encode_pkt(destcub, addr+dram_hi+dram_lo, send_ctr /* tag */, RD256, packet);
@@ -78,16 +78,17 @@ int main(int argc, char* argv[])
     if(next_available == true && sim.hmc_send_pkt(slidId, packet)) {
       track[send_ctr] = clks;
       send_ctr++;
-      if(!(send_ctr % 100))
-        std::cout << "issued " << send_ctr << std::endl;
+//      if(!(send_ctr % 100))
+//        std::cout << "issued " << send_ctr << std::endl;
       next_available = false;
     }
+
     if(slidnotify->get_notification() && sim.hmc_recv_pkt(slidId, retpacket))
     {
       track[recv_ctr] = clks - track[recv_ctr];
       recv_ctr++;
-      if(!(recv_ctr % 100))
-        std::cout << "received " << recv_ctr << std::endl;
+//      if(!(recv_ctr % 100))
+//        std::cout << "received " << recv_ctr << std::endl;
       if(recv_ctr >= issue)
         break;
     }
@@ -108,6 +109,7 @@ int main(int argc, char* argv[])
 
   delete[] track;
 
+  // ToDo: account not only for reads but also writes! and depending on the type send!
   std::cout << "issued: " << issue << " (skip: " << skip << ")" << std::endl;
   float freq = 0.8f; // we clk at the same frequency! otherwise: 0.8f
   std::cout << "done in " << clks << " clks, avg.: " << avg << std::endl;
