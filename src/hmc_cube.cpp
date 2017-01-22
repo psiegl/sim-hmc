@@ -15,22 +15,18 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
   hmc_register(this, capacity),
   id(id),
   quad_notify(id, notify, this),
-  quads(HMC_NUM_QUADS, nullptr),
   conn_notify(id, notify, this),
   conn(nullptr)
 {
   char *quadConnection = getenv("HMCSIM_QUAD_CONNECTION");
-  if (quadConnection == nullptr) // default is ring to connection quads
+  // default is ring to connection quads
+  if (quadConnection == nullptr || !strcmp("ring", quadConnection))
     this->conn = new hmc_ring(&this->conn_notify, this, quadbus_bitwidth, quadbus_bitrate, clk);
+  else if (!strcmp("xbar", quadConnection))
+    this->conn = new hmc_xbar(&this->conn_notify, this, quadbus_bitwidth, quadbus_bitrate, clk);
   else {
-    if (!strcmp("xbar", quadConnection))
-      this->conn = new hmc_xbar(&this->conn_notify, this, quadbus_bitwidth, quadbus_bitrate, clk);
-    else if (!strcmp("ring", quadConnection))
-      this->conn = new hmc_ring(&this->conn_notify, this, quadbus_bitwidth, quadbus_bitrate, clk);
-    else {
-      std::cerr << "ERROR: env HMCSIM_QUAD_CONNECTION has wrong value! " << quadConnection << ", choose ring or xbar" << std::endl;
-      exit(-1);
-    }
+    std::cerr << "ERROR: env HMCSIM_QUAD_CONNECTION has wrong value! " << quadConnection << ", choose ring or xbar" << std::endl;
+    exit(-1);
   }
 
   unsigned num_ranks = capacity; /* num_ranks 8GB -> 8 layer, 4GB -> 4layer */

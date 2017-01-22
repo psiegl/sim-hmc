@@ -1,7 +1,7 @@
 #ifndef _HMC_CUBE_H_
 #define _HMC_CUBE_H_
 
-#include <vector>
+#include <array>
 #include "hmc_macros.h"
 #include "hmc_route.h"
 #include "hmc_notify.h"
@@ -18,7 +18,7 @@ private:
   unsigned id;
 
   hmc_notify quad_notify;
-  std::vector<hmc_quad*> quads;
+  std::array<hmc_quad*, HMC_NUM_QUADS> quads;
   hmc_notify conn_notify;
   hmc_conn* conn;
 

@@ -2,7 +2,7 @@
 #define _HMC_QUAD_H_
 
 #include <list>
-#include <map>
+#include <array>
 #include "config.h"
 #include "hmc_notify.h"
 
@@ -19,9 +19,9 @@ class hmc_quad : private hmc_notify_cl {
 private:
   hmc_notify vault_notify;
 #ifdef HMC_USES_BOBSIM
-  std::map<unsigned, hmc_bobsim*> vaults;
+  std::array<hmc_bobsim*, HMC_NUM_VAULTS / HMC_NUM_QUADS> vaults;
 #else
-  std::map<unsigned, hmc_vault*> vaults;
+  std::array<hmc_vault*, HMC_NUM_VAULTS / HMC_NUM_QUADS> vaults;
 #endif /* #ifdef HMC_USES_BOBSIM */
   std::list<hmc_link*> link_garbage;
 

@@ -2,7 +2,6 @@
 #define _HMC_CONNECTION_H_
 
 #include <array>
-#include <vector>
 #include "config.h"
 #include "hmc_notify.h"
 #include "hmc_macros.h"
@@ -25,7 +24,7 @@ private:
   hmc_cube* cub;
 
   hmc_notify links_notify;
-  std::vector<hmc_link*> links;
+  std::array<hmc_link*, HMC_JTL_ALL_LINKS> links;
 
   unsigned decode_link_of_packet(char* packet);
   bool _set_link(unsigned notifyid, unsigned id, hmc_link *link);

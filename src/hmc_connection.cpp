@@ -15,8 +15,7 @@ hmc_conn_part::hmc_conn_part(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   hmc_module(),
   id(id),
   cub(cub),
-  links_notify(id, notify, this),
-  links(HMC_JTL_ALL_LINKS, nullptr)
+  links_notify(id, notify, this)
 {
 }
 
