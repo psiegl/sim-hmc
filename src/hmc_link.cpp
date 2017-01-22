@@ -9,7 +9,7 @@ hmc_link::hmc_link(uint64_t *i_cur_cycle, hmc_module *module,
   not_rx_q(-1, nullptr, this),
   rx_q(i_cur_cycle, &rx_buf, &not_rx_q, this),
   not_rx_buf(-1, nullptr, this),
-  rx_buf(&not_rx_buf),
+  rx_buf(i_cur_cycle, &not_rx_buf, this),
   tx(nullptr),
   binding(nullptr)
 {

@@ -29,9 +29,7 @@ private:
   std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
   hmc_link_buf *buf;
 
-  // provides pointers to next module
   hmc_link *link;
-  hmc_module *link_end;
 
 public:
   hmc_link_queue(uint64_t* cur_cycle, hmc_link_buf *buf, hmc_notify *notify,

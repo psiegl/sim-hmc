@@ -84,7 +84,7 @@ cppcheck:
 	cppcheck --enable=all --enable=information $(wildcard $(SRCDIR)/*.h) $(SRCDIR) main.cpp 2>&1 >/dev/null | less
 
 $(BLDDIR):
-	@echo "[MKDIR] $@"
+	@echo "[mkdir] $@"
 	@mkdir -p $@
 
 $(OBJ): $(BLDDIR)/%.o : $(SRCDIR)/%.cpp
@@ -92,16 +92,17 @@ $(OBJ): $(BLDDIR)/%.o : $(SRCDIR)/%.cpp
 	@uncrustify  --no-backup -c tools/uncrustify.cfg -q --replace $<
 	@$(CXX) $(CXXFLAGS) -MD -MF $(@:.o=.deps) -c -o $@ $<
 
-$(TARGET): $(BLDDIR) $(OBJ) $(BOBOBJ)
+$(BLDDIR)/asm.ar: $(BLDDIR) $(OBJ) $(BOBOBJ)
+	@echo "[echo] $@"
+	@echo "CREATE $(TARGET)" > $@
+	@for o in $(BOBOBJ); do (echo "ADDMOD $$o" >> $@); done
+	@for o in $(OBJ); do (echo "ADDMOD $$o" >> $@); done
+	@echo "SAVE" >> $@
+	@echo "END" >> $@
+
+$(TARGET): $(BLDDIR)/asm.ar
 	@echo "[$(AR)] $@"
-	@-$(RM) -f $(TARGET).ar
-	@echo "CREATE $@" > $(TARGET).ar
-	@for o in $(BOBOBJ); do (echo "ADDMOD $$o" >> $(TARGET).ar); done
-	@for o in $(OBJ); do (echo "ADDMOD $$o" >> $(TARGET).ar); done
-	@echo "SAVE" >> $(TARGET).ar
-	@echo "END" >> $(TARGET).ar
-	@$(AR) -M < $(TARGET).ar
-	@-$(RM) -f $(TARGET).ar
+	@$(AR) -M < $(BLDDIR)/asm.ar
 
 
 TESTBIN := main.elf
@@ -114,8 +115,8 @@ runall: $(TESTBIN)
 
 ifneq (,$(findstring HMC_PROF, $(HMCSIM_MACROS)))
 prof: runall
-	gprof $(TESTBIN) gmon.out > $(TESTBIN).prof.txt
-	gprof $(TESTBIN) | gprof2dot | dot -Tpng -o $(TESTBIN).prof.png
+	@gprof $(TESTBIN) gmon.out > $(TESTBIN).prof.txt
+	@gprof $(TESTBIN) | gprof2dot -w | dot -Tpng -o $(TESTBIN).prof.png
 endif
 
 clean:

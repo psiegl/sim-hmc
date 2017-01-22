@@ -98,11 +98,8 @@ void hmc_ring::clock(void)
       assert(next_link != nullptr);
       hmc_link_queue *tx = next_link->get_tx();
       assert(tx != nullptr);
-      if (!tx->has_space(packetleninbit))
-        continue;
-
-      tx->push_back(packet, packetleninbit);
-      rx->pop_front();
+      if (tx->push_back(packet, packetleninbit))
+        rx->pop_front();
     }
   }
 }

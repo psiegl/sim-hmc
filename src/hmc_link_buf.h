@@ -3,19 +3,24 @@
 
 #include <list>
 #include <utility>
+#include <stdint.h>
 
 class hmc_notify;
+class hmc_link;
 
 class hmc_link_buf {
-
+private:
+  uint64_t *cur_cycle;
   float bitoccupation;
   unsigned bitoccupationmax;
   std::list< std::pair<char*,unsigned> > buf;
 
   hmc_notify *notify;
 
+  hmc_link *link;
+
 public:
-  explicit hmc_link_buf(hmc_notify *notify);
+  explicit hmc_link_buf(uint64_t *cycle, hmc_notify *notify, hmc_link *link);
   ~hmc_link_buf(void);
 
   void adjust_size(unsigned bitsize);
