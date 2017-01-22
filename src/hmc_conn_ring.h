@@ -37,9 +37,6 @@ public:
 
 
 class hmc_ring : public hmc_conn {
-private:
-  std::list<hmc_link*> link_garbage;
-
 public:
   hmc_ring(hmc_notify *notify, hmc_cube *cub,
            unsigned ringbus_bitwidth, float ringbus_bitrate,

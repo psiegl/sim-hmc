@@ -26,7 +26,7 @@ private:
 
 public:
   hmc_cube(unsigned id, hmc_notify *notify,
-           unsigned ringbus_bitwidth, float ringbus_bitrate,
+           unsigned quadbus_bitwidth, float quadbus_bitrate,
            unsigned capacity,
            std::map<unsigned, hmc_cube*>* cubes, unsigned numcubes, uint64_t *clk);
   virtual ~hmc_cube(void);

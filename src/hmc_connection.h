@@ -61,6 +61,7 @@ class hmc_conn : public hmc_notify_cl {
 protected:
   hmc_notify conn_notify;
   std::array<hmc_conn_part*, HMC_NUM_QUADS> conns;
+  std::list<hmc_link*> link_garbage;
 
 private:
   bool notify_up(void);
@@ -69,7 +70,10 @@ public:
   hmc_conn(hmc_notify *notify) :
     conn_notify(0, notify, this)
   {}
-  virtual ~hmc_conn(void) {}
+  virtual ~hmc_conn(void) {
+    for (auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
+      delete *it;
+  }
 
   ALWAYS_INLINE hmc_conn_part* get_conn(unsigned id) {
     return this->conns[id];

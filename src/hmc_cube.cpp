@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <iostream>
 #include "hmc_cube.h"
 #include "hmc_quad.h"
 #include "hmc_link.h"
@@ -5,7 +7,7 @@
 #include "hmc_conn_xbar.h"
 
 hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
-                   unsigned ringbus_bitwidth, float ringbus_bitrate,
+                   unsigned quadbus_bitwidth, float quadbus_bitrate,
                    unsigned capacity,
                    std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes, uint64_t *clk) :
   hmc_route(cubes, numcubes),
@@ -17,7 +19,19 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
   conn_notify(id, notify, this),
   conn(nullptr)
 {
-  this->conn = new hmc_ring(&this->conn_notify, this, ringbus_bitwidth, ringbus_bitrate, clk);
+  char *quadConnection = getenv("HMCSIM_QUAD_CONNECTION");
+  if (quadConnection == nullptr) // default is ring to connection quads
+    this->conn = new hmc_ring(&this->conn_notify, this, quadbus_bitwidth, quadbus_bitrate, clk);
+  else {
+    if (!strcmp("xbar", quadConnection))
+      this->conn = new hmc_xbar(&this->conn_notify, this, quadbus_bitwidth, quadbus_bitrate, clk);
+    else if (!strcmp("ring", quadConnection))
+      this->conn = new hmc_ring(&this->conn_notify, this, quadbus_bitwidth, quadbus_bitrate, clk);
+    else {
+      std::cerr << "ERROR: env HMCSIM_QUAD_CONNECTION has wrong value! " << quadConnection << ", choose ring or xbar" << std::endl;
+      exit(-1);
+    }
+  }
 
   unsigned num_ranks = capacity; /* num_ranks 8GB -> 8 layer, 4GB -> 4layer */
   for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
