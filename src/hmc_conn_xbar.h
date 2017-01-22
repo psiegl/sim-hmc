@@ -1,12 +1,15 @@
 #ifndef _HMC_CONN_XBAR_H_
 #define _HMC_CONN_XBAR_H_
 
+#include <stdint.h>
+#include <list>
 #include "hmc_connection.h"
 
-class hmc_notify;
 class hmc_cube;
+class hmc_link;
+class hmc_notify;
 
-class hmc_conn_xbar : public hmc_connection {
+class hmc_xbar_part : public hmc_conn_part {
 private:
   unsigned routing(unsigned nextquad)
   {
@@ -14,11 +17,23 @@ private:
     return nextquad;
   }
 public:
-  hmc_conn_xbar(unsigned id, hmc_notify *notify, hmc_cube *cub) :
-    hmc_connection(id, notify, cub)
+  hmc_xbar_part(unsigned id, hmc_notify *notify, hmc_cube *cub) :
+    hmc_conn_part(id, notify, cub)
   {}
-  ~hmc_conn_xbar(void)
+  ~hmc_xbar_part(void)
   {}
+};
+
+class hmc_xbar : public hmc_conn {
+private:
+  std::list<hmc_link*> link_garbage;
+
+public:
+  hmc_xbar(hmc_notify *notify, hmc_cube *cub,
+           unsigned ringbus_bitwidth, float ringbus_bitrate,
+           uint64_t *clk);
+
+  ~hmc_xbar(void);
 };
 
 #endif /* #ifndef _HMC_CONN_RING_H_ */

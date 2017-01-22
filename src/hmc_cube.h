@@ -36,7 +36,7 @@ public:
     return this->id;
   }
 
-  ALWAYS_INLINE hmc_connection* get_conn(unsigned id)
+  ALWAYS_INLINE hmc_conn_part* get_conn(unsigned id)
   {
     return this->conn->get_conn(id);
   }

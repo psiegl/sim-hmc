@@ -110,7 +110,7 @@ $(TESTBIN): $(TARGET)
 	@echo "[$(CXX)]" $@
 	@$(CXX) $(CXXFLAGS) -o $@ main.cpp $(TARGET) $(LIBS) # -static
 
-runall: $(TESTBIN)
+run: $(TESTBIN)
 	@./$(TESTBIN)
 
 ifneq (,$(findstring HMC_PROF, $(HMCSIM_MACROS)))

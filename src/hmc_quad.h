@@ -12,7 +12,7 @@ class hmc_bobsim;
 class hmc_vault;
 #endif /* #ifdef HMC_USES_BOBSIM */
 class hmc_cube;
-class hmc_connection;
+class hmc_conn_part;
 class hmc_link;
 
 class hmc_quad : private hmc_notify_cl {
@@ -28,7 +28,7 @@ private:
   bool notify_up(void);
 
 public:
-  hmc_quad(unsigned id, hmc_connection *conn, unsigned num_ranks, hmc_notify *notify,
+  hmc_quad(unsigned id, hmc_conn_part *conn, unsigned num_ranks, hmc_notify *notify,
            hmc_cube *cube, uint64_t *clk);
   virtual ~hmc_quad(void);
 

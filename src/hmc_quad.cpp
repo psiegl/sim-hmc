@@ -9,7 +9,7 @@
 #include "hmc_notify.h"
 #include "hmc_link.h"
 
-hmc_quad::hmc_quad(unsigned id, hmc_connection *conn, unsigned num_ranks, hmc_notify *notify,
+hmc_quad::hmc_quad(unsigned id, hmc_conn_part *conn, unsigned num_ranks, hmc_notify *notify,
                    hmc_cube *cube, uint64_t *clk) :
   hmc_notify_cl(),
   vault_notify(id, notify, this)

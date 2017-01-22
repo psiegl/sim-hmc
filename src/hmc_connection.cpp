@@ -10,7 +10,7 @@
 #include "hmc_decode.h"
 #include "hmc_quad.h"
 
-hmc_connection::hmc_connection(unsigned id, hmc_notify *notify, hmc_cube *cub) :
+hmc_conn_part::hmc_conn_part(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   hmc_notify_cl(),
   hmc_module(),
   id(id),
@@ -20,11 +20,11 @@ hmc_connection::hmc_connection(unsigned id, hmc_notify *notify, hmc_cube *cub) :
 {
 }
 
-hmc_connection::~hmc_connection(void)
+hmc_conn_part::~hmc_conn_part(void)
 {
 }
 
-bool hmc_connection::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
+bool hmc_conn_part::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
 {
   if (!this->links[notifyid]) {
     this->links[notifyid] = link;
@@ -34,7 +34,7 @@ bool hmc_connection::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
   return false;
 }
 
-unsigned hmc_connection::decode_link_of_packet(char *packet)
+unsigned hmc_conn_part::decode_link_of_packet(char *packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
   unsigned p_cubId;
@@ -71,7 +71,7 @@ unsigned hmc_connection::decode_link_of_packet(char *packet)
   return ext_id;
 }
 
-void hmc_connection::clock(void)
+void hmc_conn_part::clock(void)
 {
 #ifdef HMC_USES_NOTIFY
   uint32_t notifymap = this->links_notify.get_notification();
@@ -104,10 +104,42 @@ void hmc_connection::clock(void)
     }
   }
 }
-bool hmc_connection::notify_up(void)
+bool hmc_conn_part::notify_up(void)
 {
 #ifdef HMC_USES_NOTIFY
   return !this->links_notify.get_notification();
+#else
+  return true;
+#endif /* #ifdef HMC_USES_NOTIFY */
+}
+
+void hmc_conn::clock(void)
+{
+#ifdef HMC_USES_NOTIFY
+  unsigned notifymap = this->conn_notify.get_notification();
+  if (notifymap)
+#endif
+  {
+#ifdef HMC_USES_NOTIFY
+    unsigned lid = __builtin_ctzl(notifymap);
+#else
+    unsigned lid = 0;
+#endif /* #ifdef HMC_USES_NOTIFY */
+    for (unsigned q = lid; q < HMC_NUM_QUADS; q++) {
+#ifdef HMC_USES_NOTIFY
+      if ((0x1 << q) & notifymap)
+#endif /* #ifdef HMC_USES_NOTIFY */
+      {
+        this->conns[q]->clock();
+      }
+    }
+  }
+}
+
+bool hmc_conn::notify_up(void)
+{
+#ifdef HMC_USES_NOTIFY
+  return (!this->conn_notify.get_notification());
 #else
   return true;
 #endif /* #ifdef HMC_USES_NOTIFY */
