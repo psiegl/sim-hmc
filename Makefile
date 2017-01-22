@@ -14,11 +14,15 @@ TARGET   := lib/lib$(LIBNAME).a
 .PHONY   : $(TARGET)
 
 SRC      := $(wildcard $(SRCDIR)/*.cpp)
+
 ifeq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
 SRC      := $(filter-out $(SRCDIR)/hmc_bobsim.cpp, $(SRC))
 endif
+
 ifeq (,$(findstring HMC_USES_GRAPHVIZ, $(HMCSIM_MACROS)))
 SRC      := $(filter-out $(SRCDIR)/hmc_graphviz.cpp, $(SRC))
+else
+LIBS     += -lboost_system -lboost_graph -lboost_regex
 endif
 
 ifeq (,$(findstring HMC_LOGGING_SQLITE3, $(HMCSIM_MACROS)))
@@ -26,17 +30,19 @@ SRC      := $(filter-out $(SRCDIR)/hmc_trace_sqlite3.cpp, $(SRC))
 else
 LIBS     += -lsqlite3
 endif
+
 ifeq (,$(findstring HMC_LOGGING_POSTGRESQL, $(HMCSIM_MACROS)))
 SRC      := $(filter-out $(SRCDIR)/hmc_trace_postgresql.cpp, $(SRC))
 else
 LIBS     += -lpqxx -lpq
 endif
+
 ifeq (,$(findstring HMC_LOGGING, $(HMCSIM_MACROS)))
 SRC      := $(filter-out $(SRCDIR)/hmc_trace.cpp, $(SRC))
 else
-CFLAGS   += -DHMC_LOGGING
 CXXFLAGS += -DHMC_LOGGING
 endif
+
 OBJ      := $(SRC:$(SRCDIR)/%.cpp=$(BLDDIR)/%.o)
 DEPS     := $(SRC:$(SRCDIR)/%.cpp,$(BLDDIR)/%.deps)
 
@@ -47,31 +53,22 @@ default: $(TARGET)
 ####### Conditional ##############################
 
 ifneq (,$(findstring HMC_DEBUG, $(HMCSIM_MACROS)))
-CFLAGS   += -O -g #-fsanitize=address -fno-omit-frame-pointer -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift
 CXXFLAGS += -O -g #-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift -fsanitize=undefined 
 else
-CFLAGS   += -O3 -ffast-math -fPIC
 CXXFLAGS += -O3 -ffast-math -fPIC
 LIBS     += -lz
 HMCSIM_MACROS += -DNDEBUG
 endif
 ifneq (,$(findstring HMC_PROF, $(HMCSIM_MACROS)))
-CFLAGS   += -pg
 CXXFLAGS += -pg
-endif
-
-ifneq (,$(findstring HMC_USES_GRAPHVIZ, $(HMCSIM_MACROS)))
-LIBS      += -lboost_system -lboost_graph -lboost_regex
 endif
 
 ifneq (,$(findstring HMC_USES_BOBSIM, $(HMCSIM_MACROS)))
 BOBSRCDIR := extern/bobsim/src
 BOBSRC    := $(wildcard $(BOBSRCDIR)/*.cpp)
 BOBOBJ    := $(BOBSRC:$(BOBSRCDIR)/%.cpp=$(BLDDIR)/%.o)
-CFLAGS    += -DHMCSIM_SUPPORT=1
 CXXFLAGS  += -DHMCSIM_SUPPORT=1
 ifneq (,$(findstring HMC_FAST_BOBSIM, $(HMCSIM_MACROS)))
-CFLAGS    += -DBOBSIM_NO_LOG=1
 CXXFLAGS  += -DBOBSIM_NO_LOG=1
 endif
 
@@ -109,12 +106,17 @@ $(TARGET): $(BLDDIR) $(OBJ) $(BOBOBJ)
 
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
-	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) $(LIBS)
+	@echo "[$(CXX)]" $@
+	@$(CXX) $(CXXFLAGS) -o $@ main.cpp $(TARGET) $(LIBS)
 
 runall: $(TESTBIN)
 	@./$(TESTBIN)
-	#gprof $(TESTBIN) gmon.out > $(TESTBIN).anal.txt
-	#gprof $(TESTBIN) | gprof2dot | dot -Tpng -o output.png
+
+ifneq (,$(findstring HMC_PROF, $(HMCSIM_MACROS)))
+prof: runall
+	gprof $(TESTBIN) gmon.out > $(TESTBIN).prof.txt
+	gprof $(TESTBIN) | gprof2dot | dot -Tpng -o $(TESTBIN).prof.png
+endif
 
 clean:
-	rm -rf $(TARGET) $(BLDDIR) lib/*
+	@rm -rf $(TARGET) $(BLDDIR) lib/* *.prof.* *.db gmon.out
