@@ -32,7 +32,7 @@ void hmc_vault::clock(void)
   this->link->clock();
 
   unsigned packetleninbit;
-  hmc_link_buf *rx = this->link->get_rx();
+  hmc_link_fifo *rx = this->link->get_rx_fifo_out();
   char *packet = rx->front(&packetleninbit);
   if (packet == nullptr)
     return;

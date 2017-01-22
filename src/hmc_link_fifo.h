@@ -8,7 +8,7 @@
 class hmc_notify;
 class hmc_link;
 
-class hmc_link_buf {
+class hmc_link_fifo {
 private:
 #ifdef HMC_LOGGING
   uint64_t *cur_cycle;
@@ -22,8 +22,8 @@ private:
   hmc_notify *notify;
 
 public:
-  explicit hmc_link_buf(uint64_t *cycle, hmc_notify *notify, hmc_link *link);
-  ~hmc_link_buf(void);
+  explicit hmc_link_fifo(uint64_t *cycle, hmc_notify *notify, hmc_link *link);
+  ~hmc_link_fifo(void);
 
   void adjust_size(unsigned bitsize);
 

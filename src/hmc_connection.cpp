@@ -87,7 +87,7 @@ void hmc_conn_part::clock(void)
     {
       this->links[i]->clock(); // ToDo!
 
-      hmc_link_buf *rx = this->links[i]->get_rx();
+      hmc_link_fifo *rx = this->links[i]->get_rx_fifo_out();
       unsigned packetleninbit;
       char *packet = rx->front(&packetleninbit);
       if (packet == nullptr)

@@ -1,3 +1,4 @@
+#include "config.h"
 #include "hmc_link.h"
 #include "hmc_module.h"
 
@@ -7,9 +8,9 @@ hmc_link::hmc_link(uint64_t *i_cur_cycle, hmc_module *module,
   module(module),
   type(type),
   not_rx_q(-1, nullptr, this),
-  rx_q(i_cur_cycle, &rx_buf, &not_rx_q, this),
+  rx_q(i_cur_cycle, &rx_fifo_out, &not_rx_q, this),
   not_rx_buf(-1, nullptr, this),
-  rx_buf(i_cur_cycle, &not_rx_buf, this),
+  rx_fifo_out(i_cur_cycle, &not_rx_buf, this),
   tx(nullptr),
   binding(nullptr)
 {
@@ -40,13 +41,13 @@ void hmc_link::adjust_both_linkends(unsigned link_bitwidth, float link_bitrate)
   this->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
   this->binding->__get_rx_q()->re_adjust(link_bitwidth, link_bitrate);
 
-  this->re_adjust_bufsize(128 * 17); // ToDo! Buffer - Sizes .. lookup documentation!
-  this->binding->re_adjust_bufsize(128 * 17); // ToDo!
+  this->re_adjust_bufsize(FLIT_WIDTH * RETRY_BUFFER_FLITS);
+  this->binding->re_adjust_bufsize(FLIT_WIDTH * RETRY_BUFFER_FLITS);
 }
 
 void hmc_link::re_adjust_bufsize(unsigned buf_bitsize)
 {
-  this->rx_buf.adjust_size(buf_bitsize);
+  this->rx_fifo_out.adjust_size(buf_bitsize);
 }
 
 void hmc_link::connect_linkports(hmc_link *part)

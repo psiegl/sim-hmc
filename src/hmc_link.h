@@ -2,7 +2,7 @@
 #define _HMC_LINK_H_
 
 #include <stdint.h>
-#include "hmc_link_buf.h"
+#include "hmc_link_fifo.h"
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
 #include "hmc_macros.h"
@@ -24,7 +24,7 @@ private:
   hmc_link_queue rx_q;
 
   hmc_notify not_rx_buf;
-  hmc_link_buf rx_buf;
+  hmc_link_fifo rx_fifo_out;
 
   // to bind the other end ...
   hmc_link_queue *tx;
@@ -36,9 +36,9 @@ public:
   virtual ~hmc_link(void);
 
   // ToDo: tx buf!
-  ALWAYS_INLINE hmc_link_buf* get_rx(void)
+  ALWAYS_INLINE hmc_link_fifo* get_rx_fifo_out(void)
   {
-    return &this->rx_buf;
+    return &this->rx_fifo_out;
   }
 
   hmc_link_queue* __get_rx_q(void);

@@ -1,6 +1,6 @@
 #include <cassert>
 #include "hmc_link.h"
-#include "hmc_link_buf.h"
+#include "hmc_link_fifo.h"
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"
 #include "config.h"
@@ -13,7 +13,7 @@
 
 // everything related to occupation will be in Mega instead of Giga!
 // therewith we can use safer unsigned, instead of float
-hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf,
+hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_fifo *buf,
                                hmc_notify *notify, hmc_link *link) :
   id(-1),
   notifyid(-1),

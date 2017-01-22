@@ -96,6 +96,8 @@ umn addresses, addressing 1Mb blocks of 16 bytes each
 
 #define   FLIT_WIDTH            128 /* bit */
 
+#define   RETRY_BUFFER_FLITS    256 /* flits */
+
 /* registers */
 #define   HMC_NUM_REGS          26
 

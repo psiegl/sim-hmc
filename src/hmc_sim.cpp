@@ -5,7 +5,7 @@
 #include "hmc_link.h"
 #include "hmc_quad.h"
 #include "hmc_link_queue.h"
-#include "hmc_link_buf.h"
+#include "hmc_link_fifo.h"
 #include "hmc_vault.h"
 #include "hmc_connection.h"
 #ifdef HMC_LOGGING
@@ -236,7 +236,7 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
   }
 
   unsigned recvpacketleninbit;
-  hmc_link_buf *rx = this->slids[slidId]->get_rx();
+  hmc_link_fifo *rx = this->slids[slidId]->get_rx_fifo_out();
   char *packet = rx->front(&recvpacketleninbit);
   if (packet == nullptr)
     return false;

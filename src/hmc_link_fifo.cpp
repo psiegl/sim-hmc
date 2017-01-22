@@ -1,5 +1,5 @@
 #include <cassert>
-#include "hmc_link_buf.h"
+#include "hmc_link_fifo.h"
 #include "hmc_notify.h"
 #include "hmc_link.h"
 #ifdef HMC_LOGGING
@@ -10,7 +10,7 @@
 #endif /* #ifdef HMC_LOGGING */
 
 
-hmc_link_buf::hmc_link_buf(uint64_t *cur_cycle, hmc_notify *notify, hmc_link *link) :
+hmc_link_fifo::hmc_link_fifo(uint64_t *cur_cycle, hmc_notify *notify, hmc_link *link) :
 #ifdef HMC_LOGGING
   cur_cycle(cur_cycle),
   link(link),
@@ -21,16 +21,16 @@ hmc_link_buf::hmc_link_buf(uint64_t *cur_cycle, hmc_notify *notify, hmc_link *li
 {
 }
 
-hmc_link_buf::~hmc_link_buf(void)
+hmc_link_fifo::~hmc_link_fifo(void)
 {
 }
 
-void hmc_link_buf::adjust_size(unsigned bitsize)
+void hmc_link_fifo::adjust_size(unsigned bitsize)
 {
   this->bitoccupationmax = bitsize;
 }
 
-bool hmc_link_buf::reserve_space(float packetleninbit)
+bool hmc_link_fifo::reserve_space(float packetleninbit)
 {
   assert(packetleninbit <= this->bitoccupationmax);
   if ((this->bitoccupation + packetleninbit) <= this->bitoccupationmax) {
@@ -44,12 +44,12 @@ bool hmc_link_buf::reserve_space(float packetleninbit)
   return false;
 }
 
-void hmc_link_buf::push_back_set_avail(char *packet, unsigned packetleninbit)
+void hmc_link_fifo::push_back_set_avail(char *packet, unsigned packetleninbit)
 {
   this->buf.push_back(std::make_pair(packet, packetleninbit));
 }
 
-char* hmc_link_buf::front(unsigned *packetleninbit)
+char* hmc_link_fifo::front(unsigned *packetleninbit)
 {
   if (this->buf.size()) {
     auto front = this->buf.front();
@@ -59,7 +59,7 @@ char* hmc_link_buf::front(unsigned *packetleninbit)
   return nullptr;
 }
 
-void hmc_link_buf::pop_front(void)
+void hmc_link_fifo::pop_front(void)
 {
   switch (this->buf.size()) {
   case 1:
