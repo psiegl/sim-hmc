@@ -11,11 +11,13 @@
 
 
 hmc_link_buf::hmc_link_buf(uint64_t *cur_cycle, hmc_notify *notify, hmc_link *link) :
+#ifdef HMC_LOGGING
   cur_cycle(cur_cycle),
+  link(link),
+#endif /* #ifdef HMC_LOGGING */
   bitoccupation(0.f),
   bitoccupationmax(0),
-  notify(notify),
-  link(link)
+  notify(notify)
 {
 }
 

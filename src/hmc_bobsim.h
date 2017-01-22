@@ -19,7 +19,9 @@ class hmc_cube;
 class hmc_bobsim : private hmc_notify_cl, public hmc_module {
 private:
   unsigned id;
+#ifndef BOBSIM_NO_LOG
   unsigned quadId;
+#endif /* #ifndef BOBSIM_NO_LOG */
   hmc_cube *cube;
 
   hmc_link *link;

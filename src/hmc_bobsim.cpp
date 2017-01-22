@@ -14,7 +14,9 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigne
                        hmc_cube *cube, hmc_notify *notify) :
   hmc_notify_cl(),
   id(id),
+#ifndef BOBSIM_NO_LOG
   quadId(quadId),
+#endif /* #ifndef BOBSIM_NO_LOG */
   cube(cube),
   link(nullptr),
   linknotify(id, notify, this),

@@ -1,12 +1,15 @@
 #ifndef _HMC_CONN_RING_H_
 #define _HMC_CONN_RING_H_
 
+#include <array>
+#include <list>
 #include "hmc_connection.h"
+#include "hmc_notify.h"
 
-class hmc_notify;
 class hmc_cube;
+class hmc_link;
 
-class hmc_conn_ring : public hmc_connection {
+class hmc_ring_part : public hmc_connection {
 private:
   unsigned routing(unsigned nextquad)
   {
@@ -24,12 +27,37 @@ private:
     unsigned shift = (nextquad ^ this->id) & 0b01;
     return this->id ^ (0b10 >> shift);
   }
+
 public:
-  hmc_conn_ring(unsigned id, hmc_notify *notify, hmc_cube *cub) :
+  hmc_ring_part(unsigned id, hmc_notify *notify, hmc_cube *cub) :
     hmc_connection(id, notify, cub)
   {}
-  ~hmc_conn_ring(void)
+  ~hmc_ring_part(void)
   {}
+};
+
+
+class hmc_ring : public hmc_conn {
+private:
+  hmc_notify conn_notify;
+  std::array<hmc_ring_part*, HMC_NUM_QUADS> conns;
+  std::list<hmc_link*> link_garbage;
+
+public:
+  hmc_ring(hmc_notify *notify, hmc_cube *cub,
+           unsigned ringbus_bitwidth, float ringbus_bitrate,
+           uint64_t *clk);
+
+  ~hmc_ring(void);
+
+  hmc_ring_part* get_conn(unsigned id) {
+    return this->conns[id];
+  }
+
+  unsigned get_id(void) { return 0; }
+
+  void clock(void);
+  bool notify_up(void);
 };
 
 #endif /* #ifndef _HMC_CONN_RING_H_ */

@@ -56,4 +56,11 @@ public:
   unsigned get_id(void) { return this->id; }
 };
 
+class hmc_conn : public hmc_notify_cl {
+public:
+  hmc_conn(void) {}
+  virtual ~hmc_conn(void) {}
+  virtual hmc_connection* get_conn(unsigned id) = 0;
+};
+
 #endif /* #ifndef _HMC_CONNECTION_H_ */

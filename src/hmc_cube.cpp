@@ -14,62 +14,34 @@ hmc_cube::hmc_cube(unsigned id, hmc_notify *notify,
   id(id),
   quad_notify(id, notify, this),
   quads(HMC_NUM_QUADS, nullptr),
-  conns_notify(id, notify, this),
-  conns(HMC_NUM_QUADS, nullptr)
+  conn_notify(id, notify, this),
+  conn(nullptr)
 {
-  unsigned num_ranks = capacity; /* num_ranks 8GB -> 8 layer, 4GB -> 4layer */
-  for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
-    this->conns[i] = new hmc_conn_ring(i, &this->conns_notify, this);
-    this->quads[i] = new hmc_quad(i, this->conns[i], num_ranks, &this->quad_notify, this, clk);
-  }
+  this->conn = new hmc_ring(&this->conn_notify, this, ringbus_bitwidth, ringbus_bitrate, clk);
 
-  // first create quads above so that there is no nullptr conflict when connecting them below
-  unsigned map[] = { 0x2, 0x0, 0x3, 0x1 }; // ToDo: -> XBAR!
-  for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
-    unsigned neighbour = map[i];
-    hmc_link *linkend0 = new hmc_link(clk, this->conns[i], HMC_LINK_RING, neighbour);
-    hmc_link *linkend1 = new hmc_link(clk, this->conns[neighbour], HMC_LINK_RING, i);
-    linkend0->connect_linkports(linkend1);
-    linkend0->adjust_both_linkends(ringbus_bitwidth, ringbus_bitrate);
-    this->link_garbage.push_back(linkend0);
-    this->link_garbage.push_back(linkend1);
-  }
+  unsigned num_ranks = capacity; /* num_ranks 8GB -> 8 layer, 4GB -> 4layer */
+  for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
+    this->quads[i] = new hmc_quad(i, this->conn->get_conn(i), num_ranks, &this->quad_notify, this, clk);
 }
 
 hmc_cube::~hmc_cube(void)
 {
-  for (unsigned i = 0; i < HMC_NUM_QUADS; i++) {
-    delete this->conns[i];
+  for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
     delete this->quads[i];
-  }
-  for (auto it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it)
-    delete *it;
+  delete this->conn;
 }
 
 void hmc_cube::clock(void)
 {
 #ifdef HMC_USES_NOTIFY
-  unsigned notifymap = this->conns_notify.get_notification();
-  if (notifymap)
+  if (this->conn_notify.get_notification())
 #endif
   {
-#ifdef HMC_USES_NOTIFY
-    unsigned lid = __builtin_ctzl(notifymap);
-#else
-    unsigned lid = 0;
-#endif /* #ifdef HMC_USES_NOTIFY */
-    for (unsigned q = lid; q < HMC_NUM_QUADS; q++) {
-#ifdef HMC_USES_NOTIFY
-      if ((0x1 << q) & notifymap)
-#endif /* #ifdef HMC_USES_NOTIFY */
-      {
-        this->conns[q]->clock();
-      }
-    }
+    this->conn->clock();
   }
 
 #ifdef HMC_USES_NOTIFY
-  notifymap = this->quad_notify.get_notification();
+  unsigned notifymap = this->quad_notify.get_notification();
   if (notifymap)
 #endif
   {
@@ -92,7 +64,7 @@ void hmc_cube::clock(void)
 bool hmc_cube::notify_up(void)
 {
 #ifdef HMC_USES_NOTIFY
-  return (!this->conns_notify.get_notification() &&
+  return (!this->conn_notify.get_notification() &&
           !this->quad_notify.get_notification());
 #else
   return true;

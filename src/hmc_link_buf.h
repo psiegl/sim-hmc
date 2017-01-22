@@ -10,14 +10,16 @@ class hmc_link;
 
 class hmc_link_buf {
 private:
+#ifdef HMC_LOGGING
   uint64_t *cur_cycle;
+  hmc_link *link;
+#endif /* #ifdef HMC_LOGGING */
+
   float bitoccupation;
   unsigned bitoccupationmax;
   std::list< std::pair<char*,unsigned> > buf;
 
   hmc_notify *notify;
-
-  hmc_link *link;
 
 public:
   explicit hmc_link_buf(uint64_t *cycle, hmc_notify *notify, hmc_link *link);

@@ -22,9 +22,11 @@ hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_buf *buf,
   bitoccupationmax(0),
   bitwidth(0),
   bitrate(0),
+#ifdef HMC_LOGGING
+  link(link),
+#endif /* #ifdef HMC_LOGGING */
   notify(notify),
-  buf(buf),
-  link(link)
+  buf(buf)
 {
 }
 
