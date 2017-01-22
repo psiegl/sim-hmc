@@ -17,7 +17,7 @@
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
-                 unsigned ringbus_bitwidth, float ringbus_bitrate,
+                 unsigned quadbus_bitwidth, float quadbus_bitrate,
                  const char *graphviz_filename) :
   hmc_notify_cl(),
   clk(0),
@@ -55,7 +55,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   }
 
   for (unsigned i = 0; i < num_hmcs; i++) {
-    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, ringbus_bitwidth, ringbus_bitrate, capacity, &this->cubes, num_hmcs, &this->clk);
+    this->cubes[i] = new hmc_cube(i, &this->cubes_notify, quadbus_bitwidth, quadbus_bitrate, capacity, &this->cubes, num_hmcs, &this->clk);
     this->jtags[i] = new hmc_jtag(this->cubes[i]);
   }
 

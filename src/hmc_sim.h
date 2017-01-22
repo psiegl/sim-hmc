@@ -96,7 +96,7 @@ private:
 public:
   hmc_sim(unsigned num_hmcs, unsigned num_slids,
           unsigned num_links, unsigned capacity,
-          unsigned ringbus_bitwidth, float ringbus_bitrate,
+          unsigned quadbus_bitwidth, float quadbus_bitrate,
           const char* graphviz_filename = nullptr);
   ~hmc_sim(void);
 
