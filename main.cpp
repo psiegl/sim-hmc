@@ -31,13 +31,16 @@ int main(int argc, char* argv[])
   unsigned sendpacketleninbit = 2*FLIT_WIDTH;
   char packet[(17*FLIT_WIDTH) / 8];
 
-  unsigned issue = 60000;
+  unsigned issue_writes = 0;
+  unsigned issue_reads = 60000;
+
+  unsigned issue_sum = issue_writes + issue_reads;
   unsigned send_ctr = 0;
   unsigned skip = 0;
   unsigned recv_ctr = 0 + skip;
 
   unsigned clks = 0;
-  unsigned *track = new unsigned[issue];
+  unsigned *track = new unsigned[issue_sum];
 
   struct timeval t1, t2;
   gettimeofday(&t1, NULL);
@@ -46,7 +49,7 @@ int main(int argc, char* argv[])
   bool next_available = false;
   do
   {
-    if(issue > send_ctr && next_available == false)
+    if(issue_sum > send_ctr && next_available == false)
     {
       memset(packet, 0, (sendpacketleninbit / FLIT_WIDTH << 1) * sizeof(uint64_t));
 
@@ -66,7 +69,7 @@ int main(int argc, char* argv[])
         addr = 0b110000000000; // quad 3
         break;
       }
-      if(send_ctr < (issue /* - 2*/)) {
+      if(send_ctr < issue_reads) {
         unsigned dram_hi = (send_ctr & 0b111) << 4;
         unsigned dram_lo = (send_ctr >> 3) << (capacity == 8 ? 16 : 15);
         sim.hmc_encode_pkt(destcub, addr+dram_hi+dram_lo, send_ctr /* tag */, RD256, packet);
@@ -89,7 +92,7 @@ int main(int argc, char* argv[])
       recv_ctr++;
 //      if(!(recv_ctr % 100))
 //        std::cout << "received " << recv_ctr << std::endl;
-      if(recv_ctr >= issue)
+      if(recv_ctr >= issue_sum)
         break;
     }
     // set clk anyway
@@ -102,20 +105,20 @@ int main(int argc, char* argv[])
   gettimeofday(&t2, NULL);
 
   unsigned long long avg = 0;
-  for(unsigned i=0; i<issue-skip; i++) {
+  for(unsigned i=0; i<issue_sum-skip; i++) {
     avg += track[i];
   }
-  avg /= (issue-skip);
+  avg /= (issue_sum-skip);
 
   delete[] track;
 
   // ToDo: account not only for reads but also writes! and depending on the type send!
-  std::cout << "issued: " << issue << " (skip: " << skip << ")" << std::endl;
+  std::cout << "issued: " << issue_sum << " (skip: " << skip << ")" << std::endl;
   float freq = 0.8f; // we clk at the same frequency! otherwise: 0.8f
   std::cout << "done in " << clks << " clks, avg.: " << avg << std::endl;
-  float bw = (((float)(256+16)*8*(issue-skip))/(clks*freq)); // Gbit/s
+  float bw = (((float)(256+16)*8*(issue_sum-skip))/(clks*freq)); // Gbit/s
   std::cout << "bw: " << bw << "Gbit/s, " << (bw/8) << "GB/s"  << std::endl;
-  std::cout << "bw per lane: " << (((float)(256+16)*8*(issue-skip))/(clks*freq*16)) << "Gbit/s" << std::endl;
+  std::cout << "bw per lane: " << (((float)(256+16)*8*(issue_sum-skip))/(clks*freq*16)) << "Gbit/s" << std::endl;
 
   double elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0; // ms
   std::cout << std::endl;
