@@ -4,7 +4,8 @@
 #include <list>
 #include <map>
 #include "config.h"
-#include "hmc_ring.h"
+#include "hmc_conn_ring.h"
+#include "hmc_conn_xbar.h"
 #include "hmc_notify.h"
 #include "hmc_module.h"
 
@@ -22,7 +23,7 @@ private:
   unsigned id;
 
   hmc_notify ring_notify;
-  hmc_ring ring;
+  hmc_conn_ring ring;
 
   hmc_notify vault_notify;
 #ifdef HMC_USES_BOBSIM

@@ -7,7 +7,6 @@
 #endif
 #include "hmc_notify.h"
 #include "hmc_link.h"
-#include "hmc_ring.h"
 
 hmc_quad::hmc_quad(unsigned id, unsigned num_ranks, hmc_notify *notify,
                    hmc_cube *cube, uint64_t *clk) :

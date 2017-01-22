@@ -3,14 +3,14 @@
 #include "hmc_cube.h"
 #include "hmc_link.h"
 #include "hmc_link_queue.h"
-#include "hmc_ring.h"
+#include "hmc_connection.h"
 #include "hmc_packet.h"
 #include "hmc_notify.h"
 #include "hmc_macros.h"
 #include "hmc_decode.h"
 #include "hmc_quad.h"
 
-hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube *cub) :
+hmc_connection::hmc_connection(unsigned id, hmc_notify *notify, hmc_cube *cub) :
   hmc_notify_cl(),
   id(id),
   cub(cub),
@@ -19,11 +19,11 @@ hmc_ring::hmc_ring(unsigned id, hmc_notify *notify, hmc_cube *cub) :
 {
 }
 
-hmc_ring::~hmc_ring(void)
+hmc_connection::~hmc_connection(void)
 {
 }
 
-bool hmc_ring::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
+bool hmc_connection::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
 {
   if (!this->links[notifyid]) {
     this->links[notifyid] = link;
@@ -33,7 +33,7 @@ bool hmc_ring::_set_link(unsigned notifyid, unsigned id, hmc_link *link)
   return false;
 }
 
-unsigned hmc_ring::decode_link_of_packet(char *packet)
+unsigned hmc_connection::decode_link_of_packet(char *packet)
 {
   uint64_t header = HMC_PACKET_HEADER(packet);
   unsigned p_cubId;
@@ -70,7 +70,7 @@ unsigned hmc_ring::decode_link_of_packet(char *packet)
   return ext_id;
 }
 
-void hmc_ring::clock(void)
+void hmc_connection::clock(void)
 {
 #ifdef HMC_USES_NOTIFY
   uint32_t notifymap = this->links_notify.get_notification();
@@ -103,7 +103,7 @@ void hmc_ring::clock(void)
     }
   }
 }
-bool hmc_ring::notify_up(void)
+bool hmc_connection::notify_up(void)
 {
 #ifdef HMC_USES_NOTIFY
   return !this->links_notify.get_notification();

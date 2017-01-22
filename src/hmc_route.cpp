@@ -1,6 +1,6 @@
 #include <iostream>
 #include "hmc_route.h"
-#include "hmc_ring.h"
+#include "hmc_connection.h"
 #include "hmc_cube.h"
 
 hmc_route::hmc_route(std::map<unsigned, hmc_cube*> *cubes, unsigned numcubes) :
