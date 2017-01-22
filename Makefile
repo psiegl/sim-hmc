@@ -52,6 +52,7 @@ CXXFLAGS += -O -g #-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fs
 else
 CFLAGS   += -O3 -ffast-math -fPIC
 CXXFLAGS += -O3 -ffast-math -fPIC
+LIBS     += -lz
 HMCSIM_MACROS += -DNDEBUG
 endif
 ifneq (,$(findstring HMC_PROF, $(HMCSIM_MACROS)))
@@ -108,7 +109,7 @@ $(TARGET): $(BLDDIR) $(OBJ) $(BOBOBJ)
 
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
-	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) -lz $(LIBS)
+	$(CXX) $(CFLAGS) -o $@ main.cpp $(TARGET) $(LIBS)
 
 runall: $(TESTBIN)
 	@./$(TESTBIN)
