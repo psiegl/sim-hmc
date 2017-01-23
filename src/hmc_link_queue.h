@@ -1,8 +1,8 @@
 #ifndef _HMC_LINK_QUEUE_H_
 #define _HMC_LINK_QUEUE_H_
 
+#include <cstdint>
 #include <list>
-#include <stdint.h>
 #include <tuple>
 #include "config.h"
 #include "hmc_macros.h"

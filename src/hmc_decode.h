@@ -2,7 +2,6 @@
 #define _HMC_DECODE_H_
 
 #include <cstdint>
-#include <math.h>
 #include "config.h"
 #include "hmc_macros.h"
 

@@ -1,8 +1,8 @@
 #ifndef _HMC_TRACE_STDOUT_H_
 #define _HMC_TRACE_STDOUT_H_
 
+#include <cstdint>
 #include <iostream>
-#include <stdint.h>
 #include "hmc_trace.h"
 
 class hmc_trace_stdout : public hmc_trace_logger {

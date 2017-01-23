@@ -1,6 +1,7 @@
 #include <boost/regex.hpp>
 #include <iostream>
 #include <cmath>
+
 class hmc_sim;
 
 class hmc_graphviz {

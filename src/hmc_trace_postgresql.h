@@ -1,8 +1,8 @@
 #ifndef _HMC_TRACE_POSTGRESQL_H_
 #define _HMC_TRACE_POSTGRESQL_H_
 
+#include <cstdint>
 #include <pqxx/pqxx>
-#include <stdint.h>
 #include "hmc_trace.h"
 
 class hmc_postgresql : public hmc_trace_logger {

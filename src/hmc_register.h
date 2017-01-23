@@ -1,6 +1,7 @@
 #ifndef _HMC_REGISTER_H_
 #define _HMC_REGISTER_H_
 
+#include <array>
 #include <cstdint>
 #include "config.h"
 #include "hmc_macros.h"
@@ -330,7 +331,7 @@ private:
   };
 
   hmc_cube *cube;
-  uint32_t regs[ HMC_NUM_REGS ];
+  std::array<uint32_t, HMC_NUM_REGS> regs;
 
   int hmcsim_get_decode_idx(unsigned reg);
   bool hmcsim_get_decode_field(hmc_regslots_e name, struct hmcsim_reg_decode_fields_t **field);

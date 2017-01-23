@@ -1,7 +1,7 @@
 #ifndef _HMC_CONN_XBAR_H_
 #define _HMC_CONN_XBAR_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <list>
 #include "hmc_connection.h"
 

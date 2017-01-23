@@ -8,7 +8,7 @@ include Makefile.inc
 LIBNAME  := hmcsim
 SRCDIR   := src
 BLDDIR   := build
-LIBS     := -ltcmalloc
+LIBS     := -lm -ltcmalloc
 TARGET   := lib/lib$(LIBNAME).a
 
 .PHONY   : $(TARGET)
@@ -81,7 +81,7 @@ endif
 ####### Build targets ############################
 
 cppcheck:
-	cppcheck --enable=all --enable=information $(wildcard $(SRCDIR)/*.h) $(SRCDIR) main.cpp 2>&1 >/dev/null | less
+	cppcheck --enable=all --suppress=missingIncludeSystem --enable=information $(wildcard $(SRCDIR)/*.h) $(SRCDIR) main.cpp 2>&1 >/dev/null | less
 
 $(BLDDIR):
 	@echo "[mkdir] $@"

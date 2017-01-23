@@ -1,7 +1,7 @@
 #ifndef _HMC_JTAG_H_
 #define _HMC_JTAG_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class hmc_cube;
 

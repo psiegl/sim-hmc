@@ -1,8 +1,6 @@
 #include <iostream>
 #include "hmc_trace.h"
-#if defined(HMC_LOGGING_HDF5)
-# include "hmc_trace_hdf5.h"
-#elif defined(HMC_LOGGING_SQLITE3)
+#if defined(HMC_LOGGING_SQLITE3)
 # include "hmc_trace_sqlite3.h"
 #elif defined(HMC_LOGGING_POSTGRESQL)
 # include "hmc_trace_postgresql.h"
@@ -14,11 +12,7 @@ static hmc_trace_logger *logger = nullptr;
 
 void hmc_trace::trace_setup(void)
 {
-#if defined(HMC_LOGGING_HDF5)
-  if (!logger) {
-    logger = new hmc_hdf5();
-  }
-#elif defined(HMC_LOGGING_SQLITE3)
+#if defined(HMC_LOGGING_SQLITE3)
   if (!logger) {
     const char *dbname;
     if (!(dbname = getenv("HMCSIM_TRACE_DBFILE"))) {

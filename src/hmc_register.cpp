@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdint>
+#include <cmath>
 #include "config.h"
 #include "hmc_cube.h"
 #include "hmc_register.h"
@@ -12,7 +13,7 @@ hmc_register::hmc_register(hmc_cube *cube, unsigned capacity) :
     this->regs[i] = 0x0;
 
   // reset all the registers
-  for (unsigned i = 0; i < (unsigned)elemsof(this->hmcsim_decode); i++) {
+  for (unsigned i = 0; i < elemsof(this->hmcsim_decode); i++) {
     struct hmcsim_reg_decode_fields_t *field;
     if (!this->hmcsim_get_decode_field(this->hmcsim_decode[i].name, &field)) {
       std::cerr << "ERROR: No mapping found!" << std::endl;
@@ -39,7 +40,7 @@ bool hmc_register::hmcsim_get_decode_field(hmc_regslots_e name, struct hmcsim_re
     return true;
   }
   else {
-    for (unsigned i = 0; i < (unsigned)elemsof(this->hmcsim_decode_fields); i++) {
+    for (unsigned i = 0; i < elemsof(this->hmcsim_decode_fields); i++) {
       if (this->hmcsim_decode_fields[ i ].name == name) {
         *field = &this->hmcsim_decode_fields[ i ];
         return true;
@@ -113,7 +114,7 @@ int hmc_register::hmcsim_reg_value_set_full(unsigned reg_addr, uint64_t value)
     if (banks == -1 || bsize == -1)
       return -1;
 
-    this->cube->set_decoding(bsize, banks);   // psiegl: speedup!
+    this->cube->set_decoding(bsize, banks);   // speedup! :-)
 
     /* in theory also writes to Register FEATURES.
        But: all of the values are RO!
@@ -142,7 +143,7 @@ int hmc_register::hmcsim_reg_value_get(unsigned reg_addr, hmc_regslots_e slot, u
 
 int hmc_register::hmcsim_reg_value_get_full(unsigned reg_addr, uint64_t *value)
 {
-  int idx = hmcsim_get_decode_idx(reg_addr);
+  int idx = this->hmcsim_get_decode_idx(reg_addr);
   if (idx == -1)
     return -1;
 
@@ -167,7 +168,7 @@ int hmc_register::hmcsim_util_decode_bsize(unsigned value)
     /* 128 bytes */
     return 128;
   case 0x3:   // HMC spec v2.1 doesn't provide details about registers anymore,
-  // while 1.0, 1.1 don't contain bsize 256
+  // wheres 1.0, 1.1 don't contain bsize 256
   case 0xB:
     /* 256 bytes */
     return 256;

@@ -1,8 +1,8 @@
 #ifndef _HMC_TRACE_SQLITE3_H_
 #define _HMC_TRACE_SQLITE3_H_
 
+#include <cstdint>
 #include <sqlite3.h>
-#include <stdint.h>
 #include "hmc_trace.h"
 
 class hmc_sqlite3 : public hmc_trace_logger {

@@ -1,6 +1,6 @@
 #include <cassert>
 #include <cstdint>
-#include <math.h>
+#include <cmath>
 #include "hmc_decode.h"
 #include "config.h"
 

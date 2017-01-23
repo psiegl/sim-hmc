@@ -1,7 +1,7 @@
 #ifndef _HMC_TRACE_H_
 #define _HMC_TRACE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class hmc_trace_logger {
 public:

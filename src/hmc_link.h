@@ -1,7 +1,7 @@
 #ifndef _HMC_LINK_H_
 #define _HMC_LINK_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include "hmc_link_fifo.h"
 #include "hmc_link_queue.h"
 #include "hmc_notify.h"

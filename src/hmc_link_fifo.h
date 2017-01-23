@@ -1,9 +1,9 @@
 #ifndef _HMC_LINK_BUF_H_
 #define _HMC_LINK_BUF_H_
 
+#include <cstdint>
 #include <list>
 #include <utility>
-#include <stdint.h>
 
 class hmc_notify;
 class hmc_link;
