@@ -17,8 +17,7 @@
 
 hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
                  unsigned num_links, unsigned capacity,
-                 unsigned quadbus_bitwidth, float quadbus_bitrate,
-                 const char *graphviz_filename) :
+                 unsigned quadbus_bitwidth, float quadbus_bitrate) :
   hmc_notify_cl(),
   clk(0),
   cubes_notify(0, nullptr, this),
@@ -65,9 +64,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
 
   // set up the graph after everything else was set up!
 #ifdef HMC_USES_GRAPHVIZ
-  if (!graphviz_filename)
-    graphviz_filename = getenv("HMCSIM_GRAPH_DOTFILE");
-  hmc_graphviz graph(this, graphviz_filename);
+  hmc_graphviz graph(this);
 #endif /* #ifdef HMC_USES_GRAPHVIZ */
 }
 

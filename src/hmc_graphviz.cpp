@@ -48,7 +48,7 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
         std::cerr << HMCSIM_FULL_LINK_WIDTH << " (FULL), ";
         std::cerr << HMCSIM_HALF_LINK_WIDTH << " (HALF), ";
         std::cerr << HMCSIM_QUARTER_LINK_WIDTH << " (QUARTER); ";
-        std::cerr << "current: " << lanes;
+        std::cerr << "supplied: " << lanes;
         std::cerr << std::endl;
         exit(-1);
       }
@@ -65,7 +65,7 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
         std::cerr << HMCSIM_BR25 << " (BR25), ";
         std::cerr << HMCSIM_BR28 << " (BR28), ";
         std::cerr << HMCSIM_BR30 << " (BR30); ";
-        std::cerr << "current: " << bitrate;
+        std::cerr << "supplied: " << bitrate;
         std::cerr << std::endl;
         exit(-1);
       }
@@ -75,18 +75,18 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
 
       std::string src_name(src->name);
       std::transform(src_name.begin(), src_name.end(), src_name.begin(), ::tolower);
-      if (!src_name.compare(0, strlen("host"), "host")) {
-        unsigned slidId = this->extract_id_from_string(src->location[0]);
-        if (!sim->hmc_define_slid(slidId, tgt_hmcId, tgt_linkId, lanes, bitrate)) {
-          std::cout << "ERROR: define slid failed!" << std::endl;
-          exit(-1);
-        }
-      }
-      else {
+      if (src_name.compare(0, strlen("host"), "host")) {
         unsigned src_hmcId = this->extract_id_from_string(src->name);
         unsigned src_linkId = this->extract_id_from_string(src->location[0]);
         if (!sim->hmc_set_link_config(src_hmcId, src_linkId, tgt_hmcId, tgt_linkId, lanes, bitrate)) {
           std::cout << "ERROR: set link config failed!" << std::endl;
+          exit(-1);
+        }
+      }
+      else {
+        unsigned slidId = this->extract_id_from_string(src->location[0]);
+        if (!sim->hmc_define_slid(slidId, tgt_hmcId, tgt_linkId, lanes, bitrate)) {
+          std::cout << "ERROR: define slid failed!" << std::endl;
           exit(-1);
         }
       }
@@ -95,18 +95,17 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
   }
 }
 
-hmc_graphviz::hmc_graphviz (hmc_sim *sim, const char *graphviz_filename)
+hmc_graphviz::hmc_graphviz (hmc_sim *sim)
 {
+  char *filename = getenv("HMCSIM_GRAPH_DOTFILE");
   // if not set, try to find a filename, if this does not apply, potentially the graph will be setup the old way
-  if (!graphviz_filename) {
-    std::cout << "HMC_GRAPHVIZ: HMCSIM_GRAPH_DOTFILE env variable not set!" << std::endl;
-    return;
+  if (filename) {
+    std::cout << "HMC_GRAPHVIZ: " << filename << std::endl;
+
+    std::string content = this->get_content_from_file(filename);
+    if (!content.empty())
+      this->parse_content_and_set(sim, content);
   }
-  std::cout << "HMC_GRAPHVIZ: " << graphviz_filename << std::endl;
-
-  std::string content = this->get_content_from_file(graphviz_filename);
-  if (content.empty())
-    return;
-
-  this->parse_content_and_set(sim, content);
+  else
+    std::cout << "HMC_GRAPHVIZ: HMCSIM_GRAPH_DOTFILE env variable not set!" << std::endl;
 }

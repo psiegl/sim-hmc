@@ -96,8 +96,7 @@ private:
 public:
   hmc_sim(unsigned num_hmcs, unsigned num_slids,
           unsigned num_links, unsigned capacity,
-          unsigned quadbus_bitwidth, float quadbus_bitrate,
-          const char* graphviz_filename = nullptr);
+          unsigned quadbus_bitwidth, float quadbus_bitrate);
   ~hmc_sim(void);
 
   ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)

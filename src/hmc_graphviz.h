@@ -26,6 +26,6 @@ private:
     }
 
 public:
-    hmc_graphviz(hmc_sim *sim, const char* graphviz_filename = nullptr);
+    hmc_graphviz(hmc_sim *sim);
     ~hmc_graphviz(void) {}
 };
