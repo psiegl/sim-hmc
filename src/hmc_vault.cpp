@@ -28,25 +28,26 @@ hmc_vault::~hmc_vault(void)
 //#include <iostream>
 void hmc_vault::clock(void)
 {
-  // ToDo: check if clock needed!
-  this->link->clock();
+  if (this->link_notify.get_notification()) {
+    this->link->clock();
 
-  unsigned packetleninbit;
-  hmc_link_fifo *rx = this->link->get_rx_fifo_out();
-  char *packet = rx->front(&packetleninbit);
-  if (packet == nullptr)
-    return;
+    unsigned packetleninbit;
+    hmc_link_fifo *rx = this->link->get_rx_fifo_out();
+    char *packet = rx->front(&packetleninbit);
+    if (packet == nullptr)
+      return;
 
-  //uint64_t header = HMC_PACKET_HEADER(packet);
-  //uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
-  //unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
+    //uint64_t header = HMC_PACKET_HEADER(packet);
+    //uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
+    //unsigned bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);
 
-  //std::cout << "got packet!!! to bank " << bank << std::endl;
-  // Bank Conflict! <- only available with BOBSIM
+    //std::cout << "got packet!!! to bank " << bank << std::endl;
+    // Bank Conflict! <- only available with BOBSIM
 
-  if (this->hmcsim_process_rqst(packet)) {
-    rx->pop_front();
-    delete[] packet;
+    if (this->hmcsim_process_rqst(packet)) {
+      rx->pop_front();
+      delete[] packet;
+    }
   }
 }
 #endif /* #ifndef HMC_USES_BOBSIM */
@@ -300,7 +301,7 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     if (error)
       *r_tail |= HMCSIM_PACKET_RESPONSE_SET_ERRSTAT(0x1);    // ToDo: FixME with specific code
     *r_tail |= HMCSIM_PACKET_RESPONSE_SET_RTC(rsp_rtc);
-    *r_tail |= HMCSIM_PACKET_RESPONSE_SET_CRC(hmcsim_crc32(response_packet, rsp_flits));    // ToDo: create CRC!
+    *r_tail |= HMCSIM_PACKET_RESPONSE_SET_CRC(hmcsim_crc32(response_packet, rsp_flits));
 
     /* -- register the response */
     tx->push_back(response_packet, packetleninbit);
