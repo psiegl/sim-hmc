@@ -2,7 +2,6 @@
 #include <boost/graph/graphviz.hpp>
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
 #include "hmc_graphviz.h"
 #include "hmc_sim.h"
 
@@ -54,11 +53,11 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
       }
 
       float bitrate = std::stof(parms[2]);
-      if (!(similar_floats(bitrate, HMCSIM_BR12_5)
-            || similar_floats(bitrate, HMCSIM_BR15)
-            || similar_floats(bitrate, HMCSIM_BR25)
-            || similar_floats(bitrate, HMCSIM_BR28)
-            || similar_floats(bitrate, HMCSIM_BR30))) {
+      if (!(this->similar_floats(bitrate, HMCSIM_BR12_5)
+            || this->similar_floats(bitrate, HMCSIM_BR15)
+            || this->similar_floats(bitrate, HMCSIM_BR25)
+            || this->similar_floats(bitrate, HMCSIM_BR28)
+            || this->similar_floats(bitrate, HMCSIM_BR30))) {
         std::cerr << "ERROR: bitrate supports only ";
         std::cerr << HMCSIM_BR12_5 << " (BR12.5), ";
         std::cerr << HMCSIM_BR15 << " (BR15), ";
@@ -98,7 +97,6 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
 hmc_graphviz::hmc_graphviz (hmc_sim *sim)
 {
   char *filename = getenv("HMCSIM_GRAPH_DOTFILE");
-  // if not set, try to find a filename, if this does not apply, potentially the graph will be setup the old way
   if (filename) {
     std::cout << "HMC_GRAPHVIZ: " << filename << std::endl;
 
