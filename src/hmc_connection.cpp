@@ -72,20 +72,22 @@ unsigned hmc_conn_part::decode_link_of_packet(char *packet)
 
 void hmc_conn_part::clock(void)
 {
+  // ToDo: round robin? of all?
 #ifdef HMC_USES_NOTIFY
-  uint32_t notifymap = this->links_notify.get_notification();
-  unsigned lid = __builtin_ctzl(notifymap); // ToDo: round robin? of all?
+  unsigned notifymap = this->links_notify.get_notification();
+  for (unsigned i, lid = i = __builtin_ctzl(notifymap);
+       notifymap >>= lid;
+       lid = __builtin_ctzl(notifymap >>= 1),
+       i += (lid + 1))
 #else
-  unsigned lid = 0;
+  for (unsigned i = 0; i < HMC_JTL_ALL_LINKS; i++)
 #endif /* #ifdef HMC_USES_NOTIFY */
-  for (unsigned i = lid; i < HMC_JTL_ALL_LINKS; i++) {
-#ifdef HMC_USES_NOTIFY
-    if ((0x1 << i) & notifymap)
-#else
+  {
+#ifndef HMC_USES_NOTIFY
     if (this->links[i] != nullptr)
-#endif /* #ifdef HMC_USES_NOTIFY */
+#endif /* #ifndef HMC_USES_NOTIFY */
     {
-      this->links[i]->clock(); // ToDo!
+      this->links[i]->clock();
 
       hmc_link_fifo *rx = this->links[i]->get_rx_fifo_out();
       unsigned packetleninbit;
@@ -116,22 +118,15 @@ void hmc_conn::clock(void)
 {
 #ifdef HMC_USES_NOTIFY
   unsigned notifymap = this->conn_notify.get_notification();
-  if (notifymap)
-#endif
-  {
-#ifdef HMC_USES_NOTIFY
-    unsigned lid = __builtin_ctzl(notifymap);
+  for (unsigned i, lid = i = __builtin_ctzl(notifymap);
+       notifymap >>= lid;
+       lid = __builtin_ctzl(notifymap >>= 1),
+       i += (lid + 1))
 #else
-    unsigned lid = 0;
+  for (unsigned i = 0; i < HMC_NUM_QUADS; i++)
 #endif /* #ifdef HMC_USES_NOTIFY */
-    for (unsigned q = lid; q < HMC_NUM_QUADS; q++) {
-#ifdef HMC_USES_NOTIFY
-      if ((0x1 << q) & notifymap)
-#endif /* #ifdef HMC_USES_NOTIFY */
-      {
-        this->conns[q]->clock();
-      }
-    }
+  {
+    this->conns[i]->clock();
   }
 }
 

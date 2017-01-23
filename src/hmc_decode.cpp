@@ -90,7 +90,8 @@ void hmc_decode::set_decoding(unsigned bsize, unsigned num_banks_per_vault)
   assert((dram_mask_width_lo + dram_mask_width_hi) == (col_mask_width + row_mask_width));
 
   // we first shuffle with DRAM, therewith we receive on junk of addr ... and then with ROW and COL
-  // ToDo: col above, then row, or interleaved ..
+  // we assume here that dram[] will be partitioned in col[], row[]
+  // could also try interleaving ...
   this->row_shift = 0;
   this->row_mask = (1 << row_mask_width) - 1;
 

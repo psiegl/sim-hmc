@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <boost/graph/graphviz.hpp>
 #include <cstdlib>
 #include <fstream>
@@ -36,7 +35,7 @@ void hmc_graphviz::parse_content_and_set(hmc_sim *sim, std::string content)
     boost::regex expr { "([0-9]+)\\s*,\\s*BR([0-9]+(.[0-9])*)" };
     boost::smatch parms;
     if (boost::regex_search(label, parms, expr)) {
-      unsigned int lanes = std::stoi(parms[1]); // ToDo
+      unsigned int lanes = std::stoi(parms[1]);
       switch (lanes) {
       case HMCSIM_FULL_LINK_WIDTH:
       case HMCSIM_HALF_LINK_WIDTH:

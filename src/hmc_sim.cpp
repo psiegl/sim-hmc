@@ -396,33 +396,32 @@ void hmc_sim::clock(void)
   this->clk++;
 #ifdef HMC_USES_NOTIFY
   unsigned notifymap = this->cubes_notify.get_notification();
-  unsigned lid = __builtin_ctzl(notifymap);
+  for (unsigned i, lid = i = __builtin_ctzl(notifymap);
+       notifymap >>= lid;
+       lid = __builtin_ctzl(notifymap >>= 1),
+       i += (lid + 1))
 #else
-  unsigned lid = 0;
+  for (unsigned i = 0; i < this->cubes.size(); i++)
 #endif /* #ifdef HMC_USES_NOTIFY */
-  for (unsigned h = lid; h < this->cubes.size(); h++) {
-#ifdef HMC_USES_NOTIFY
-    if ((0x1 << h) & notifymap)
-#endif /* #ifdef HMC_USES_NOTIFY */
-    {
-      this->cubes[h]->clock();
-    }
+  {
+    this->cubes[i]->clock();
   }
 
 #ifdef HMC_USES_NOTIFY
   notifymap = this->slidnotify.get_notification();
-  lid = __builtin_ctzl(notifymap);
+  for (unsigned i, lid = i = __builtin_ctzl(notifymap);
+       notifymap >>= lid;
+       lid = __builtin_ctzl(notifymap >>= 1),
+       i += (lid + 1))
 #else
-  lid = 0;
+  for (unsigned i = 0; i < this->num_slids; i++)
 #endif /* #ifdef HMC_USES_NOTIFY */
-  for (unsigned slidId = lid; slidId < this->num_slids; slidId++) {
-#ifdef HMC_USES_NOTIFY
-    if ((0x1 << slidId) & notifymap)
-#else
-    if (this->slids[slidId] != nullptr)
-#endif /* #ifdef HMC_USES_NOTIFY */
+  {
+#ifndef HMC_USES_NOTIFY
+    if (this->slids[i] != nullptr)
+#endif /* #ifndef HMC_USES_NOTIFY */
     {
-      this->slids[slidId]->clock(); // ToDo
+      this->slids[i]->clock();
     }
   }
 }

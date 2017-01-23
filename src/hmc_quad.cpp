@@ -46,22 +46,15 @@ void hmc_quad::clock(void)
 {
 #ifdef HMC_USES_NOTIFY
   unsigned notifymap = this->vault_notify.get_notification();
-  if (notifymap)
+  for (unsigned i, lid = i = __builtin_ctzl(notifymap);
+       notifymap >>= lid;
+       lid = __builtin_ctzl(notifymap >>= 1),
+       i += (lid + 1))
+#else
+  for (unsigned i = 0; i < HMC_NUM_VAULTS / HMC_NUM_QUADS; i++)
 #endif /* #ifdef HMC_USES_NOTIFY */
   {
-#ifdef HMC_USES_NOTIFY
-    unsigned lid = __builtin_ctzl(notifymap);
-#else
-    unsigned lid = 0;
-#endif /* #ifdef HMC_USES_NOTIFY */
-    for (unsigned v = lid; v < HMC_NUM_VAULTS / HMC_NUM_QUADS; v++) {
-#ifdef HMC_USES_NOTIFY
-      if ((0x1 << v) & notifymap)
-#endif /* #ifdef HMC_USES_NOTIFY */
-      {
-        this->vaults[v]->clock();
-      }
-    }
+    this->vaults[i]->clock();
   }
 }
 
