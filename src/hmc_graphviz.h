@@ -14,12 +14,15 @@ private:
     void parse_content_and_set(hmc_sim *sim, std::string content);
 
     unsigned int extract_id_from_string(std::string str) {
-      std::string s = boost::regex_replace(
-          str,
-          boost::regex("[^0-9]*([0-9]+).*"),
-          std::string("\\1")
-          );
-      return std::stoi(s);
+      boost::regex expr { "(\\d+)(?!.*\\d)" };
+      boost::smatch parms;
+      if(boost::regex_search(str, parms, expr))
+        return std::stoi(parms[1]);
+      else {
+        std::cerr << "ERROR: haven't find id in string '"<< str.c_str() << "'" << std::endl;
+        exit(-1);
+        return ~0x0;
+      }
     }
 
 public:
