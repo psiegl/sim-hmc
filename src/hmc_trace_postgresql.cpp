@@ -38,6 +38,8 @@ hmc_postgresql::hmc_postgresql(const char *dbname, const char *dbuser, const cha
                         "linkIntTypeId  INT," \
                         "cycle          BIGINT," \
                         "phyPktAddr     BIGINT," \
+                        "fromCubId      INT," \
+                        "toCubId        INT," \
                         "fromId         INT," \
                         "toId           INT," \
                         "header         BIGINT," \
@@ -61,8 +63,9 @@ hmc_postgresql::~hmc_postgresql(void)
   delete this->db_conn;
 }
 
-void hmc_postgresql::execute(unsigned linkTypeId, unsigned linkIntTypeId,
+void hmc_postgresql::execute(enum hmc_link_type linkTypeId, unsigned linkIntTypeId,
                              uint64_t cycle, uint64_t phyPktAddr,
+                             int fromCubId, int toCubId,
                              int fromId, int toId,
                              uint64_t header, uint64_t tail)
 {
@@ -73,7 +76,7 @@ void hmc_postgresql::execute(unsigned linkTypeId, unsigned linkIntTypeId,
   int64_t i_tail = *(int64_t*)&tail;
 
 //  try {
-  this->trans->prepared("insert")(linkTypeId)(linkIntTypeId)(i_cycle)(i_phyPktAddr)(fromId)(toId)(i_header)(i_tail).exec();
+  this->trans->prepared("insert")(linkTypeId)(linkIntTypeId)(i_cycle)(i_phyPktAddr)(fromCubId)(toCubId)(fromId)(toId)(i_header)(i_tail).exec();
 //  }
 //  catch (const std::exception &e) {
 //    std::cerr << "ERROR: " << e.what() << std::endl;

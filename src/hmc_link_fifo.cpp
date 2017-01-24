@@ -78,9 +78,9 @@ void hmc_link_fifo::pop_front(void)
     int fromId = this->link->get_binding()->get_module()->get_id();
     int toId = this->link->get_module()->get_id();
     hmc_cube *toCub = this->link->get_cube();
-    unsigned toCubId = (!toCub) ? -1 : toCub->get_id();
+    int toCubId = (!toCub) ? -1 : toCub->get_id();
     hmc_cube *fromCub = this->link->get_binding()->get_cube();
-    unsigned fromCubId = (!fromCub) ? -1 : fromCub->get_id();
+    int fromCubId = (!fromCub) ? -1 : fromCub->get_id();
 
     uint64_t header = HMC_PACKET_HEADER(packet);
     if (HMCSIM_PACKET_IS_REQUEST(header)) {

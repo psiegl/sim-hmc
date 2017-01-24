@@ -20,9 +20,9 @@ public:
   explicit hmc_sqlite3(const char *dbname = "hmcsim_sqlite3.db", bool use_memory = true);
   ~hmc_sqlite3(void);
 
-  void execute(unsigned linkTypeId, unsigned linkIntTypeId,
+  void execute(enum hmc_link_type linkTypeId, unsigned linkIntTypeId,
                uint64_t cycle, uint64_t phyPktAddr,
-               unsigned fromCubId, unsigned toCubId,
+               int fromCubId, int toCubId,
                int fromId, int toId,
                uint64_t header, uint64_t tail);
 };
