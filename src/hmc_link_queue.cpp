@@ -9,6 +9,7 @@
 # include "hmc_packet.h"
 # include "hmc_decode.h"
 # include "hmc_trace.h"
+# include "hmc_cube.h"
 #endif /* #ifdef HMC_LOGGING */
 
 // everything related to occupation will be in Mega instead of Giga!
@@ -66,19 +67,21 @@ bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
     float UI = packetleninbit / this->bitwidth;
     this->list.push_back(std::make_tuple(packet, UI, packetleninbit, *this->cur_cycle));
 #ifdef HMC_LOGGING
-    hmc_module *fromModule = this->link->get_binding()->get_module();
-    int fromId = (fromModule) ? fromModule->get_id() : -1;
-    hmc_module *toModule = this->link->get_module();
-    int toId = (toModule) ? toModule->get_id() : -1;
+    int fromId = this->link->get_binding()->get_module()->get_id();
+    int toId = this->link->get_module()->get_id();
+    hmc_cube *toCub = this->link->get_cube();
+    unsigned toCubId = (!toCub) ? -1 : toCub->get_id();
+    hmc_cube *fromCub = this->link->get_binding()->get_cube();
+    unsigned fromCubId = (!fromCub) ? -1 : fromCub->get_id();
 
     uint64_t header = HMC_PACKET_HEADER(packet);
     if (HMCSIM_PACKET_IS_REQUEST(header)) {
       uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
-      hmc_trace::trace_in_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
+      hmc_trace::trace_in_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromCubId, toCubId, fromId, toId, header, tail);
     }
     else {
       uint64_t tail = HMC_PACKET_RESP_TAIL(packet);
-      hmc_trace::trace_in_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
+      hmc_trace::trace_in_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromCubId, toCubId, fromId, toId, header, tail);
     }
 #endif /* #ifdef HMC_LOGGING */
     return true;
@@ -128,19 +131,21 @@ void hmc_link_queue::clock(void)
   if (std::get<1>(front) == 0.0f) {
     char *packet = std::get<0>(front);
 //#ifdef HMC_LOGGING
-//    hmc_module *fromModule = this->link->get_binding()->get_module();
-//    int fromId = (fromModule) ? fromModule->get_id() : -1;
-//    hmc_module *toModule = this->link->get_module();
-//    int toId = (toModule) ? toModule->get_id() : -1;
+//    int fromId = this->link->get_binding()->get_module()->get_id();
+//    int toId = this->link->get_module()->get_id();
+//    hmc_cube *toCub = this->link->get_cube();
+//    unsigned toCubId = (!toCub) ? -1 : toCub->get_id();
+//    hmc_cube *fromCub = this->link->get_binding()->get_cube();
+//    unsigned fromCubId = (!fromCub) ? -1 : fromCub->get_id();
 //
 //    uint64_t header = HMC_PACKET_HEADER(packet);
 //    if (HMCSIM_PACKET_IS_REQUEST(header)) {
 //      uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
-//      hmc_trace::trace_out_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
+//      hmc_trace::trace_out_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromCubId, toCubId, fromId, toId, header, tail);
 //    }
 //    else {
 //      uint64_t tail = HMC_PACKET_RESP_TAIL(packet);
-//      hmc_trace::trace_out_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
+//      hmc_trace::trace_out_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromCubId, toCubId, fromId, toId, header, tail);
 //    }
 //#endif /* #ifdef HMC_LOGGING */
     this->buf->push_back_set_avail(packet, std::get<2>(front));

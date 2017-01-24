@@ -1,9 +1,11 @@
+#include <iostream>
 #include "config.h"
 #include "hmc_link.h"
 #include "hmc_module.h"
 
-hmc_link::hmc_link(uint64_t *i_cur_cycle, hmc_module *module,
-                   enum hmc_link_type type, unsigned linkId_in_module) :
+hmc_link::hmc_link(uint64_t *i_cur_cycle, enum hmc_link_type type,
+                   hmc_module *module, hmc_cube *cube,
+                   unsigned linkId_in_module) :
   hmc_notify_cl(),
   module(module),
   type(type),
@@ -11,11 +13,17 @@ hmc_link::hmc_link(uint64_t *i_cur_cycle, hmc_module *module,
   rx_q(i_cur_cycle, &rx_fifo_out, &not_rx_q, this),
   not_rx_buf(-1, nullptr, this),
   rx_fifo_out(i_cur_cycle, &not_rx_buf, this),
+#ifdef HMC_LOGGING
+  cube(cube),
+#endif /* #ifdef HMC_LOGGING */
   tx(nullptr),
   binding(nullptr)
 {
-  if (module != nullptr)
-    module->set_link(linkId_in_module, this, type); // ToDo: if false!
+  if (this->module == nullptr) {
+    std::cerr << "ERROR: can't register link to module!" << std::endl;
+    exit(-1);
+  }
+  this->module->set_link(linkId_in_module, this, type); // ToDo: if false!
 }
 
 hmc_link::~hmc_link(void)

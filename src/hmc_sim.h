@@ -37,6 +37,7 @@ enum link_width_t {
 
 class hmc_link;
 class hmc_cube;
+class hmc_slid;
 
 class hmc_sim : private hmc_notify_cl {
 private:
@@ -51,6 +52,7 @@ private:
   unsigned num_links;
 
   std::list<hmc_link*> link_garbage;
+  std::list<hmc_slid*> slidModule_garbage;
 
   bool notify_up(void);
 

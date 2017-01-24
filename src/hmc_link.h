@@ -8,12 +8,14 @@
 #include "hmc_macros.h"
 
 class hmc_module;
+class hmc_cube;
 
 enum hmc_link_type {
-  HMC_LINK_EXTERN    = 0x0, /* HOST <-> DEV (SLID) or DEV <-> DEV */
+  HMC_LINK_EXTERN    = 0x0,
   HMC_LINK_RING      = 0x1,
-  HMC_LINK_VAULT     = 0x2,
-  HMC_LINK_UNDEFINED = 0x3
+  HMC_LINK_VAULT_IN  = 0x2,
+  HMC_LINK_VAULT_OUT = 0x3,
+  HMC_LINK_SLID      = 0x4
 };
 
 class hmc_link : private hmc_notify_cl {
@@ -26,13 +28,19 @@ private:
   hmc_notify not_rx_buf;
   hmc_link_fifo rx_fifo_out;
 
+#ifdef HMC_LOGGING
+  hmc_cube *cube;
+#endif /* #ifdef HMC_LOGGING */
+
   // to bind the other end ...
   hmc_link_queue *tx;
   hmc_link *binding;
 
+
 public:
-  hmc_link(uint64_t *i_cur_cycle, hmc_module *module = nullptr,
-           enum hmc_link_type type = HMC_LINK_UNDEFINED, unsigned linkId_in_module = ~0x0);
+  hmc_link(uint64_t *i_cur_cycle, enum hmc_link_type type,
+           hmc_module *module, hmc_cube *cube = nullptr,
+           unsigned linkId_in_module = ~0x0);
   virtual ~hmc_link(void);
 
   // ToDo: tx buf!
@@ -58,6 +66,12 @@ public:
   {
     return this->type;
   }
+#ifdef HMC_LOGGING
+  ALWAYS_INLINE hmc_cube* get_cube(void)
+  {
+    return this->cube;
+  }
+#endif /* #ifdef HMC_LOGGING */
 
   void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify);
 

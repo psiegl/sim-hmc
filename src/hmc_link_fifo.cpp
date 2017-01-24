@@ -7,6 +7,7 @@
 # include "hmc_packet.h"
 # include "hmc_decode.h"
 # include "hmc_trace.h"
+# include "hmc_cube.h"
 #endif /* #ifdef HMC_LOGGING */
 
 
@@ -74,19 +75,21 @@ void hmc_link_fifo::pop_front(void)
 #ifdef HMC_LOGGING
     auto front = this->buf.front();
     char *packet = front.first;
-    hmc_module *fromModule = this->link->get_binding()->get_module();
-    int fromId = (fromModule) ? fromModule->get_id() : -1;
-    hmc_module *toModule = this->link->get_module();
-    int toId = (toModule) ? toModule->get_id() : -1;
+    int fromId = this->link->get_binding()->get_module()->get_id();
+    int toId = this->link->get_module()->get_id();
+    hmc_cube *toCub = this->link->get_cube();
+    unsigned toCubId = (!toCub) ? -1 : toCub->get_id();
+    hmc_cube *fromCub = this->link->get_binding()->get_cube();
+    unsigned fromCubId = (!fromCub) ? -1 : fromCub->get_id();
 
     uint64_t header = HMC_PACKET_HEADER(packet);
     if (HMCSIM_PACKET_IS_REQUEST(header)) {
       uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
-      hmc_trace::trace_out_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
+      hmc_trace::trace_out_rqst(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromCubId, toCubId, fromId, toId, header, tail);
     }
     else {
       uint64_t tail = HMC_PACKET_RESP_TAIL(packet);
-      hmc_trace::trace_out_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromId, toId, header, tail);
+      hmc_trace::trace_out_rsp(*cur_cycle, (uint64_t)packet, this->link->get_type(), fromCubId, toCubId, fromId, toId, header, tail);
     }
 #endif /* #ifdef HMC_LOGGING */
     this->bitoccupation -= this->buf.front().second;

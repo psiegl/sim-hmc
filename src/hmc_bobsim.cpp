@@ -22,7 +22,7 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigne
   linknotify(id, notify, this),
   vault(id, cube, &linknotify),
 #ifndef ALWAYS_NOTIFY_BOBSIM
-  bobnotify_ctr(0),
+  bobnotify_ctr(0), // ToDo .... not really the way to go, but for now, ok!
 #endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
   bobnotify(id, notify, this),
   bobsim(new BOBSim::BOBWrapper(num_ports, num_ranks, num_ranks)) // DEVICE_WIDTH == NUM_RANKS
@@ -111,15 +111,13 @@ void hmc_bobsim::clock(void)
       hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
 
       enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd);
-      //std::cout << "rqstlen: " << std::dec << rqstlen << " Byte ! " << std::endl;
-
 
       unsigned rsp_lenInFlits;
       this->vault.hmcsim_packet_resp_len(cmd, &rsp_lenInFlits);
 
       unsigned flits = HMCSIM_PACKET_REQUEST_GET_LNG(header);
       rsp_lenInFlits -= (rsp_lenInFlits > 0); // netto! without overhead!
-      flits -= (flits > 0); // netto! without overhead!
+      flits -= (flits > 0); // netto! without overhead!, because BOBSim accounts by itself for the packet overhead!
       BOBSim::Transaction *bobtrans = new BOBSim::Transaction(type, 0 /* addr */, flits, rsp_lenInFlits, packet);
 
       unsigned long gl_bank = this->cube->HMCSIM_UTIL_DECODE_BANK(addr);

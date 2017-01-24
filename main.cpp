@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
   char packet[(17*FLIT_WIDTH) / 8];
 
   unsigned issue_writes = 0;
-  unsigned issue_reads = 60000;
+  unsigned issue_reads = 20; //60000;
 
   unsigned issue_sum = issue_writes + issue_reads;
   unsigned send_ctr = 0;

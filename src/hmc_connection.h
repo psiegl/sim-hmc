@@ -42,12 +42,12 @@ public:
     switch(linkType) {
     case HMC_LINK_RING:
       return this->_set_link(HMC_JTL_RING_LINK(linkId), this->id, link);
-    case HMC_LINK_VAULT:
+    case HMC_LINK_VAULT_IN:
+    case HMC_LINK_VAULT_OUT:
       return this->_set_link(HMC_JTL_VAULT_LINK(linkId), this->id, link);
     case HMC_LINK_EXTERN:
+    case HMC_LINK_SLID:
       return this->_set_link(HMC_JTL_EXT_LINK(linkId), this->id, link);
-    case HMC_LINK_UNDEFINED:
-      break;
     }
     return false;
   }

@@ -8,6 +8,7 @@
 #include "hmc_link_fifo.h"
 #include "hmc_vault.h"
 #include "hmc_connection.h"
+#include "hmc_slid.h"
 #ifdef HMC_LOGGING
 # include "hmc_trace.h"
 #endif /* #ifdef HMC_LOGGING */
@@ -83,6 +84,9 @@ hmc_sim::~hmc_sim(void)
   for (std::list<hmc_link*>::iterator it = this->link_garbage.begin(); it != this->link_garbage.end(); ++it) {
     delete *it;
   }
+  for (std::list<hmc_slid*>::iterator it = this->slidModule_garbage.begin(); it != this->slidModule_garbage.end(); ++it) {
+    delete *it;
+  }
 }
 
 bool hmc_sim::notify_up(void)
@@ -111,11 +115,13 @@ bool hmc_sim::hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
     return false;
   }
 
-  hmc_conn_part *src_quad = this->cubes[src_hmcId]->get_conn(src_linkId);
-  hmc_conn_part *dst_quad = this->cubes[dst_hmcId]->get_conn(dst_linkId);
+  hmc_cube *src_cub = this->cubes[src_hmcId];
+  hmc_conn_part *src_quad = src_cub->get_conn(src_linkId);
+  hmc_cube *dst_cub = this->cubes[dst_hmcId];
+  hmc_conn_part *dst_quad = dst_cub->get_conn(dst_linkId);
 
-  hmc_link *linkend0 = new hmc_link(&this->clk, src_quad, HMC_LINK_EXTERN, 0);
-  hmc_link *linkend1 = new hmc_link(&this->clk, dst_quad, HMC_LINK_EXTERN, 0);
+  hmc_link *linkend0 = new hmc_link(&this->clk, HMC_LINK_EXTERN, src_quad, src_cub, 0);
+  hmc_link *linkend1 = new hmc_link(&this->clk, HMC_LINK_EXTERN, dst_quad, dst_cub, 0);
   linkend0->connect_linkports(linkend1);
   linkend0->adjust_both_linkends(bitwidth, bitrate, FLIT_WIDTH * RETRY_BUFFER_FLITS);
 
@@ -150,16 +156,19 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
     return nullptr;
   }
 
-  hmc_conn_part *quad = this->cubes[hmcId]->get_conn(linkId);
+  hmc_cube *cub = this->cubes[hmcId];
+  hmc_conn_part *quad = cub->get_conn(linkId);
 
-  hmc_link *linkend0 = new hmc_link(&this->clk, quad, HMC_LINK_EXTERN, 0);
-  hmc_link *linkend1 = new hmc_link(&this->clk);
+  hmc_slid *slid_module = new hmc_slid(slidId);
+  hmc_link *linkend0 = new hmc_link(&this->clk, HMC_LINK_SLID, quad, cub, 0);
+  hmc_link *linkend1 = new hmc_link(&this->clk, HMC_LINK_SLID, slid_module);
   linkend0->connect_linkports(linkend1);
   linkend0->adjust_both_linkends(lanes, bitrate, FLIT_WIDTH * RETRY_BUFFER_FLITS);
   linkend1->set_ilink_notify(slidId, slidId, &this->slidnotify); // important 1!! -> will be return for slid
 
   this->link_garbage.push_back(linkend0);
   this->link_garbage.push_back(linkend1);
+  this->slidModule_garbage.push_back(slid_module);
 
   // notify all!
   for (unsigned i = 0; i < this->cubes.size(); i++)

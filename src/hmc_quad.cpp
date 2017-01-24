@@ -21,8 +21,8 @@ hmc_quad::hmc_quad(unsigned id, hmc_conn_part *conn, unsigned num_ranks, hmc_not
     this->vaults[i] = new hmc_vault(i, cube, &this->vault_notify);
 #endif /* #ifdef HMC_USES_BOBSIM */
 
-    hmc_link *linkend0 = new hmc_link(clk, conn, HMC_LINK_VAULT, i);
-    hmc_link *linkend1 = new hmc_link(clk, this->vaults[i], HMC_LINK_VAULT, id);
+    hmc_link *linkend0 = new hmc_link(clk, HMC_LINK_VAULT_OUT, conn, cube, i);
+    hmc_link *linkend1 = new hmc_link(clk, HMC_LINK_VAULT_IN, this->vaults[i], cube, id);
     linkend0->connect_linkports(linkend1);
     /*
      * Vault: bi-directional    80Gbit/s

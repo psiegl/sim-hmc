@@ -33,7 +33,7 @@ hmc_sqlite3::hmc_sqlite3(const char *dbname, bool use_memory) :
   }
 
   sqlite3_stmt *query;
-  const char *squery = "CREATE TABLE hmcsim_stat (linkTypeId INTEGER, linkIntTypeId INTEGER, cycle INTEGER, physicalPktAddr INTEGER, fromID INTEGER, toId INTEGER, pktHeader INTEGER, pktTail INTEGER);";
+  const char *squery = "CREATE TABLE hmcsim_stat (linkTypeId INTEGER, linkIntTypeId INTEGER, cycle INTEGER, physicalPktAddr INTEGER, fromCubId INTEGER, toCubId INTEGER, fromID INTEGER, toId INTEGER, pktHeader INTEGER, pktTail INTEGER);";
   sqlite3_prepare_v2(this->db, squery, -1, &query, nullptr);
   if (sqlite3_step(query) != SQLITE_DONE) {
     std::cerr << "ERROR: create table SQL failed!" << std::endl;
@@ -41,7 +41,7 @@ hmc_sqlite3::hmc_sqlite3(const char *dbname, bool use_memory) :
   }
   sqlite3_finalize(query);
 
-  const char *s_sql = "INSERT INTO hmcsim_stat (linkTypeId, linkIntTypeId, cycle, physicalPktAddr, fromId, toId, pktHeader, pktTail) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);";
+  const char *s_sql = "INSERT INTO hmcsim_stat (linkTypeId, linkIntTypeId, cycle, physicalPktAddr, fromCubId, toCubId, fromId, toId, pktHeader, pktTail) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);";
   sqlite3_prepare_v2(this->db, s_sql, -1, &this->sql, nullptr);
 }
 
@@ -70,17 +70,20 @@ hmc_sqlite3::~hmc_sqlite3(void)
 
 void hmc_sqlite3::execute(unsigned linkTypeId, unsigned linkIntTypeId,
                           uint64_t cycle, uint64_t phyPktAddr,
+                          unsigned fromCubId, unsigned toCubId,
                           int fromId, int toId,
                           uint64_t header, uint64_t tail)
 {
-  sqlite3_bind_int(this->sql, 1, linkTypeId);
-  sqlite3_bind_int(this->sql, 2, linkIntTypeId);
+  sqlite3_bind_int(this->sql, 1, (int)linkTypeId);
+  sqlite3_bind_int(this->sql, 2, (int)linkIntTypeId);
   sqlite3_bind_int64(this->sql, 3, cycle);
   sqlite3_bind_int64(this->sql, 4, phyPktAddr);
-  sqlite3_bind_int(this->sql, 5, fromId);
-  sqlite3_bind_int(this->sql, 6, toId);
-  sqlite3_bind_int64(this->sql, 7, header);
-  sqlite3_bind_int64(this->sql, 8, tail);
+  sqlite3_bind_int(this->sql, 5, fromCubId);
+  sqlite3_bind_int(this->sql, 6, toCubId);
+  sqlite3_bind_int(this->sql, 7, fromId);
+  sqlite3_bind_int(this->sql, 8, toId);
+  sqlite3_bind_int64(this->sql, 9, header);
+  sqlite3_bind_int64(this->sql, 10, tail);
   if (sqlite3_step(this->sql) != SQLITE_DONE) {
     std::cerr << "ERROR: insert SQL failed!" << std::endl;
     exit(-1);
