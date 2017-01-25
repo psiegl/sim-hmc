@@ -65,10 +65,13 @@ ctr = 0
 
 cube_analysis = {}
 for row in c.execute(type_sql):
-    print(row)
+    cube_analysis.setdefault(cube, {})
+
+    graphviz = ''
     if row[7] == 'ring':
       cube = row[0]
       tag = "quad%d to quad%d" % (row[2],row[3])
+      graphviz = "HMC%d:link%d -> HMC%d:link%d" % (cube, row[2], cube, row[3])
     elif row[7] == 'vault_in':
       cube = row[0]
       tag = "quad%d to vault%d" % (row[2],row[3])
@@ -78,24 +81,44 @@ for row in c.execute(type_sql):
     elif row[7] == 'link':
       cube = row[0]
       tag = "hmc%d (quad%d) to hmc%d (quad%d)" % (row[0], row[2], row[1], row[3])
+      graphviz = "HMC%d:link%d -> HMC%d:link%d" % (row[0], row[2], row[1], row[3])
     elif row[7] == 'slid' and row[0] == -1:
       cube = row[0]
       tag = "slid%d to hmc%d (quad%d)" % (row[2], row[1], row[3])
+      graphviz = "HOST:slid%d -> HMC%d:link%d" % (row[2], row[1], row[3])
     else: # slid row[1] == -1
       cube = row[1]
       tag = "hmc%d (quad%d) to slid%d" % (row[0], row[2], row[3])
-      
-    type = row[7]
-    cube_analysis.setdefault(cube, {})
-    cube_analysis[cube].setdefault(type, {})
-    cube_analysis[cube][type].setdefault( tag, { 'sum latency' : 0, "ctr pkt" : 0 } )
-    cube_analysis[cube][type][tag]['sum latency'] += row[4]
-    cube_analysis[cube][type][tag]['ctr pkt'] += 1
-    
-    
-    ctr += 1
-print( ctr )
+      graphviz = "HMC%d:link%d -> HOST:slid%d" % (row[0], row[2], row[3])
 
-pprint.pprint(cube_analysis)
+    cube_analysis[cube].setdefault( tag, { 'sum latency' : 0, "ctr pkt" : 0 } )
+    cube_analysis[cube][tag]['sum latency'] += row[4]
+    cube_analysis[cube][tag]['ctr pkt'] += 1
+    if graphviz != '':
+      cube_analysis[cube][tag]['graphviz'] = graphviz
+    ctr += 1
+#print( ctr )
+
+
+
+graphviz = []
+for cub, c_data in cube_analysis.items():
+    for link, l_data in c_data.items():
+        cube_analysis[cub][link]['avg latency'] = l_data['sum latency'] / l_data['ctr pkt']
+        if 'graphviz' in l_data:
+            cube_analysis[cub][link]['graphviz'] += " [label=\"%d clks avg. lat., %d pkts\"];" % (l_data['sum latency'] / l_data['ctr pkt'], l_data['ctr pkt'])
+            graphviz.append( cube_analysis[cub][link]['graphviz'] )
+print("""
+digraph G {
+    overlap = false;
+    node[style=rounded, shape=record];
+    HOST[label="{ HOST|{<slid0>slid0|<slid1>slid1|<slid2>slid2|<slid3>slid3} }"];
+    HMC0[label="{ {<link0>link0||<link1>link1}|HMC0|{<link2>link2||<link3>link3} }"];
+    HMC1[label="{ {<link0>link0||<link1>link1}|HMC1|{<link2>link2||<link3>link3} }"];
+
+""")
+print("}")
+
+#pprint.pprint(cube_analysis)
 
 conn.close()
