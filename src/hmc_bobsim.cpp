@@ -143,7 +143,6 @@ void hmc_bobsim::clock(void)
       // some request (if implemented, currently not) will not return with a packet!
       // in any case we have to set the notify bit
       // in the case it does not return, we will cycle the the bobsim a little bit further ...
-      std::cout << "added" << std::endl;
       this->bobnotify.notify_add(0);
       if (!has_response) {
         this->bobnotify_ctr = 100;

@@ -3,9 +3,9 @@
 
 #include <cstdint>
 #include <tuple>
-#ifdef NDEBUG
+#if defined(NDEBUG) && defined(HMC_USES_CRC)
 # include <zlib.h>
-#endif
+#endif /* #if defined(NDEBUG) && defined(HMC_USES_CRC) */
 #ifdef HMC_USES_BOBSIM
 # include <cassert>
 #endif /* #ifdef HMC_USES_BOBSIM */
@@ -33,7 +33,7 @@ private:
 
   ALWAYS_INLINE uint32_t hmcsim_crc32(void *packet, unsigned flits)
   {
-#ifdef NDEBUG
+#if defined(NDEBUG) && defined(HMC_USES_CRC)
     uLong crc = crc32(0L, Z_NULL, 0);
     unsigned len = (flits << 1) * sizeof(uint64_t);
     /*
@@ -43,7 +43,7 @@ private:
     return crc32(crc, (const Bytef *)packet, len);
 #else
     return 0;
-#endif
+#endif /* #if defined(NDEBUG) && defined(HMC_USES_CRC) */
   }
 
   struct jtl_t* jtl[ 0xFF ];

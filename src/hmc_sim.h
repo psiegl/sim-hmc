@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <map>
 #include <list>
-#ifdef NDEBUG
+#if defined(NDEBUG) && defined(HMC_USES_CRC)
 #include <zlib.h> // crc32(), uLong
-#endif
+#endif /* #if defined(NDEBUG) && defined(HMC_USES_CRC) */
 #include "config.h"
 #include "hmc_sim_t.h"
 #include "hmc_jtag.h"
@@ -82,7 +82,7 @@ private:
   }
   ALWAYS_INLINE uint32_t hmcsim_crc32(unsigned char *packet, unsigned flits)
   {
-#ifdef NDEBUG
+#if defined(NDEBUG) && defined(HMC_USES_CRC)
     uLong crc = crc32(0L, Z_NULL, 0);
     unsigned len = (flits << 1) * sizeof(uint64_t);
     /*
@@ -92,7 +92,7 @@ private:
     return crc32(crc, packet, len);
 #else
     return 0;
-#endif
+#endif /* #if defined(NDEBUG) && defined(HMC_USES_CRC) */
   }
 
 public:

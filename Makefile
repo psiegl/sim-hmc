@@ -56,8 +56,10 @@ ifneq (,$(findstring HMC_DEBUG, $(HMCSIM_MACROS)))
 CXXFLAGS += -O -g #-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift -fsanitize=undefined 
 else
 CXXFLAGS += -O3 -ffast-math -fPIC
-LIBS     += -lz
 HMCSIM_MACROS += -DNDEBUG
+ifneq (,$(findstring HMC_USES_CRC, $(HMCSIM_MACROS)))
+LIBS     += -lz
+endif
 endif
 ifneq (,$(findstring HMC_PROF, $(HMCSIM_MACROS)))
 CXXFLAGS += -pg
