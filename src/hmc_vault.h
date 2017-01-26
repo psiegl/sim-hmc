@@ -4,8 +4,11 @@
 #include <cstdint>
 #include <tuple>
 #ifdef NDEBUG
-#include <zlib.h>
+# include <zlib.h>
 #endif
+#ifdef HMC_USES_BOBSIM
+# include <cassert>
+#endif /* #ifdef HMC_USES_BOBSIM */
 #include "hmc_macros.h"
 #include "hmc_notify.h"
 #include "hmc_sim_t.h"
@@ -120,7 +123,7 @@ public:
   void clock(void) {}
 #else
   void clock(void);
-#endif /* #ifndef HMC_USES_BOBSIM */
+#endif /* #ifdef HMC_USES_BOBSIM */
   unsigned get_id(void) { return this->id; }
   bool set_link(unsigned linkId, hmc_link* link, enum hmc_link_type linkType) {
     this->link = link;
@@ -129,6 +132,16 @@ public:
   }
   bool hmcsim_process_rqst(void *packet);
   bool hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len);
+#ifdef HMC_USES_BOBSIM
+#ifdef HMC_USES_NOTIFY
+  bool pkt_has_response(hmc_rqst_t cmd)
+  {
+    struct jtl_t* cmd_type = this->jtl[cmd];
+    assert(cmd_type != nullptr);
+    return cmd_type->rsp;
+  }
+#endif /* #ifdef HMC_USES_NOTIFY */
+#endif /* #ifdef HMC_USES_BOBSIM */
 };
 
 #endif /* #ifndef _HMC_VAULT_H_ */

@@ -2,6 +2,7 @@
 #include "hmc_link.h"
 #include "hmc_cube.h"
 #include "config.h"
+#include "hmc_notify.h"
 
 bool callback(void *bobsim, void *packet)
 {
@@ -21,9 +22,9 @@ hmc_bobsim::hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigne
   link(nullptr),
   linknotify(id, notify, this),
   vault(id, cube, &linknotify),
-#ifndef ALWAYS_NOTIFY_BOBSIM
-  bobnotify_ctr(0), // ToDo .... not really the way to go, but for now, ok!
-#endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
+#ifdef HMC_USES_NOTIFY
+  bobnotify_ctr(0),
+#endif /* #ifdef HMC_USES_NOTIFY */
   bobnotify(id, notify, this),
   bobsim(new BOBSim::BOBWrapper(num_ports, num_ranks, num_ranks)) // DEVICE_WIDTH == NUM_RANKS
 {
@@ -52,10 +53,8 @@ bool hmc_bobsim::bob_feedback(char *packet)
 {
   if (this->vault.hmcsim_process_rqst(packet)) {
 #ifdef HMC_USES_NOTIFY
-#ifndef ALWAYS_NOTIFY_BOBSIM
-    if (!--this->bobnotify_ctr)
+    if (this->bobnotify_ctr && !--this->bobnotify_ctr)
       this->bobnotify.notify_del(0);
-#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
 #endif /* #ifdef HMC_USES_NOTIFY */
     return true;
   }
@@ -69,9 +68,7 @@ bool hmc_bobsim::bob_feedback(char *packet)
 void hmc_bobsim::clock(void)
 {
 #ifdef HMC_USES_NOTIFY
-#ifndef ALWAYS_NOTIFY_BOBSIM
-  if (this->bobnotify_ctr)
-#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
+  if (this->bobnotify_ctr || this->bobnotify.get_notification())
 #endif /* #ifdef HMC_USES_NOTIFY */
   {
     if (this->feedback_cache.empty()) {
@@ -91,6 +88,15 @@ void hmc_bobsim::clock(void)
       if (update)
         this->bobsim->Update();
     }
+
+#ifdef HMC_USES_NOTIFY
+    // this is the case when there are no return packets, but we just schedule a little bit furter
+    if (!this->bobnotify.get_notification()
+        && this->bobnotify_ctr
+        && !--this->bobnotify_ctr) {
+      this->bobnotify.notify_del(0);
+    }
+#endif /* #ifdef HMC_USES_NOTIFY */
   }
 
 #ifdef HMC_USES_NOTIFY
@@ -109,6 +115,9 @@ void hmc_bobsim::clock(void)
       uint64_t tail = HMC_PACKET_REQ_TAIL(packet);
       uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
       hmc_rqst_t cmd = (hmc_rqst_t)HMCSIM_PACKET_REQUEST_GET_CMD(header);
+#ifdef HMC_USES_NOTIFY
+      bool has_response = this->vault.pkt_has_response(cmd);
+#endif /* #ifdef HMC_USES_NOTIFY */
 
       enum BOBSim::TransactionType type = this->hmc_determineTransactionType(cmd);
 
@@ -126,21 +135,21 @@ void hmc_bobsim::clock(void)
       this->cube->HMC_UTIL_DECODE_COL_AND_ROW(addr, &bobtrans->col, &bobtrans->row);
       bobtrans->transactionID = HMCSIM_PACKET_REQUEST_GET_SEQ(tail);
 
-      if (!this->bobsim->AddTransaction(bobtrans, 0 /* port */)) {
-        exit(0);
-      }
+      // adding will always work, since we checked that upfront! (IsPortBusy)
+      this->bobsim->AddTransaction(bobtrans, 0 /* port */);
+
 #ifdef HMC_USES_NOTIFY
-#ifdef ALWAYS_NOTIFY_BOBSIM
-      else if (!this->bobnotify.get_notification()) {
-        // only add forever, if there is something in it
-        this->bobnotify.notify_add(0);
+      // the deal is the following:
+      // some request (if implemented, currently not) will not return with a packet!
+      // in any case we have to set the notify bit
+      // in the case it does not return, we will cycle the the bobsim a little bit further ...
+      std::cout << "added" << std::endl;
+      this->bobnotify.notify_add(0);
+      if (!has_response) {
+        this->bobnotify_ctr = 100;
       }
-#else
-      if (!(this->bobnotify_ctr++)) {
-        this->bobnotify.notify_add(0);
-      }
-#endif /* #ifdef ALWAYS_NOTIFY_BOBSIM */
 #endif /* #ifdef HMC_USES_NOTIFY */
+
       this->link->get_rx_fifo_out()->pop_front();
     }
   }

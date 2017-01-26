@@ -12,10 +12,6 @@
 class hmc_link;
 class hmc_cube;
 
-#define ALWAYS_NOTIFY_BOBSIM 1
-// ToDo: clock bobsim just a few 100s of cycles further (if all packets went out), then turn it off
-// if so, turn off the printing in bobsim!
-
 class hmc_bobsim : private hmc_notify_cl, public hmc_module {
 private:
   unsigned id;
@@ -29,9 +25,9 @@ private:
 
   hmc_vault vault;
 
-#ifndef ALWAYS_NOTIFY_BOBSIM
+#ifdef HMC_USES_NOTIFY
   unsigned bobnotify_ctr;
-#endif /* #ifndef ALWAYS_NOTIFY_BOBSIM */
+#endif /* #ifdef HMC_USES_NOTIFY */
   hmc_notify bobnotify;
   BOBSim::BOBWrapper *bobsim;
 
@@ -122,7 +118,8 @@ private:
   bool notify_up(void);
 
 public:
-  hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports, unsigned num_ranks, bool periodPrintStats,
+  hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports,
+             unsigned num_ranks, bool periodPrintStats,
              hmc_cube *cube, hmc_notify *notify);
   virtual ~hmc_bobsim(void);
 
