@@ -269,22 +269,23 @@ void SimpleController::Update(void)
   if (!issuingRefresh) {
     for (unsigned i = 0; i < commandQueue.size(); i++) {
       //make sure we don't send a command ahead of its own ACTIVATE
-      if ((!(i > 0 &&
-             commandQueue[i]->transactionID == commandQueue[i - 1]->transactionID)) &&
-          IsIssuable(commandQueue[i])) {     //Checks to see if this particular request can be issued
+      BusPacket *buspkt = commandQueue[i];
+      if ((!(i
+             && buspkt->transactionID == commandQueue[i - 1]->transactionID))
+          && IsIssuable(buspkt)) {     //Checks to see if this particular request can be issued
         //send to channel
-        this->channel->ReceiveOnCmdBus(commandQueue[i]);
+        this->channel->ReceiveOnCmdBus(buspkt);
 
         //update channel controllers bank state bookkeeping
-        unsigned rank = commandQueue[i]->rank;
-        unsigned bank = commandQueue[i]->bank;
+        unsigned rank = buspkt->rank;
+        unsigned bank = buspkt->bank;
 
         //
         //Main block for determining what to do with each type of command
         //
         BankState *bankstate = &bankStates[rank][bank];
-        unsigned burstLength = commandQueue[i]->reqBurstSize();
-        switch (commandQueue[i]->busPacketType) {
+        unsigned burstLength = buspkt->reqBurstSize();
+        switch (buspkt->busPacketType) {
         case READ_P:
           outstandingReads++;
           waitingACTS--;
@@ -298,7 +299,7 @@ void SimpleController::Update(void)
           burstEnergyCtr[rank]++;
 #endif
 
-          bankstate->lastCommand = commandQueue[i]->busPacketType;
+          bankstate->lastCommand = buspkt->busPacketType;
           bankstate->stateChangeCountdown = (4 * tCK > 7.5) ? tRTP : ceil(7.5 / tCK); //4 clk or 7.5ns
           bankstate->nextActivate = max(bankstate->nextActivate, currentClockCycle + tRTP + tRP);
 //					bankstate->nextRefresh = currentClockCycle + tRTP + tRP;
@@ -335,12 +336,12 @@ void SimpleController::Update(void)
           burstEnergyCtr[rank] += (IDD4W - IDD3N) * BL / 2 * ((DRAM_BUS_WIDTH / 2 * 8) / this->deviceWidth);
 #endif
 
-          BusPacket *writeData = new BusPacket(*commandQueue[i]);
+          BusPacket *writeData = new BusPacket(*buspkt);
           writeData->busPacketType = WRITE_DATA;
           writeBurst.push_back(make_pair(tCWL, writeData));
           if (DEBUG_CHANNEL) DEBUG("     !!! After Issuing WRITE_P, burstQueue is :" << writeBurst.size() << " " << writeBurst.size() << " with head : " << (*writeBurst.begin()).second);
 
-          bankstate->lastCommand = commandQueue[i]->busPacketType;
+          bankstate->lastCommand = buspkt->busPacketType;
           unsigned stateChangeCountdown = tCWL + burstLength + tWR;
           bankstate->stateChangeCountdown = stateChangeCountdown;
           bankstate->nextActivate = currentClockCycle + stateChangeCountdown + tRP;
@@ -381,9 +382,9 @@ void SimpleController::Update(void)
           actpreEnergyCtr[rank]++;
 #endif
 
-          bankstate->lastCommand = commandQueue[i]->busPacketType;
+          bankstate->lastCommand = buspkt->busPacketType;
           bankstate->currentBankState = ROW_ACTIVE;
-          bankstate->openRowAddress = commandQueue[i]->row;
+          bankstate->openRowAddress = buspkt->row;
           bankstate->nextActivate = currentClockCycle + tRC;
           bankstate->nextRead = max(currentClockCycle + tRCD, bankstate->nextRead);
           bankstate->nextWrite = max(currentClockCycle + tRCD, bankstate->nextWrite);

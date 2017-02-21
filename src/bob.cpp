@@ -550,7 +550,7 @@ void BOB::Update(void)
   //Channels update at DRAM speeds (whatever ratio is with CPU)
   //
 
-  if (currentClockCycle && currentClockCycle % DRAM_CPU_CLK_RATIO == 0) {
+  if (currentClockCycle && !(currentClockCycle % DRAM_CPU_CLK_RATIO)) {
     if (DEBUG_CHANNEL) DEBUG(" --------- Channel updates started ---------");
 
     //if there is an adjustment, we need to increment counter and handle clock differences
