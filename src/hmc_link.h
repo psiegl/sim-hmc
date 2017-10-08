@@ -73,7 +73,7 @@ public:
   }
 #endif /* #ifdef HMC_LOGGING */
 
-  void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify);
+  void set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *queuenotify, hmc_notify *bufnotify);
 
   void adjust_both_linkends(unsigned link_bitwidth, float link_bitrate, unsigned link_fifo_out_sizeInFlits);
 
@@ -82,7 +82,7 @@ public:
   void set_binding(hmc_link* part);
 
   void clock(void);
-  bool notify_up(void);
+  bool notify_up(unsigned id);
 };
 
 #endif /* #ifndef _HMC_LINK_H_ */

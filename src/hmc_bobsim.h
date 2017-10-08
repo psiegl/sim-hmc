@@ -115,7 +115,7 @@ private:
   void bob_printStatsPeriodical(bool flag);
   void bob_printStats(void);
 
-  bool notify_up(void);
+  bool notify_up(unsigned id);
 
 public:
   hmc_bobsim(unsigned id, unsigned quadId, unsigned num_ports,

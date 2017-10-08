@@ -168,7 +168,7 @@ void hmc_bobsim::bob_printStats(void)
 #endif
 }
 
-bool hmc_bobsim::notify_up(void)
+bool hmc_bobsim::notify_up(unsigned id)
 {
 #ifdef HMC_USES_NOTIFY
   return (!this->linknotify.get_notification() &&

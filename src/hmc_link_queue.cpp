@@ -26,7 +26,9 @@ hmc_link_queue::hmc_link_queue(uint64_t *cur_cycle, hmc_link_fifo *buf,
 #ifdef HMC_LOGGING
   link(link),
 #endif /* #ifdef HMC_LOGGING */
+#ifdef HMC_USES_NOTIFY
   notify(notify),
+#endif /* #ifdef HMC_USES_NOTIFY */
   buf(buf)
 {
 }
@@ -44,27 +46,31 @@ void hmc_link_queue::set_notifyid(unsigned notifyid, unsigned id)
 // we run here relative to 1 GHz, just to have a possiblity to be in sync with BOBSIM
 void hmc_link_queue::re_adjust(unsigned link_bitwidth, float link_bitrate)
 {
-  this->bitrate = link_bitrate / (1.0f / (float)HMC_CLK_PERIOD_NS);
+  float bitrate = link_bitrate / (1.0f / (float)HMC_CLK_PERIOD_NS);
   this->bitwidth = link_bitwidth;
-  this->bitoccupationmax = this->bitrate * link_bitwidth;
+
+// to avoid working on floats, we multiple it so that an unsigned can be used
+  this->bitoccupationmax = bitrate * link_bitwidth * 1000;
+  this->bitrate = bitrate * 1000.0;
 }
 
 bool hmc_link_queue::has_space(unsigned packetleninbit)
 {
   assert(this->bitoccupationmax); // otherwise not initialized!
-  return ((this->bitoccupation / 1000) < this->bitoccupationmax);
+  return (this->bitoccupation < this->bitoccupationmax);
 }
 
 bool hmc_link_queue::push_back(char *packet, unsigned packetleninbit)
 {
-  if (__builtin_expect((this->bitoccupation / 1000) /* + packetleninbit */ < this->bitoccupationmax, 1)) {
+  if (__builtin_expect(this->bitoccupation /* + packetleninbit */ < this->bitoccupationmax, 1)) {
 #ifdef HMC_USES_NOTIFY
     if (!this->bitoccupation)
       this->notify->notify_add(this->notifyid);
 #endif /* #ifdef HMC_USES_NOTIFY */
 
-    this->bitoccupation += ((packetleninbit / this->bitwidth) * 1000);
-    float UI = packetleninbit / this->bitwidth;
+    packetleninbit *= 1000;
+    unsigned UI = packetleninbit / this->bitwidth;
+    this->bitoccupation += UI;
     this->list.push_back(std::make_tuple(packet, UI, packetleninbit, *this->cur_cycle));
 #ifdef HMC_LOGGING
     int fromId = this->link->get_binding()->get_module()->get_id();
@@ -94,41 +100,45 @@ void hmc_link_queue::clock(void)
 {
 #ifdef HMC_USES_NOTIFY
   assert(!this->list.empty());
+#else
+  if (this->bitoccupation) // speedup, it could be that clock is issued, but there is no bitoccupation, but still elements left, since it could not yet fit into the buffer
 #endif /* #ifdef HMC_USES_NOTIFY */
-  if (this->bitoccupation) { // speedup, it could be that clock is issued, but there is no bitoccupation, but still elements left, since it could not yet fit into the buffer
-    float tbitrate = this->bitrate;
-    for (auto it = this->list.begin(); it != this->list.end(); ++it) {
-      if (std::get<3>(*it) == *this->cur_cycle)
+  {
+    uint64_t ccycle = *this->cur_cycle;
+    unsigned tbitrate = this->bitrate;
+    auto it = this->list.begin();
+    do { // we know already that there are elements in it .. use do { } while( );
+      unsigned UI = std::get<1>(*it);
+      if (std::get<3>(*it) == ccycle)
         break;
 
-      float UI = std::get<1>(*it);
-      if (UI == 0.0f)
-        continue;
-
-      if (UI > tbitrate) {
-        if (this->buf->reserve_space(tbitrate)) {
+      if (UI >= tbitrate) {
+        if (this->buf->reserve_space(tbitrate * this->bitwidth)) {
           std::get<1>(*it) -= tbitrate;
-          this->bitoccupation -= (unsigned)(tbitrate * 1000);
+          this->bitoccupation -= tbitrate;
         }
         break;
       }
-      else if (this->buf->reserve_space(tbitrate)) {
-        std::get<1>(*it) = 0.0f;
-        this->buf->reserve_space(UI);
-        this->bitoccupation -= (unsigned)(UI * 1000);
-        tbitrate -= UI;
+      else if (UI) {
+        if (this->buf->reserve_space(UI * this->bitwidth)) {
+          std::get<1>(*it) = 0;
+          this->bitoccupation -= UI;
+          tbitrate -= UI;
+        }
+        else
+          break;
       }
-      else
-        break;
-    }
+      ++it;
+    } while (it != this->list.end());
   }
 
 #ifndef HMC_USES_NOTIFY
   if (this->list.empty())
     return;
 #endif /* #ifndef HMC_USES_NOTIFY */
+
   auto front = this->list.front();
-  if (std::get<1>(front) == 0.0f) {
+  if (!std::get<1>(front)) {
     char *packet = std::get<0>(front);
 //#ifdef HMC_LOGGING
 //    int fromId = this->link->get_binding()->get_module()->get_id();
@@ -151,7 +161,7 @@ void hmc_link_queue::clock(void)
     this->buf->push_back_set_avail(packet, std::get<2>(front));
     this->list.pop_front();
 #ifdef HMC_USES_NOTIFY
-    if (!this->list.size())
+    if (__builtin_expect(!this->list.size(), 0))
       this->notify->notify_del(this->notifyid);
 #endif /* #ifdef HMC_USES_NOTIFY */
   }

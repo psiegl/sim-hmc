@@ -23,14 +23,15 @@ private:
   unsigned bitoccupationmax;
 
   unsigned bitwidth;
-  float bitrate;
+  unsigned bitrate;
 
 #ifdef HMC_LOGGING
   hmc_link *link;
 #endif /* #ifdef HMC_LOGGING */
-
+#ifdef HMC_USES_NOTIFY
   hmc_notify *notify;
-  std::list< std::tuple<char*, float, unsigned, uint64_t> > list;
+#endif /* #ifdef HMC_USES_NOTIFY */
+  std::list< std::tuple<char*, unsigned, unsigned, uint64_t> > list;
   hmc_link_fifo *buf;
 
 

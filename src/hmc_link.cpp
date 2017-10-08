@@ -23,7 +23,8 @@ hmc_link::hmc_link(uint64_t *i_cur_cycle, enum hmc_link_type type,
     std::cerr << "ERROR: can't register link to module!" << std::endl;
     exit(-1);
   }
-  this->module->set_link(linkId_in_module, this, type); // ToDo: if false!
+  if (!this->module->set_link(linkId_in_module, this, type))
+    std::cerr << "Setting up link failed!" << std::endl;
 }
 
 hmc_link::~hmc_link(void)
@@ -35,10 +36,10 @@ hmc_link_queue* hmc_link::__get_rx_q(void)
   return &this->rx_q;
 }
 
-void hmc_link::set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *notify)
+void hmc_link::set_ilink_notify(unsigned notifyid, unsigned id, hmc_notify *queuenotify, hmc_notify *bufnotify)
 {
-  this->not_rx_q.set(notifyid, notify);
-  this->not_rx_buf.set(notifyid, notify);
+  this->not_rx_q.set(notifyid, queuenotify, 0);
+  this->not_rx_buf.set(notifyid, bufnotify, 1);
 
   this->rx_q.set_notifyid(notifyid, id);
 }
@@ -77,11 +78,17 @@ void hmc_link::clock(void)
 // ToDo -> will be most likely a combination out of front and pop_front
 }
 
-bool hmc_link::notify_up(void)
+bool hmc_link::notify_up(unsigned id)
 {
 #ifdef HMC_USES_NOTIFY
-  return (!this->not_rx_q.get_notification()
-          && !this->not_rx_buf.get_notification());
+  switch (id) {
+  case 0:
+    return !this->not_rx_q.get_notification();
+  case 1:
+    return !this->not_rx_buf.get_notification();
+  default:
+    return true;
+  }
 #else
   return true;
 #endif /* #ifdef HMC_USES_NOTIFY */

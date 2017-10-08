@@ -10,7 +10,10 @@
 
 hmc_vault::hmc_vault(unsigned id, hmc_cube *cube, hmc_notify *notify) :
   id(id),
+#ifdef HMC_USES_NOTIFY
   link_notify(id, notify, this),
+  linkrxbuf_notify(id, notify, this),
+#endif /* #ifdef HMC_USES_NOTIFY */
   cube(cube)
 {
   for (unsigned i = 0; i < elemsof(this->jtl); i++)
@@ -28,14 +31,25 @@ hmc_vault::~hmc_vault(void)
 //#include <iostream>
 void hmc_vault::clock(void)
 {
-  if (this->link_notify.get_notification()) {
+#ifdef HMC_USES_NOTIFY
+  if (this->link_notify.get_notification())
+#endif /* #ifdef HMC_USES_NOTIFY */
+  {
     this->link->clock();
-
+  }
+#ifdef HMC_USES_NOTIFY
+  if (this->linkrxbuf_notify.get_notification())
+#endif /* #ifdef HMC_USES_NOTIFY */
+  {
     unsigned packetleninbit;
     hmc_link_fifo *rx = this->link->get_rx_fifo_out();
     char *packet = rx->front(&packetleninbit);
+#ifdef HMC_USES_NOTIFY
+    assert(packet != nullptr);
+#else
     if (packet == nullptr)
       return;
+#endif /* #ifdef HMC_USES_NOTIFY */
 
     //uint64_t header = HMC_PACKET_HEADER(packet);
     //uint64_t addr = HMCSIM_PACKET_REQUEST_GET_ADRS(header);
@@ -52,37 +66,6 @@ void hmc_vault::clock(void)
 }
 #endif /* #ifndef HMC_USES_BOBSIM */
 
-
-bool hmc_vault::hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len)
-{
-  if (jtl[cmd] != nullptr) {
-    *rsp_len = jtl[cmd]->rsp_len;
-    return !jtl[cmd]->rsp;
-  }
-  else {
-#if 0
-    switch (cmd) {
-    /* begin CMC commands */
-    default:
-#if 0
-      switch (dev->hmc->cmcs[ cmd ]->rsp_cmd) {
-      case MD_RD_RS:
-      case MD_WR_RS:
-      case RSP_NONE:
-        /* no response packet */
-        response = false;
-        break;
-      default:
-        break;
-      }
-#endif
-      break;
-    }
-#endif
-    *rsp_len = 2;
-    return false;
-  }
-}
 
 bool hmc_vault::hmcsim_process_rqst(void *packet)
 {
@@ -136,64 +119,43 @@ bool hmc_vault::hmcsim_process_rqst(void *packet)
     case WR48:
     case P_WR48:
     case RD48:
-      if (this->cube->hmcsim_util_get_bsize() < 48) {
-        error = 1;
-        break;
-      }
+      error = (this->cube->hmcsim_util_get_bsize() < 48);
       break;
 
     case WR64:
     case P_WR64:
     case RD64:
-      if (this->cube->hmcsim_util_get_bsize() < 64) {
-        error = 1;
-        break;
-      }
+      error = (this->cube->hmcsim_util_get_bsize() < 64);
       break;
 
     case WR80:
     case P_WR80:
     case RD80:
-      if (this->cube->hmcsim_util_get_bsize() < 80) {
-        error = 1;
-        break;
-      }
+      error = (this->cube->hmcsim_util_get_bsize() < 80);
       break;
 
     case WR96:
     case P_WR96:
     case RD96:
-      if (this->cube->hmcsim_util_get_bsize() < 96) {
-        error = 1;
-        break;
-      }
+      error = (this->cube->hmcsim_util_get_bsize() < 96);
       break;
 
     case WR112:
     case P_WR112:
     case RD112:
-      if (this->cube->hmcsim_util_get_bsize() < 112) {
-        error = 1;
-        break;
-      }
+      error = (this->cube->hmcsim_util_get_bsize() < 112);
       break;
 
     case WR128:
     case P_WR128:
     case RD128:
-      if (this->cube->hmcsim_util_get_bsize() < 128) {
-        error = 1;
-        break;
-      }
+      error = (this->cube->hmcsim_util_get_bsize() < 128);
       break;
 
     case WR256:
     case P_WR256:
     case RD256:
-      if (this->cube->hmcsim_util_get_bsize() < 256) {
-        error = 1;
-        break;
-      }
+      error = (this->cube->hmcsim_util_get_bsize() < 256);
       break;
     default:
       break;

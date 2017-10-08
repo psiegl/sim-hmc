@@ -23,6 +23,7 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
   clk(0),
   cubes_notify(0, nullptr, this),
   slidnotify(),
+  slidbufnotify(),
   num_slids(num_slids),
   num_links(num_links)
 {
@@ -40,8 +41,8 @@ hmc_sim::hmc_sim(unsigned num_hmcs, unsigned num_slids,
     throw false;
   }
 
-  if (num_slids > HMC_MAX_LINKS) {
-    std::cerr << "INSUFFICIENT NUMBER SLIDS: between " << HMC_MIN_LINKS << " to " << HMC_MAX_LINKS << " (" << num_links << ")" << std::endl;
+  if (num_slids > HMC_MAX_SLIDS) {
+    std::cerr << "INSUFFICIENT NUMBER SLIDS: between 0 to " << HMC_MAX_SLIDS << " (" << num_slids << ")" << std::endl;
     throw false;
   }
 
@@ -89,7 +90,7 @@ hmc_sim::~hmc_sim(void)
   }
 }
 
-bool hmc_sim::notify_up(void)
+bool hmc_sim::notify_up(unsigned id)
 {
   return true; // don't care
 }
@@ -164,7 +165,7 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
   hmc_link *linkend1 = new hmc_link(&this->clk, HMC_LINK_SLID, slid_module);
   linkend0->connect_linkports(linkend1);
   linkend0->adjust_both_linkends(lanes, bitrate, FLIT_WIDTH * RETRY_BUFFER_FLITS);
-  linkend1->set_ilink_notify(slidId, slidId, &this->slidnotify); // important 1!! -> will be return for slid
+  linkend1->set_ilink_notify(slidId, slidId, &this->slidnotify, &this->slidbufnotify); // important 1!! -> will be return for slid
 
   this->link_garbage.push_back(linkend0);
   this->link_garbage.push_back(linkend1);
@@ -175,22 +176,13 @@ hmc_notify* hmc_sim::hmc_define_slid(unsigned slidId, unsigned hmcId, unsigned l
     this->cubes[i]->set_slid(slidId, hmcId, linkId);
 
   this->slids[slidId] = linkend1;
-  return &this->slidnotify;
+  return &this->slidbufnotify;
 }
 
-// slidId currently not needed, but maybe in the future ...
 #ifdef HMC_USES_GRAPHVIZ
-hmc_notify* hmc_sim::hmc_get_slid_notify(unsigned slidId)
+hmc_notify* hmc_sim::hmc_get_slid_notify(void)
 {
-  if (slidId >= this->num_slids) {
-    std::cerr << "ERROR: Defined slid heigher than amount of slids defined (" << slidId << " / " << this->num_slids << ")" << std::endl;
-    return nullptr;
-  }
-  if (this->slids.find(slidId) == this->slids.end()) {
-    std::cerr << "ERROR: slid not set! Most likely initialisation error!" << std::endl;
-    return nullptr;
-  }
-  return &this->slidnotify;
+  return &this->slidbufnotify;
 }
 #endif /* #ifdef HMC_USES_GRAPHVIZ */
 

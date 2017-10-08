@@ -24,14 +24,17 @@ private:
   hmc_cube* cub;
 
   hmc_notify links_notify;
+  hmc_notify linkrxbuf_notify;
   std::array<hmc_link*, HMC_JTL_ALL_LINKS> links;
+  unsigned roundRobinSchedule;
+  unsigned cyclesBlocked;
 
   unsigned decode_link_of_packet(char* packet);
   bool _set_link(unsigned notifyid, unsigned id, hmc_link *link);
 
   virtual unsigned routing(unsigned nextquad) = 0;
 
-  bool notify_up(void);
+  bool notify_up(unsigned id);
 
 public:
   hmc_conn_part(unsigned id, hmc_notify *notify, hmc_cube* cub);
@@ -63,7 +66,7 @@ protected:
   std::list<hmc_link*> link_garbage;
 
 private:
-  bool notify_up(void);
+  bool notify_up(unsigned id);
 
 public:
   hmc_conn(hmc_notify *notify) :

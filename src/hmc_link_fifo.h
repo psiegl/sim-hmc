@@ -15,11 +15,12 @@ private:
   hmc_link *link;
 #endif /* #ifdef HMC_LOGGING */
 
-  float bitoccupation;
+  unsigned bitoccupation;
   unsigned bitoccupationmax;
   std::list< std::pair<char*,unsigned> > buf;
-
+#ifdef HMC_USES_NOTIFY
   hmc_notify *notify;
+#endif /* #ifdef HMC_USES_NOTIFY */
 
 public:
   explicit hmc_link_fifo(uint64_t *cycle, hmc_notify *notify, hmc_link *link);
@@ -27,7 +28,7 @@ public:
 
   void adjust_size(unsigned bitsize);
 
-  bool reserve_space(float packetleninbit);
+  bool reserve_space(unsigned packetleninbit);
   void push_back_set_avail(char *packet, unsigned packetleninbit);
 
   char *front(unsigned *packetleninbit);

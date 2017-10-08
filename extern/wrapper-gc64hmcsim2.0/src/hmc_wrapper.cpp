@@ -1,6 +1,6 @@
 #include <cassert>
 #include <iostream>
-#include "../../src/hmc_sim.h" // C++
+#include "../../../src/hmc_sim.h" // C++
 #include "../include/hmc_sim.h" // C Wrapper
 
 extern "C" {
@@ -41,7 +41,7 @@ int hmcsim_link_config( struct hmcsim_t *hmc,
     hmc_notify *slid_not = hmcsim->hmc_define_slid(dest_link, dest_dev, dest_link, HMCSIM_FULL_LINK_WIDTH, HMCSIM_BR30);
     if(slid_not == nullptr)
       return -1;
-    slid_notifier = slid_not;
+    slid_notifier = slid_not; // is always the same ptr.
     return 0;
   }
   else { // dev to dev
@@ -112,20 +112,14 @@ int hmcsim_decode_memresponse( struct hmcsim_t *hmc,
 int hmcsim_send( struct hmcsim_t *hmc, unsigned slidId, uint64_t *packet )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
-  if( hmcsim->hmc_send_pkt(slidId, (char*)packet) )
-    return HMC_OK;
-  else
-    return HMC_STALL;
+  return ( hmcsim->hmc_send_pkt(slidId, (char*)packet) ) ? HMC_OK : HMC_STALL;
 }
 
 int hmcsim_recv( struct hmcsim_t *hmc, uint32_t dev, uint32_t link, uint64_t *packet )
 {
   hmc_sim* hmcsim = (hmc_sim*)hmc->hmcsim;
-  if((slid_notifier->get_notification() & (1 << link))
-     && hmcsim->hmc_recv_pkt(link, (char*)packet))
-    return HMC_OK;
-  else
-    return HMC_STALL;
+  return ((slid_notifier->get_notification() & (1 << link))
+          && hmcsim->hmc_recv_pkt(link, (char*)packet)) ? HMC_OK : HMC_STALL;
 }
 
 int hmcsim_clock( struct hmcsim_t *hmc )
@@ -217,12 +211,16 @@ int hmcsim_util_get_max_blocksize( struct hmcsim_t *hmc, uint32_t dev, uint32_t 
   switch (res) {
   case 0x0:
     *bsize = 32;
+    break;
   case 0x1:
     *bsize = 64;
+    break;
   case 0x2:
     *bsize = 128;
+    break;
   case 0x3:               // HMC spec v2.1 doesn't provide details about registers anymore, while 1.0, 1.1 don't contain 256
     *bsize = 256;
+    break;
   default:
     printf("ERROR: No supported res given %d\n", res);
     return -1;

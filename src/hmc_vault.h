@@ -28,7 +28,10 @@ class hmc_vault : public hmc_module, private hmc_notify_cl {
 private:
   unsigned id;
   hmc_link *link;
+#ifdef HMC_USES_NOTIFY
   hmc_notify link_notify;
+  hmc_notify linkrxbuf_notify;
+#endif /* #ifdef HMC_USES_NOTIFY */
   hmc_cube *cube;
 
   ALWAYS_INLINE uint32_t hmcsim_crc32(void *packet, unsigned flits)
@@ -108,9 +111,10 @@ private:
     { SWAP16, 2, RD_RS, true }
   };
 
-  bool notify_up(void) {
+  bool notify_up(unsigned id) {
 #ifdef HMC_USES_NOTIFY
-    return (!this->link_notify.get_notification());
+    return (!this->link_notify.get_notification()
+            && !this->linkrxbuf_notify.get_notification());
 #else
     return true;
 #endif /* #ifdef HMC_USES_NOTIFY */
@@ -127,11 +131,42 @@ public:
   unsigned get_id(void) { return this->id; }
   bool set_link(unsigned linkId, hmc_link* link, enum hmc_link_type linkType) {
     this->link = link;
-    this->link->set_ilink_notify(linkId, linkId, &this->link_notify);
+#ifdef HMC_USES_NOTIFY
+    this->link->set_ilink_notify(linkId, linkId, &this->link_notify, &this->linkrxbuf_notify);
+#endif /* #ifdef HMC_USES_NOTIFY */
     return true;
   }
   bool hmcsim_process_rqst(void *packet);
-  bool hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len);
+  ALWAYS_INLINE bool hmcsim_packet_resp_len(hmc_rqst_t cmd, unsigned *rsp_len)
+  {
+    if (jtl[cmd] != nullptr) {
+      *rsp_len = jtl[cmd]->rsp_len;
+      return !jtl[cmd]->rsp;
+    }
+    else {
+#if 0
+      switch (cmd) {
+      /* begin CMC commands */
+      default:
+#if 0
+        switch (dev->hmc->cmcs[ cmd ]->rsp_cmd) {
+        case MD_RD_RS:
+        case MD_WR_RS:
+        case RSP_NONE:
+          /* no response packet */
+          response = false;
+          break;
+        default:
+          break;
+        }
+#endif
+        break;
+      }
+#endif
+      *rsp_len = 2;
+      return false;
+    }
+  }
 #ifdef HMC_USES_BOBSIM
 #ifdef HMC_USES_NOTIFY
   bool pkt_has_response(hmc_rqst_t cmd)

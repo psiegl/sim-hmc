@@ -64,11 +64,11 @@ void hmc_cube::clock(void)
   }
 }
 
-bool hmc_cube::notify_up(void)
+bool hmc_cube::notify_up(unsigned id)
 {
 #ifdef HMC_USES_NOTIFY
-  return (!this->conn_notify.get_notification() &&
-          !this->quad_notify.get_notification());
+  return (!this->conn_notify.get_notification()
+          && !this->quad_notify.get_notification());
 #else
   return true;
 #endif /* #ifdef HMC_USES_NOTIFY */

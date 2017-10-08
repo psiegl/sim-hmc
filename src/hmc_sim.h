@@ -47,14 +47,16 @@ private:
   hmc_jtag* jtags[HMC_MAX_DEVS];
 
   std::map<unsigned, hmc_link*> slids;
+
   hmc_notify slidnotify;
+  hmc_notify slidbufnotify;
   unsigned num_slids;
   unsigned num_links;
 
   std::list<hmc_link*> link_garbage;
   std::list<hmc_slid*> slidModule_garbage;
 
-  bool notify_up(void);
+  bool notify_up(unsigned id);
 
   unsigned seq = 0x0;
   ALWAYS_INLINE uint8_t hmcsim_rqst_getseq(hmc_rqst_t cmd) // ToDo!
@@ -96,23 +98,23 @@ private:
   }
 
 public:
-  hmc_sim(unsigned num_hmcs, unsigned num_slids,
+  hmc_sim(unsigned num_cubes, unsigned num_slids,
           unsigned num_links, unsigned capacity,
           unsigned quadbus_bitwidth, float quadbus_bitrate);
   ~hmc_sim(void);
 
-  ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned id)
+  ALWAYS_INLINE hmc_jtag* hmc_get_jtag_interface(unsigned cubeId)
   {
-    return this->jtags[id];
+    return this->jtags[cubeId];
   }
-  bool hmc_set_link_config(unsigned src_hmcId, unsigned src_linkId,
-                           unsigned dst_hmcId, unsigned dst_linkId,
+  bool hmc_set_link_config(unsigned src_cubeId, unsigned src_linkId,
+                           unsigned dst_cubeId, unsigned dst_linkId,
                            unsigned bitwidth, float bitrate);
-  hmc_notify* hmc_define_slid(unsigned slidId, unsigned hmcId,
+  hmc_notify* hmc_define_slid(unsigned slidId, unsigned cubeId,
                               unsigned linkId,
                               unsigned lanes, float bitrate);
 #ifdef HMC_USES_GRAPHVIZ
-  hmc_notify* hmc_get_slid_notify(unsigned slidId);
+  hmc_notify* hmc_get_slid_notify(void);
 #endif /* #ifdef HMC_USES_GRAPHVIZ */
 
   bool hmc_send_pkt(unsigned slidId, char *pkt);

@@ -25,7 +25,7 @@ private:
 #endif /* #ifdef HMC_USES_BOBSIM */
   std::list<hmc_link*> link_garbage;
 
-  bool notify_up(void);
+  bool notify_up(unsigned id);
 
 public:
   hmc_quad(unsigned id, hmc_conn_part *conn, unsigned num_ranks, hmc_notify *notify,

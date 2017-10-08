@@ -22,7 +22,7 @@ private:
   hmc_notify conn_notify;
   hmc_conn* conn;
 
-  bool notify_up(void);
+  bool notify_up(unsigned id);
 
 public:
   hmc_cube(unsigned id, hmc_notify *notify,

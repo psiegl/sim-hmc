@@ -7,8 +7,10 @@ include Makefile.inc
 
 LIBNAME  := hmcsim
 SRCDIR   := src
-BLDDIR   := build
-LIBS     := -lm -ltcmalloc
+BLDDIR   := bld
+LIBDIR   := lib
+LIBS     := -lm -ltcmalloc 
+CXXFLAGS += -ggdb -fPIC
 TARGET   := lib/lib$(LIBNAME).a
 
 .PHONY   : $(TARGET)
@@ -49,13 +51,14 @@ DEPS     := $(SRC:$(SRCDIR)/%.cpp,$(BLDDIR)/%.deps)
 -include $(DEPS)
 
 default: $(TARGET)
+	make -C extern/wrapper-gc64hmcsim2.0
 
 ####### Conditional ##############################
 
 ifneq (,$(findstring HMC_DEBUG, $(HMCSIM_MACROS)))
 CXXFLAGS += -O -g #-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=object-size -fsanitize=shift -fsanitize=undefined 
 else
-CXXFLAGS += -O3 -ffast-math -fPIC
+CXXFLAGS += -Ofast -ffast-math -march=native
 HMCSIM_MACROS += -DNDEBUG
 ifneq (,$(findstring HMC_USES_CRC, $(HMCSIM_MACROS)))
 LIBS     += -lz
@@ -89,12 +92,16 @@ $(BLDDIR):
 	@echo "[mkdir] $@"
 	@mkdir -p $@
 
+$(LIBDIR):
+	@echo "[mkdir] $@"
+	@mkdir -p $@
+
 $(OBJ): $(BLDDIR)/%.o : $(SRCDIR)/%.cpp
 	@echo "[$(CXX)]" $@
 	@uncrustify  --no-backup -c tools/uncrustify.cfg -q --replace $<
 	@$(CXX) $(CXXFLAGS) -MD -MF $(@:.o=.deps) -c -o $@ $<
 
-$(BLDDIR)/asm.ar: $(BLDDIR) $(OBJ) $(BOBOBJ)
+$(BLDDIR)/asm.ar: $(BLDDIR) $(LIBDIR) $(LIB) $(OBJ) $(BOBOBJ)
 	@echo "[echo] $@"
 	@echo "CREATE $(TARGET)" > $@
 	@for o in $(BOBOBJ); do (echo "ADDMOD $$o" >> $@); done
@@ -110,7 +117,7 @@ $(TARGET): $(BLDDIR)/asm.ar
 TESTBIN := main.elf
 $(TESTBIN): $(TARGET)
 	@echo "[$(CXX)]" $@
-	@$(CXX) $(CXXFLAGS) -o $@ main.cpp $(TARGET) $(LIBS) # -static
+	@$(CXX) $(CXXFLAGS) $(HMCSIM_MACROS) -o $@ main.cpp $(TARGET) $(LIBS) # -static
 
 run: $(TESTBIN)
 	@./$(TESTBIN)
@@ -122,4 +129,11 @@ prof: runall
 endif
 
 clean:
-	@rm -rf $(TARGET) $(BLDDIR) lib/* *.prof.* *.db gmon.out
+	@rm -rf $(TARGET) $(BLDDIR) lib/* *.prof.* hmcsim.db gmon.out
+
+perf_anno: $(TESTBIN)
+	perf record -e cpu-clock,faults,cycles ./$(TESTBIN)
+	perf report
+
+perf_stat: $(TESTBIN)
+	perf stat -r 30 ./$(TESTBIN)

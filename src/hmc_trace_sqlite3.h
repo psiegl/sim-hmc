@@ -8,6 +8,7 @@
 class hmc_sqlite3 : public hmc_trace_logger {
 private:
   bool use_memory;
+  const char *dbname;
   sqlite3 *db;
   sqlite3 *filedb;
   sqlite3_stmt *sql;

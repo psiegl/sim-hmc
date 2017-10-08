@@ -25,10 +25,9 @@ hmc_quad::hmc_quad(unsigned id, hmc_conn_part *conn, unsigned num_ranks, hmc_not
     hmc_link *linkend1 = new hmc_link(clk, HMC_LINK_VAULT_IN, this->vaults[i], cube, id);
     linkend0->connect_linkports(linkend1);
     /*
-     * Vault: bi-directional    80Gbit/s
-     *        in one direction: 40Gbit/s (bitwidth: 32bits * bitrate: 1.25Gbit/s)
+     * Vault: bi-directional    80Gbit/s (10GB/s) (bitwidth: 32bits * bitrate: 2.5Gbit/s)
      */
-    linkend0->adjust_both_linkends(32, 1.25f, FLIT_WIDTH * RETRY_BUFFER_FLITS);
+    linkend0->adjust_both_linkends(32, 2.5f, FLIT_WIDTH * RETRY_BUFFER_FLITS);
     this->link_garbage.push_back(linkend0);
     this->link_garbage.push_back(linkend1);
   }
@@ -58,7 +57,7 @@ void hmc_quad::clock(void)
   }
 }
 
-bool hmc_quad::notify_up(void)
+bool hmc_quad::notify_up(unsigned id)
 {
 #ifdef HMC_USES_NOTIFY
   return (!this->vault_notify.get_notification());
