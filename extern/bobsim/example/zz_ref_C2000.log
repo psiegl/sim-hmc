@@ -1,0 +1,52 @@
+busoff:3 col:11 row:16 rank:2 bank:3 chan:0
+DRAM_CPU_CLK_ADJUSTMENT : 2
+
+==================Epoch [0]=======================
+per epoch] reads   : 123 writes : 70 (63.7306% Reads) : 193
+lifetime ] reads   : 123 writes : 70 total : 193
+issued logic ops   : 0 returned logic responses : 0
+bandwidth          : 7.18981 GB/sec
+current cycle      : 2000
+--------------------------
+full time mean  : 167.024 ns
+          std   : 85.1517 ns
+          min   : 51.2 ns
+          max   : 450.4 ns
+chan time mean  : 105.587 ns
+           std  : 80.6684
+           min  : 45.6 ns
+           max  : 375.2 ns
+dram time mean  : 50.9919 ns
+          std   : 16.1952 ns
+          min   : 35.2 ns
+          max   : 100.8 ns
+-- Per Channel Latency Components in nanoseconds (All from READs) : 
+      reqPort    reqLink     workQ    access     rrq    rspLink   rspPort  total
+0]   57.4374    2.4000   42.1268   50.9919    2.8683    8.0000    3.2000  167.0244
+ ---  Port stats (per epoch) : 
+ 0]  request: 78.8% idle  response: 75.4% idle  rds:144 wrts:70 rtn:123 tot:214
+ === BOB Print === 
+ == Ports
+  -- Port 0 - inputBufferAvg : 7.8555 (8)   outputBufferAvg : 0.246 (0)
+ == Link Bandwidth (!! Includes packet overhead and request packets !!)
+    Req Link(10 GB/s peak)  Rsp Link(10 GB/s peak)
+      4.815 GB/s             6.19 GB/s
+ == Channel Usage and Stats (4096MB/Chan == 4096 MB total)
+     reqs   workQAvg  workQMax idleBanks   actBanks  preBanks  refBanks  (totalBanks) BusIdle  BW(10.6667)  RRQMax(16)   RRQFull lifetimeRequests
+0]      206    5.7289        12   18.1820   10.2486    1.5882    0.0000   30.0188     23.26     7.623         3(2)         0       206
+ == Requests seen at Channels
+  -- Reads  : 137
+  -- Writes : 69
+            = 206
+ == Channel Power
+    -- Channel 0    -- Rank 0: TOT :2.402  bkg:1.005 brst:0.3949 ap:1.002 ref:0
+    -- Rank 1: TOT :2.711  bkg:1.011 brst:0.489 ap:1.212 ref:0
+    -- Rank 2: TOT :2.64  bkg:1.01 brst:0.4422 ap:1.188 ref:0
+    -- Rank 3: TOT :2.715  bkg:1.004 brst:0.4989 ap:1.212 ref:0
+    -- DRAM Power : 10.469 w
+   SimpCont BG Power : 7 w
+   SimpCont Core Power : 3.5 w
+   System Power   : 20.969 w
+ == Time Check
+    CPU Time : 1600ns
+   DRAM Time : 1500ns
