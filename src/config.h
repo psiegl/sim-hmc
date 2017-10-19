@@ -1,5 +1,5 @@
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef _HMC_CONFIG_H_
+#define _HMC_CONFIG_H_
 
 /* -------------------------------------------- VERSION MACROS */
 #ifndef   HMC_MAJOR_VERSION
@@ -214,4 +214,4 @@ Energy Components:
 
 */
 
-#endif /* #ifndef _CONFIG_H_ */
+#endif /* #ifndef _HMC_CONFIG_H_ */

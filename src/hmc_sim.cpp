@@ -241,7 +241,7 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
 
   rx->pop_front();
   if (pkt != nullptr)
-    memcpy(pkt, packet, recvpacketleninbit / 64);
+    memcpy(pkt, packet, recvpacketleninbit / 8);
   delete[] packet;
   return true;
 }
@@ -284,6 +284,121 @@ void hmc_sim::hmc_decode_pkt(char *packet, uint64_t *response_head, uint64_t *re
     *rtc = (uint8_t)HMCSIM_PACKET_RESPONSE_GET_RTC(tail);
   if (crc != nullptr)
     *crc = (uint32_t)HMCSIM_PACKET_RESPONSE_GET_CRC(tail);
+}
+
+void hmc_sim::hmc_encode_pkt(unsigned cub, unsigned quad, unsigned vault, unsigned bank, unsigned dram,
+                             uint16_t tag, hmc_rqst_t cmd, char *packet)
+{
+  unsigned flits = 0;
+  switch (cmd) { // ToDo: would be nice, if their would be something common -> see hmc_process_packet.h
+  case RD16:
+  case RD32:
+  case RD48:
+  case RD64:
+  case RD80:
+  case RD96:
+  case RD112:
+  case RD128:
+  case RD256:
+  case MD_RD:
+  case FLOW_NULL:   // right?
+  case PRET:
+  case TRET:
+  case IRTRY:
+  case INC8:
+  case P_INC8:
+    flits = 1;
+    break;
+  case WR16:
+  case MD_WR:
+  case BWR:
+  case TWOADD8:
+  case ADD16:
+  case TWOADDS8R:
+  case ADDS16R:
+  case XOR16:
+  case OR16:
+  case NOR16:
+  case AND16:
+  case NAND16:
+  case CASGT8:
+  case CASGT16:
+  case CASLT8:
+  case CASLT16:
+  case CASEQ8:
+  case CASZERO16:
+  case EQ8:
+  case EQ16:
+  case BWR8R:
+  case SWAP16:
+  case P_WR16:
+  case P_BWR:
+  case P_2ADD8:
+  case P_ADD16:
+    flits = 2;
+    break;
+  case WR32:
+  case P_WR32:
+    flits = 3;
+    break;
+  case WR48:
+  case P_WR48:
+    flits = 4;
+    break;
+  case WR64:
+  case P_WR64:
+    flits = 5;
+    break;
+  case WR80:
+  case P_WR80:
+    flits = 6;
+    break;
+  case WR96:
+  case P_WR96:
+    flits = 7;
+    break;
+  case WR112:
+  case P_WR112:
+    flits = 8;
+    break;
+  case WR128:
+  case P_WR128:
+    flits = 9;
+    break;
+  case WR256:
+  case P_WR256:
+    flits = 17;
+    break;
+  default:
+    // ToDo: CMC!
+    throw false;
+  }
+
+
+  uint64_t addr = 0x0ull;
+  addr |= ((hmc_cube*)this->cubes[cub])->HMCSIM_UTIL_ENCODE_QUAD(quad);
+  addr |= ((hmc_cube*)this->cubes[cub])->HMCSIM_UTIL_ENCODE_VAULT(vault);
+  addr |= ((hmc_cube*)this->cubes[cub])->HMCSIM_UTIL_ENCODE_BANK(bank);
+  addr |= ((hmc_cube*)this->cubes[cub])->HMC_UTIL_ENCODE_DRAM_HI(dram);
+  addr |= ((hmc_cube*)this->cubes[cub])->HMC_UTIL_ENCODE_DRAM_LO(dram);
+
+
+  uint64_t *pkt = (uint64_t*)packet;
+  pkt[0] = 0x0ull;
+  pkt[0] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_CMD(cmd);
+  pkt[0] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_LNG(flits);
+  pkt[0] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_TAG(tag);
+  pkt[0] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_ADRS(addr);
+  pkt[0] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_CUB(cub);
+
+  pkt[2 * flits - 1] = 0x00ull;
+  pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_RRP(hmcsim_rqst_getrrp());
+  pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_FRP(hmcsim_rqst_getfrp());
+  pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SEQ(hmcsim_rqst_getseq(cmd));
+  pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_Pb(0x1);
+  //pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_SLID(slid); // slid is set when send_pkt is issued
+  pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_RTC(hmcsim_rqst_getrtc());
+  pkt[2 * flits - 1] |= (uint64_t)HMCSIM_PACKET_REQUEST_SET_CRC(hmcsim_crc32((unsigned char*)pkt, 2 * flits));  // crc32 calc. needs to be last of packet init!
 }
 
 void hmc_sim::hmc_encode_pkt(unsigned cub, uint64_t addr,
