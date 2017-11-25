@@ -23,8 +23,23 @@ hmc_link::hmc_link(uint64_t *i_cur_cycle, enum hmc_link_type type,
     std::cerr << "ERROR: can't register link to module!" << std::endl;
     exit(-1);
   }
-  if (!this->module->set_link(linkId_in_module, this, type))
-    std::cerr << "Setting up link failed!" << std::endl;
+  if (!this->module->set_link(linkId_in_module, this, type)) {
+    const char *cname = "";
+    switch (type) {
+    case HMC_LINK_RING:
+      cname = "ring";
+      break;
+    case HMC_LINK_VAULT_IN:
+    case HMC_LINK_VAULT_OUT:
+      cname = "vault";
+      break;
+    case HMC_LINK_EXTERN:
+    case HMC_LINK_SLID:
+      cname = "ext/slid";
+      break;
+    }
+    std::cerr << "Setting up link failed! linkId: " << linkId_in_module << " (" << cname << ")" << std::endl;
+  }
 }
 
 hmc_link::~hmc_link(void)
