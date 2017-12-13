@@ -233,11 +233,16 @@ bool hmc_sim::hmc_recv_pkt(unsigned slidId, char *pkt)
     return false;
   }
 
+  if (!(slidbufnotify.get_notification() & (0x1 << slidId)))
+    return false;
+
   unsigned recvpacketleninbit;
   hmc_link_fifo *rx = this->slids[slidId]->get_rx_fifo_out();
   char *packet = rx->front(&recvpacketleninbit);
   if (packet == nullptr)
     return false;
+
+  assert(slidId == HMCSIM_PACKET_RESPONSE_GET_SLID(HMC_PACKET_HEADER(packet)));
 
   rx->pop_front();
   if (pkt != nullptr)
